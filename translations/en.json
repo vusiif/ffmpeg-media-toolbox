@@ -49,5 +49,17 @@
     "common.paste": "Paste",
     "common.delete": "Delete",
     "common.save": "Save",
-    "common.open": "Open"
+    "common.open": "Open",
+    "media.title": "Media Info",
+    "media.file": "File:",
+    "media.format": "Format:",
+    "media.duration": "Duration:",
+    "media.video": "Video:",
+    "media.audio": "Audio:",
+    "media.resolution": "Resolution:",
+    "media.codec": "Codec:",
+    "media.fps": "FPS:",
+    "media.sampleRate": "Sample Rate:",
+    "media.channels": "Channels:",
+    "media.bitrate": "Bitrate:"
 }

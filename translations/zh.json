@@ -49,5 +49,17 @@
     "common.paste": "粘贴",
     "common.delete": "删除",
     "common.save": "保存",
-    "common.open": "打开"
+    "common.open": "打开",
+    "media.title": "媒体信息",
+    "media.file": "文件:",
+    "media.format": "格式:",
+    "media.duration": "时长:",
+    "media.video": "视频:",
+    "media.audio": "音频:",
+    "media.resolution": "分辨率:",
+    "media.codec": "编码:",
+    "media.fps": "帧率:",
+    "media.sampleRate": "采样率:",
+    "media.channels": "声道:",
+    "media.bitrate": "码率:"
 }

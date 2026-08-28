@@ -42,12 +42,16 @@ set(APP_SOURCES
     src/ffmpeg/FFmpegLocator.cpp
     src/ffmpeg/FFmpegCapabilities.h
     src/ffmpeg/FFmpegCapabilities.cpp
+    src/media/MediaFile.h
+    src/media/MediaProbeService.h
+    src/media/MediaProbeService.cpp
     src/app/TranslationManager.h
     src/app/TranslationManager.cpp
 )
 
 set(QML_SOURCES
     qml/Main.qml
+    qml/components/FileDropArea.qml
 )
 
 set(RESOURCE_FILES

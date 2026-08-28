@@ -5,6 +5,7 @@
 
 #include "ffmpeg/FFmpegLocator.h"
 #include "ffmpeg/FFmpegCapabilities.h"
+#include "media/MediaProbeService.h"
 #include "app/TranslationManager.h"
 
 int main(int argc, char *argv[])
@@ -17,12 +18,14 @@ int main(int argc, char *argv[])
 
     FFmpegLocator ffmpegLocator;
     FFmpegCapabilities ffmpegCaps(&ffmpegLocator);
+    MediaProbeService mediaProbe(&ffmpegLocator);
     TranslationManager i18n;
 
     QQmlApplicationEngine engine;
 
     engine.rootContext()->setContextProperty(QStringLiteral("ffmpegLocator"), &ffmpegLocator);
     engine.rootContext()->setContextProperty(QStringLiteral("ffmpegCaps"), &ffmpegCaps);
+    engine.rootContext()->setContextProperty(QStringLiteral("mediaProbe"), &mediaProbe);
     engine.rootContext()->setContextProperty(QStringLiteral("i18n"), &i18n);
 
     const QUrl url(QStringLiteral("qrc:/qt/qml/ffmedia/qml/Main.qml"));
