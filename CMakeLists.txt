@@ -57,6 +57,8 @@ set(APP_SOURCES
     src/jobs/JobListModel.cpp
     src/jobs/JobQueue.h
     src/jobs/JobQueue.cpp
+    src/i18n/LanguageManager.h
+    src/i18n/LanguageManager.cpp
 )
 
 set(QML_SOURCES
@@ -89,7 +91,6 @@ qt_add_qml_module(ffmedia-toolbox
 qt_add_translations(ffmedia-toolbox
     TS_FILE_BASE ffmedia
     TS_OUTPUT_DIRECTORY i18n
-    RESOURCE_PREFIX /qt/qml/ffmedia/i18n
     LUPDATE_OPTIONS -no-obsolete
     LRELEASE_OPTIONS -idbased
 )
