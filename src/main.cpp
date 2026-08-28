@@ -4,6 +4,8 @@
 #include <QQuickStyle>
 
 #include "ffmpeg/FFmpegLocator.h"
+#include "ffmpeg/FFmpegCapabilities.h"
+#include "app/TranslationManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,10 +16,14 @@ int main(int argc, char *argv[])
     app.setApplicationName(QStringLiteral("FFmpeg Media Toolbox"));
 
     FFmpegLocator ffmpegLocator;
+    FFmpegCapabilities ffmpegCaps(&ffmpegLocator);
+    TranslationManager i18n;
 
     QQmlApplicationEngine engine;
 
     engine.rootContext()->setContextProperty(QStringLiteral("ffmpegLocator"), &ffmpegLocator);
+    engine.rootContext()->setContextProperty(QStringLiteral("ffmpegCaps"), &ffmpegCaps);
+    engine.rootContext()->setContextProperty(QStringLiteral("i18n"), &i18n);
 
     const QUrl url(QStringLiteral("qrc:/qt/qml/ffmedia/qml/Main.qml"));
 

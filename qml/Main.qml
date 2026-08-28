@@ -10,7 +10,7 @@ ApplicationWindow {
     height: 680
     minimumWidth: 800
     minimumHeight: 600
-    title: qsTr("FFmpeg Media Toolbox")
+    title: i18n.tr("app.title")
 
     color: palette.window
 
@@ -27,6 +27,16 @@ ApplicationWindow {
                 verticalAlignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 leftPadding: 12
+            }
+
+            ComboBox {
+                id: langCombo
+                model: ["English", "中文"]
+                currentIndex: i18n.currentLanguage === "zh" ? 1 : 0
+                onActivated: (index) => {
+                    i18n.setLanguage(index === 0 ? "en" : "zh")
+                }
+                Layout.rightMargin: 12
             }
         }
     }
@@ -46,7 +56,7 @@ ApplicationWindow {
                 spacing: 24
 
                 Label {
-                    text: qsTr("FFmpeg Media Toolbox")
+                    text: i18n.tr("home.title")
                     font.pixelSize: 28
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
@@ -54,7 +64,7 @@ ApplicationWindow {
                 }
 
                 Label {
-                    text: qsTr("Drop files here to get started")
+                    text: i18n.tr("home.dropHint")
                     font.pixelSize: 14
                     color: palette.placeholderText
                     horizontalAlignment: Text.AlignHCenter
@@ -62,7 +72,7 @@ ApplicationWindow {
                 }
 
                 GroupBox {
-                    title: qsTr("FFmpeg Status")
+                    title: i18n.tr("ffmpeg.status")
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 500
 
@@ -72,11 +82,11 @@ ApplicationWindow {
 
                         RowLayout {
                             Label {
-                                text: qsTr("Status:")
+                                text: i18n.tr("ffmpeg.found") + ":"
                                 font.weight: Font.Medium
                             }
                             Label {
-                                text: ffmpegLocator.isValid ? qsTr("Found") : qsTr("Not Found")
+                                text: ffmpegLocator.isValid ? i18n.tr("ffmpeg.found") : i18n.tr("ffmpeg.notFound")
                                 color: ffmpegLocator.isValid ? "green" : "red"
                             }
                         }
@@ -84,7 +94,7 @@ ApplicationWindow {
                         RowLayout {
                             visible: ffmpegLocator.isValid
                             Label {
-                                text: qsTr("FFmpeg:")
+                                text: i18n.tr("ffmpeg.ffmpegPath")
                                 font.weight: Font.Medium
                             }
                             Label {
@@ -97,7 +107,7 @@ ApplicationWindow {
                         RowLayout {
                             visible: ffmpegLocator.isValid
                             Label {
-                                text: qsTr("FFprobe:")
+                                text: i18n.tr("ffmpeg.ffprobePath")
                                 font.weight: Font.Medium
                             }
                             Label {
@@ -110,7 +120,7 @@ ApplicationWindow {
                         RowLayout {
                             visible: ffmpegLocator.isValid
                             Label {
-                                text: qsTr("Version:")
+                                text: i18n.tr("ffmpeg.version")
                                 font.weight: Font.Medium
                             }
                             Label {
@@ -121,7 +131,7 @@ ApplicationWindow {
                         }
 
                         Button {
-                            text: qsTr("Rescan")
+                            text: i18n.tr("ffmpeg.rescan")
                             onClicked: ffmpegLocator.autoDetect()
                             Layout.alignment: Qt.AlignRight
                         }

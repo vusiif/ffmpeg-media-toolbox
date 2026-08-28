@@ -40,10 +40,19 @@ set(APP_SOURCES
     src/main.cpp
     src/ffmpeg/FFmpegLocator.h
     src/ffmpeg/FFmpegLocator.cpp
+    src/ffmpeg/FFmpegCapabilities.h
+    src/ffmpeg/FFmpegCapabilities.cpp
+    src/app/TranslationManager.h
+    src/app/TranslationManager.cpp
 )
 
 set(QML_SOURCES
     qml/Main.qml
+)
+
+set(RESOURCE_FILES
+    translations/en.json
+    translations/zh.json
 )
 
 qt_add_executable(ffmedia-toolbox
@@ -55,6 +64,9 @@ qt_add_qml_module(ffmedia-toolbox
     VERSION 1.0
     QML_FILES
         ${QML_SOURCES}
+    RESOURCES
+        ${RESOURCE_FILES}
+    RESOURCE_PREFIX /
 )
 
 target_include_directories(ffmedia-toolbox PRIVATE
