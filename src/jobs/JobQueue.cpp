@@ -92,8 +92,10 @@ void JobQueue::startJob(Job *job)
         return;
     }
 
-    FFmpegCommand cmd = job->command();
-    if (!cmd.isValid()) {
+    QString program = job->commandProgram();
+    QStringList arguments = job->commandArguments();
+
+    if (program.isEmpty()) {
         job->setStatus(JobStatus::Failed);
         job->setErrorMessage(QStringLiteral("Invalid command"));
         return;
@@ -101,7 +103,7 @@ void JobQueue::startJob(Job *job)
 
     job->setStatus(JobStatus::Running);
     job->setProgress(0);
-    job->addLog(QStringLiteral("Starting: %1").arg(cmd.toDisplayString()));
+    job->addLog(QStringLiteral("Starting: %1").arg(job->commandDisplayString()));
 
     FFmpegProcess *process = new FFmpegProcess(this);
 
@@ -117,7 +119,7 @@ void JobQueue::startJob(Job *job)
 
     m_processes[job->id()] = process;
 
-    process->start(cmd.program, cmd.arguments, job->totalDuration());
+    process->start(program, arguments, job->totalDuration());
 }
 
 void JobQueue::onJobFinished(bool success)

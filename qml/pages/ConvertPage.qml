@@ -139,19 +139,18 @@ Page {
                     var job = Qt.createQmlObject('import ffmedia; Job {}', convertPage)
                     job.name = info.path.split("/").pop().split("\\").pop()
 
-                    var settings = {
-                        inputPath: convertPage.inputFile,
-                        outputPath: convertPage.inputFile.replace(/\.[^.]+$/, "." + convertPage.outputFormat),
-                        outputFormat: convertPage.outputFormat,
-                        videoCodec: convertPage.videoCodec,
-                        audioCodec: "",
-                        crf: convertPage.quality,
-                        copyStreams: convertPage.useSmartCopy
-                    }
+                    var outputPath = convertPage.inputFile.replace(/\.[^.]+$/, "." + convertPage.outputFormat)
+                    var args = commandBuilder.buildConversion(
+                        convertPage.inputFile,
+                        outputPath,
+                        convertPage.outputFormat,
+                        convertPage.videoCodec,
+                        "",
+                        convertPage.quality,
+                        convertPage.useSmartCopy
+                    )
 
-                    var builder = Qt.createQmlObject('import ffmedia; FFmpegCommandBuilder {}', convertPage)
-                    var cmd = builder.buildConversion(settings)
-                    job.command = cmd
+                    job.setCommand(ffmpegLocator.ffmpegPath, args)
                     job.totalDuration = info.duration
 
                     jobQueue.addJob(job)

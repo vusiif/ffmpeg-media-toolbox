@@ -169,11 +169,9 @@ Page {
                     args.push(filter)
                     args.push(outputPath)
 
-                    var cmd = { program: ffmpegLocator.ffmpegPath, arguments: args }
-
                     var job = Qt.createQmlObject('import ffmedia; Job {}', joinPage)
                     job.name = "Join " + joinPage.inputFiles.length + " images"
-                    job.command = cmd
+                    job.setCommand(ffmpegLocator.ffmpegPath, args)
 
                     jobQueue.addJob(job)
                 }

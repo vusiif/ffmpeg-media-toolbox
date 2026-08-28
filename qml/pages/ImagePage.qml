@@ -255,28 +255,20 @@ Page {
                     var ext = imagePage.outputFormat === "jpeg" ? "jpg" : imagePage.outputFormat
                     var outputPath = imagePage.inputFile.replace(/\.[^.]+$/, "." + ext)
 
-                    var settings = {
-                        inputPath: imagePage.inputFile,
-                        outputPath: outputPath,
-                        cropX: imagePage.cropX,
-                        cropY: imagePage.cropY,
-                        cropW: imagePage.cropW,
-                        cropH: imagePage.cropH,
-                        resizeW: imagePage.resizeW,
-                        resizeH: imagePage.resizeH,
-                        rotate: imagePage.rotation,
-                        flipH: imagePage.flipH,
-                        flipV: imagePage.flipV,
-                        outputFormat: imagePage.outputFormat,
-                        quality: imagePage.quality
-                    }
-
-                    var builder = Qt.createQmlObject('import ffmedia; FFmpegCommandBuilder {}', imagePage)
-                    var cmd = builder.buildImageOperation(settings)
+                    var args = commandBuilder.buildImageOperation(
+                        imagePage.inputFile,
+                        outputPath,
+                        imagePage.cropX, imagePage.cropY, imagePage.cropW, imagePage.cropH,
+                        imagePage.resizeW, imagePage.resizeH,
+                        imagePage.rotation,
+                        imagePage.flipH, imagePage.flipV,
+                        imagePage.outputFormat,
+                        imagePage.quality
+                    )
 
                     var job = Qt.createQmlObject('import ffmedia; Job {}', imagePage)
                     job.name = "Image: " + imagePage.inputFile.split("/").pop().split("\\").pop()
-                    job.command = cmd
+                    job.setCommand(ffmpegLocator.ffmpegPath, args)
 
                     jobQueue.addJob(job)
                 }

@@ -181,22 +181,19 @@ Page {
                             outputPath = inputFile.replace(/\.[^.]+$/, "." + batchPage.outputFormat)
                         }
 
-                        var settings = {
-                            inputPath: inputFile,
-                            outputPath: outputPath,
-                            outputFormat: batchPage.outputFormat,
-                            videoCodec: batchPage.videoCodec,
-                            audioCodec: "",
-                            crf: batchPage.quality,
-                            copyStreams: batchPage.useSmartCopy
-                        }
-
-                        var builder = Qt.createQmlObject('import ffmedia; FFmpegCommandBuilder {}', batchPage)
-                        var cmd = builder.buildConversion(settings)
+                        var args = commandBuilder.buildConversion(
+                            inputFile,
+                            outputPath,
+                            batchPage.outputFormat,
+                            batchPage.videoCodec,
+                            "",
+                            batchPage.quality,
+                            batchPage.useSmartCopy
+                        )
 
                         var job = Qt.createQmlObject('import ffmedia; Job {}', batchPage)
                         job.name = inputFile.split("/").pop().split("\\").pop()
-                        job.command = cmd
+                        job.setCommand(ffmpegLocator.ffmpegPath, args)
 
                         jobQueue.addJob(job)
                     }

@@ -13,6 +13,10 @@ JobStatus Job::status() const { return m_status; }
 double Job::progress() const { return m_progress; }
 QString Job::errorMessage() const { return m_errorMessage; }
 
+QString Job::commandProgram() const { return m_commandProgram; }
+QStringList Job::commandArguments() const { return m_commandArguments; }
+double Job::totalDuration() const { return m_totalDuration; }
+
 void Job::setName(const QString &name)
 {
     if (m_name == name) return;
@@ -43,19 +47,37 @@ void Job::setProgress(double progress)
 }
 
 void Job::setErrorMessage(const QString &message) { m_errorMessage = message; }
+void Job::setTotalDuration(double duration) { m_totalDuration = duration; emit commandChanged(); }
+
+void Job::setCommand(const QString &program, const QStringList &arguments)
+{
+    m_commandProgram = program;
+    m_commandArguments = arguments;
+    emit commandChanged();
+}
+
+QString Job::commandDisplayString() const
+{
+    QStringList parts;
+    parts << m_commandProgram;
+    for (const QString &arg : m_commandArguments) {
+        if (arg.contains(QLatin1Char(' '))) {
+            parts << QStringLiteral("\"%1\"").arg(arg);
+        } else {
+            parts << arg;
+        }
+    }
+    return parts.join(QLatin1Char(' '));
+}
 
 QStringList Job::inputFiles() const { return m_inputFiles; }
 QString Job::outputFile() const { return m_outputFile; }
-FFmpegCommand Job::command() const { return m_command; }
-double Job::totalDuration() const { return m_totalDuration; }
 QList<JobLog> Job::logs() const { return m_logs; }
 QDateTime Job::startTime() const { return m_startTime; }
 QDateTime Job::endTime() const { return m_endTime; }
 
 void Job::setInputFiles(const QStringList &files) { m_inputFiles = files; }
 void Job::setOutputFile(const QString &file) { m_outputFile = file; }
-void Job::setCommand(const FFmpegCommand &cmd) { m_command = cmd; }
-void Job::setTotalDuration(double duration) { m_totalDuration = duration; }
 
 void Job::addLog(const QString &message)
 {

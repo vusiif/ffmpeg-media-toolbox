@@ -5,113 +5,110 @@ FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
 {
 }
 
-FFmpegCommand FFmpegCommandBuilder::buildConversion(const ConversionSettings &settings) const
+QStringList FFmpegCommandBuilder::buildConversion(
+    const QString &inputPath,
+    const QString &outputPath,
+    const QString &outputFormat,
+    const QString &videoCodec,
+    const QString &audioCodec,
+    int crf,
+    bool copyStreams
+) const
 {
-    FFmpegCommand cmd;
+    QStringList args;
 
-    if (settings.inputPath.isEmpty() || settings.outputPath.isEmpty()) {
-        return cmd;
+    if (inputPath.isEmpty() || outputPath.isEmpty()) {
+        return args;
     }
 
-    cmd.arguments << QStringLiteral("-y");
-    cmd.arguments << QStringLiteral("-i") << settings.inputPath;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
 
-    if (settings.copyStreams) {
-        cmd.arguments << QStringLiteral("-c") << QStringLiteral("copy");
+    if (copyStreams) {
+        args << QStringLiteral("-c") << QStringLiteral("copy");
     } else {
-        if (!settings.videoCodec.isEmpty()) {
-            cmd.arguments << QStringLiteral("-c:v") << settings.videoCodec;
+        if (!videoCodec.isEmpty()) {
+            args << QStringLiteral("-c:v") << videoCodec;
         }
-        if (!settings.audioCodec.isEmpty()) {
-            cmd.arguments << QStringLiteral("-c:a") << settings.audioCodec;
+        if (!audioCodec.isEmpty()) {
+            args << QStringLiteral("-c:a") << audioCodec;
         }
-        if (settings.crf >= 0) {
-            cmd.arguments << QStringLiteral("-crf") << QString::number(settings.crf);
-        }
-        if (settings.videoBitrate > 0) {
-            cmd.arguments << QStringLiteral("-b:v") << QStringLiteral("%1k").arg(settings.videoBitrate);
-        }
-        if (settings.audioBitrate > 0) {
-            cmd.arguments << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(settings.audioBitrate);
-        }
-        if (!settings.preset.isEmpty()) {
-            cmd.arguments << QStringLiteral("-preset") << settings.preset;
-        }
-        if (!settings.pixelFormat.isEmpty()) {
-            cmd.arguments << QStringLiteral("-pix_fmt") << settings.pixelFormat;
-        }
-        if (settings.width > 0 && settings.height > 0) {
-            cmd.arguments << QStringLiteral("-vf")
-                          << QStringLiteral("scale=%1:%2").arg(settings.width).arg(settings.height);
-        }
-        if (settings.fps > 0) {
-            cmd.arguments << QStringLiteral("-r") << QString::number(settings.fps, 'f', 2);
+        if (crf >= 0) {
+            args << QStringLiteral("-crf") << QString::number(crf);
         }
     }
 
-    cmd.arguments << settings.extraArgs;
-    cmd.arguments << settings.outputPath;
+    args << outputPath;
 
-    return cmd;
+    return args;
 }
 
-FFmpegCommand FFmpegCommandBuilder::buildImageOperation(const ImageOperationSettings &settings) const
+QStringList FFmpegCommandBuilder::buildImageOperation(
+    const QString &inputPath,
+    const QString &outputPath,
+    int cropX, int cropY, int cropW, int cropH,
+    int resizeW, int resizeH,
+    int rotate,
+    bool flipH, bool flipV,
+    const QString &outputFormat,
+    int quality
+) const
 {
-    FFmpegCommand cmd;
+    QStringList args;
 
-    if (settings.inputPath.isEmpty() || settings.outputPath.isEmpty()) {
-        return cmd;
+    if (inputPath.isEmpty() || outputPath.isEmpty()) {
+        return args;
     }
 
-    cmd.arguments << QStringLiteral("-y");
-    cmd.arguments << QStringLiteral("-i") << settings.inputPath;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
 
     QStringList filters;
 
-    if (settings.cropW > 0 && settings.cropH > 0) {
+    if (cropW > 0 && cropH > 0) {
         filters << QStringLiteral("crop=%1:%2:%3:%4")
-                      .arg(settings.cropW)
-                      .arg(settings.cropH)
-                      .arg(settings.cropX)
-                      .arg(settings.cropY);
+                      .arg(cropW)
+                      .arg(cropH)
+                      .arg(cropX)
+                      .arg(cropY);
     }
 
-    if (settings.resizeW > 0 && settings.resizeH > 0) {
+    if (resizeW > 0 && resizeH > 0) {
         filters << QStringLiteral("scale=%1:%2")
-                      .arg(settings.resizeW)
-                      .arg(settings.resizeH);
+                      .arg(resizeW)
+                      .arg(resizeH);
     }
 
-    if (settings.rotate == 90) {
+    if (rotate == 90) {
         filters << QStringLiteral("transpose=1");
-    } else if (settings.rotate == 180) {
+    } else if (rotate == 180) {
         filters << QStringLiteral("transpose=1,transpose=1");
-    } else if (settings.rotate == 270) {
+    } else if (rotate == 270) {
         filters << QStringLiteral("transpose=2");
     }
 
-    if (settings.flipH) {
+    if (flipH) {
         filters << QStringLiteral("hflip");
     }
-    if (settings.flipV) {
+    if (flipV) {
         filters << QStringLiteral("vflip");
     }
 
     if (!filters.isEmpty()) {
-        cmd.arguments << QStringLiteral("-vf") << filters.join(QLatin1Char(','));
+        args << QStringLiteral("-vf") << filters.join(QLatin1Char(','));
     }
 
-    if (!settings.outputFormat.isEmpty()) {
-        cmd.arguments << QStringLiteral("-f") << settings.outputFormat;
+    if (!outputFormat.isEmpty()) {
+        args << QStringLiteral("-f") << outputFormat;
     }
 
-    if (settings.quality >= 0) {
-        cmd.arguments << QStringLiteral("-q:v") << QString::number(settings.quality);
+    if (quality >= 0) {
+        args << QStringLiteral("-q:v") << QString::number(quality);
     }
 
-    cmd.arguments << settings.outputPath;
+    args << outputPath;
 
-    return cmd;
+    return args;
 }
 
 QString FFmpegCommandBuilder::escapeFilterValue(const QString &value)

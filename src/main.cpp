@@ -5,6 +5,7 @@
 
 #include "ffmpeg/FFmpegLocator.h"
 #include "ffmpeg/FFmpegCapabilities.h"
+#include "ffmpeg/FFmpegCommandBuilder.h"
 #include "media/MediaProbeService.h"
 #include "jobs/JobQueue.h"
 #include "app/TranslationManager.h"
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
 
     FFmpegLocator ffmpegLocator;
     FFmpegCapabilities ffmpegCaps(&ffmpegLocator);
+    FFmpegCommandBuilder commandBuilder;
     MediaProbeService mediaProbe(&ffmpegLocator);
     JobQueue jobQueue(&ffmpegLocator, &mediaProbe);
     TranslationManager i18n;
@@ -27,6 +29,7 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty(QStringLiteral("ffmpegLocator"), &ffmpegLocator);
     engine.rootContext()->setContextProperty(QStringLiteral("ffmpegCaps"), &ffmpegCaps);
+    engine.rootContext()->setContextProperty(QStringLiteral("commandBuilder"), &commandBuilder);
     engine.rootContext()->setContextProperty(QStringLiteral("mediaProbe"), &mediaProbe);
     engine.rootContext()->setContextProperty(QStringLiteral("jobQueue"), &jobQueue);
     engine.rootContext()->setContextProperty(QStringLiteral("jobModel"), jobQueue.model());
