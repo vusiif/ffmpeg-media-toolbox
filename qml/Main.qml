@@ -53,8 +53,8 @@ ApplicationWindow {
                     { icon: "🏠", label: "nav.home", page: "home" },
                     { icon: "🔄", label: "nav.convert", page: "convert" },
                     { icon: "🖼️", label: "nav.image", page: "image" },
-                    { icon: "📋", label: "nav.queue", page: "queue" },
-                    { icon: "⚙️", label: "nav.settings", page: "settings" }
+                    { icon: "🔗", label: "image.join", page: "join" },
+                    { icon: "📋", label: "nav.queue", page: "queue" }
                 ]
 
                 delegate: AbstractButton {
@@ -102,7 +102,8 @@ ApplicationWindow {
             case "home": return 0
             case "convert": return 1
             case "image": return 2
-            case "queue": return 3
+            case "join": return 3
+            case "queue": return 4
             default: return 0
             }
         }
@@ -172,6 +173,9 @@ ApplicationWindow {
 
         // Image page
         Pages.ImagePage {}
+
+        // Join page
+        Pages.JoinPage {}
 
         // Queue page
         Pages.QueuePage {}

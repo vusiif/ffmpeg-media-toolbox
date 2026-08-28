@@ -65,6 +65,7 @@ set(QML_SOURCES
     qml/components/FileDropArea.qml
     qml/pages/ConvertPage.qml
     qml/pages/ImagePage.qml
+    qml/pages/JoinPage.qml
     qml/pages/QueuePage.qml
 )
 
