@@ -42,6 +42,9 @@ set(APP_SOURCES
     src/ffmpeg/FFmpegLocator.cpp
     src/ffmpeg/FFmpegCapabilities.h
     src/ffmpeg/FFmpegCapabilities.cpp
+    src/ffmpeg/FFmpegCommand.h
+    src/ffmpeg/FFmpegCommandBuilder.h
+    src/ffmpeg/FFmpegCommandBuilder.cpp
     src/media/MediaFile.h
     src/media/MediaProbeService.h
     src/media/MediaProbeService.cpp
