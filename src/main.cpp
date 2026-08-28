@@ -10,6 +10,7 @@
 #include "media/MediaProbeService.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "i18n/LanguageManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     FFmpegCommandBuilder commandBuilder;
     MediaProbeService mediaProbe(&ffmpegLocator);
     JobQueue jobQueue(&ffmpegLocator, &mediaProbe);
+    LanguageManager languageManager;
 
     QQmlApplicationEngine engine;
 
@@ -36,6 +38,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("mediaProbe"), &mediaProbe);
     engine.rootContext()->setContextProperty(QStringLiteral("jobQueue"), &jobQueue);
     engine.rootContext()->setContextProperty(QStringLiteral("jobModel"), jobQueue.model());
+    engine.rootContext()->setContextProperty(QStringLiteral("languageManager"), &languageManager);
 
     QObject::connect(
         &engine,

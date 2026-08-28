@@ -57,6 +57,8 @@ set(APP_SOURCES
     src/jobs/JobListModel.cpp
     src/jobs/JobQueue.h
     src/jobs/JobQueue.cpp
+    src/i18n/LanguageManager.h
+    src/i18n/LanguageManager.cpp
 )
 
 set(QML_SOURCES

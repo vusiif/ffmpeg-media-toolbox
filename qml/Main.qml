@@ -34,9 +34,9 @@ ApplicationWindow {
             ComboBox {
                 id: langCombo
                 model: ["English", "中文"]
-                currentIndex: Qt.uiLanguage.startsWith("zh") ? 1 : 0
+                currentIndex: languageManager.language.startsWith("zh") ? 1 : 0
                 onActivated: (index) => {
-                    Qt.uiLanguage = index === 0 ? "en" : "zh_CN"
+                    languageManager.language = index === 0 ? "en" : "zh_CN"
                 }
                 Layout.rightMargin: 12
             }
