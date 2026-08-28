@@ -6,6 +6,8 @@ import QtQuick.Dialogs
 Page {
     id: joinPage
 
+    function t(key) { return t(key, i18n.languageVersion) }
+
     property var inputFiles: []
     property string joinMode: "horizontal"
     property int joinSpacing: 0
@@ -18,7 +20,7 @@ Page {
         spacing: 16
 
         Label {
-            text: i18n.tr("image.join")
+            text: t("image.join")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
@@ -28,7 +30,7 @@ Page {
             spacing: 16
 
             GroupBox {
-                title: i18n.tr("convert.input")
+                title: t("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
 
@@ -75,12 +77,12 @@ Page {
                         Layout.fillWidth: true
 
                         Button {
-                            text: i18n.tr("common.browse")
+                            text: t("common.browse")
                             onClicked: joinFileDialog.open()
                         }
 
                         Button {
-                            text: i18n.tr("common.clear")
+                            text: t("common.clear")
                             onClicked: joinPage.inputFiles = []
                         }
                     }
@@ -141,7 +143,7 @@ Page {
             spacing: 12
 
             Button {
-                text: i18n.tr("convert.addToQueue")
+                text: t("convert.addToQueue")
                 enabled: joinPage.inputFiles.length >= 2
                 onClicked: {
                     if (joinPage.inputFiles.length < 2) return
@@ -181,7 +183,7 @@ Page {
 
     FileDialog {
         id: joinFileDialog
-        title: i18n.tr("image.join")
+        title: t("image.join")
         nameFilters: ["Image files (*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.gif)", "All files (*)"]
         fileMode: FileDialog.OpenFiles
         onAccepted: {
@@ -193,3 +195,4 @@ Page {
         }
     }
 }
+

@@ -6,6 +6,8 @@ import QtQuick.Dialogs
 Page {
     id: convertPage
 
+    function t(key) { return t(key, i18n.languageVersion) }
+
     property string inputFile: ""
     property string outputFormat: "mp4"
     property string videoCodec: ""
@@ -19,13 +21,13 @@ Page {
         spacing: 16
 
         Label {
-            text: i18n.tr("convert.title")
+            text: t("convert.title")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
 
         GroupBox {
-            title: i18n.tr("convert.input")
+            title: t("convert.input")
             Layout.fillWidth: true
 
             ColumnLayout {
@@ -42,7 +44,7 @@ Page {
                     }
 
                     Button {
-                        text: i18n.tr("common.browse")
+                        text: t("common.browse")
                         onClicked: inputFileDialog.open()
                     }
                 }
@@ -68,7 +70,7 @@ Page {
         }
 
         GroupBox {
-            title: i18n.tr("convert.outputFormat")
+            title: t("convert.outputFormat")
             Layout.fillWidth: true
 
             GridLayout {
@@ -77,7 +79,7 @@ Page {
                 columnSpacing: 16
                 rowSpacing: 8
 
-                Label { text: i18n.tr("convert.outputFormat") + ":" }
+                Label { text: t("convert.outputFormat") + ":" }
                 ComboBox {
                     id: formatCombo
                     model: ["mp4", "mkv", "mov", "webm", "avi"]
@@ -86,7 +88,7 @@ Page {
                     Layout.fillWidth: true
                 }
 
-                Label { text: i18n.tr("convert.codec") + ":" }
+                Label { text: t("convert.codec") + ":" }
                 ComboBox {
                     id: codecCombo
                     model: ["auto", "copy", "libx264", "libx265", "libvpx-vp9", "libaom-av1"]
@@ -106,7 +108,7 @@ Page {
                     Layout.fillWidth: true
                 }
 
-                Label { text: i18n.tr("convert.quality") + ":" }
+                Label { text: t("convert.quality") + ":" }
                 RowLayout {
                     Slider {
                         id: qualitySlider
@@ -130,7 +132,7 @@ Page {
             spacing: 12
 
             Button {
-                text: i18n.tr("convert.addToQueue")
+                text: t("convert.addToQueue")
                 enabled: convertPage.inputFile !== ""
                 onClicked: {
                     var info = mediaProbe.probe(convertPage.inputFile)
@@ -163,7 +165,7 @@ Page {
 
     FileDialog {
         id: inputFileDialog
-        title: i18n.tr("convert.input")
+        title: t("convert.input")
         nameFilters: ["Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv)", "All files (*)"]
         onAccepted: {
             convertPage.inputFile = selectedFile.toString().replace("file:///", "")

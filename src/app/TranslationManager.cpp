@@ -48,6 +48,7 @@ TranslationManager::TranslationManager(QObject *parent)
 }
 
 QString TranslationManager::currentLanguage() const { return m_currentLang; }
+int TranslationManager::languageVersion() const { return m_languageVersion; }
 
 void TranslationManager::setLanguage(const QString &lang)
 {
@@ -61,6 +62,7 @@ void TranslationManager::setLanguage(const QString &lang)
 
     m_currentLang = lang;
     m_translations = m_allTranslations.value(lang);
+    m_languageVersion++;
 
     QSettings settings;
     settings.beginGroup(kSettingsGroup);
@@ -70,8 +72,9 @@ void TranslationManager::setLanguage(const QString &lang)
     emit languageChanged();
 }
 
-QString TranslationManager::tr(const QString &key) const
+QString TranslationManager::tr(const QString &key, int version) const
 {
+    Q_UNUSED(version)
     if (m_translations.contains(key)) {
         return m_translations.value(key);
     }

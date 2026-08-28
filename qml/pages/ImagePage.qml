@@ -6,6 +6,8 @@ import QtQuick.Dialogs
 Page {
     id: imagePage
 
+    function t(key) { return t(key, i18n.languageVersion) }
+
     property string inputFile: ""
     property string outputFormat: "png"
     property int quality: 90
@@ -26,7 +28,7 @@ Page {
         spacing: 16
 
         Label {
-            text: i18n.tr("image.title")
+            text: t("image.title")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
@@ -36,7 +38,7 @@ Page {
             spacing: 16
 
             GroupBox {
-                title: i18n.tr("convert.input")
+                title: t("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
 
@@ -84,7 +86,7 @@ Page {
                         }
 
                         Button {
-                            text: i18n.tr("common.browse")
+                            text: t("common.browse")
                             onClicked: imageFileDialog.open()
                         }
                     }
@@ -105,7 +107,7 @@ Page {
                         spacing: 12
 
                         GroupBox {
-                            title: i18n.tr("image.crop")
+                            title: t("image.crop")
                             Layout.fillWidth: true
 
                             GridLayout {
@@ -142,7 +144,7 @@ Page {
                         }
 
                         GroupBox {
-                            title: i18n.tr("image.resize")
+                            title: t("image.resize")
                             Layout.fillWidth: true
 
                             GridLayout {
@@ -167,7 +169,7 @@ Page {
                         }
 
                         GroupBox {
-                            title: i18n.tr("image.rotate")
+                            title: t("image.rotate")
                             Layout.fillWidth: true
 
                             RowLayout {
@@ -201,7 +203,7 @@ Page {
                         }
 
                         GroupBox {
-                            title: i18n.tr("image.flip")
+                            title: t("image.flip")
                             Layout.fillWidth: true
 
                             RowLayout {
@@ -229,14 +231,14 @@ Page {
             Layout.fillWidth: true
             spacing: 12
 
-            Label { text: i18n.tr("convert.outputFormat") + ":" }
+            Label { text: t("convert.outputFormat") + ":" }
             ComboBox {
                 model: ["png", "jpeg", "webp", "bmp", "tiff"]
                 currentIndex: 0
                 onCurrentTextChanged: imagePage.outputFormat = currentText
             }
 
-            Label { text: i18n.tr("convert.quality") + ":" }
+            Label { text: t("convert.quality") + ":" }
             SpinBox {
                 from: 1; to: 100; value: imagePage.quality
                 onValueModified: imagePage.quality = value
@@ -245,7 +247,7 @@ Page {
             Item { Layout.fillWidth: true }
 
             Button {
-                text: i18n.tr("convert.addToQueue")
+                text: t("convert.addToQueue")
                 enabled: imagePage.inputFile !== ""
                 onClicked: {
                     var ext = imagePage.outputFormat === "jpeg" ? "jpg" : imagePage.outputFormat
@@ -274,10 +276,11 @@ Page {
 
     FileDialog {
         id: imageFileDialog
-        title: i18n.tr("image.title")
+        title: t("image.title")
         nameFilters: ["Image files (*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.gif)", "All files (*)"]
         onAccepted: {
             imagePage.inputFile = selectedFile.toString().replace("file:///", "")
         }
     }
 }
+

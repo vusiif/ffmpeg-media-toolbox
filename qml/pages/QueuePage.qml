@@ -5,6 +5,8 @@ import QtQuick.Layouts
 Page {
     id: queuePage
 
+    function t(key) { return t(key, i18n.languageVersion) }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 24
@@ -14,7 +16,7 @@ Page {
             Layout.fillWidth: true
 
             Label {
-                text: i18n.tr("queue.title")
+                text: t("queue.title")
                 font.pixelSize: 24
                 font.weight: Font.Bold
                 Layout.fillWidth: true
@@ -60,12 +62,12 @@ Page {
                         Label {
                             text: {
                                 switch(model.jobStatus) {
-                                case 0: return i18n.tr("queue.pending")
+                                case 0: return t("queue.pending")
                                 case 1: return qsTr("Preparing")
-                                case 2: return i18n.tr("queue.running")
-                                case 3: return i18n.tr("queue.completed")
-                                case 4: return i18n.tr("queue.failed")
-                                case 5: return i18n.tr("queue.cancel")
+                                case 2: return t("queue.running")
+                                case 3: return t("queue.completed")
+                                case 4: return t("queue.failed")
+                                case 5: return t("queue.cancel")
                                 default: return ""
                                 }
                             }
@@ -103,13 +105,13 @@ Page {
                         Item { Layout.fillWidth: true }
 
                         Button {
-                            text: i18n.tr("queue.cancel")
+                            text: t("queue.cancel")
                             visible: model.jobStatus === 0 || model.jobStatus === 2
                             onClicked: jobQueue.cancelJob(model.jobId)
                         }
 
                         Button {
-                            text: i18n.tr("queue.retry")
+                            text: t("queue.retry")
                             visible: model.jobStatus === 4 || model.jobStatus === 5
                             onClicked: jobQueue.retryJob(model.jobId)
                         }
@@ -126,3 +128,4 @@ Page {
         }
     }
 }
+

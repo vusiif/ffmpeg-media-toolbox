@@ -12,11 +12,15 @@ ApplicationWindow {
     height: 680
     minimumWidth: 800
     minimumHeight: 600
-    title: i18n.tr("app.title")
+    title: root.t("app.title")
 
     color: palette.window
 
     property string currentPage: "home"
+
+    function t(key) {
+        return root.t(key, i18n.languageVersion)
+    }
 
     header: ToolBar {
         RowLayout {
@@ -52,7 +56,7 @@ ApplicationWindow {
                 model: [
                     { icon: "🏠", label: "nav.home", page: "home" },
                     { icon: "🔄", label: "nav.convert", page: "convert" },
-                    { icon: "🖼️", label: "nav.image", page: "image" },
+                    { icon: "🖼�?, label: "nav.image", page: "image" },
                     { icon: "🔗", label: "image.join", page: "join" },
                     { icon: "📦", label: "nav.queue", page: "batch" },
                     { icon: "📋", label: "nav.queue", page: "queue" },
@@ -80,7 +84,7 @@ ApplicationWindow {
                         }
 
                         Label {
-                            text: i18n.tr(modelData.label)
+                            text: root.t(modelData.label)
                             font.pixelSize: 10
                             horizontalAlignment: Text.AlignHCenter
                             Layout.alignment: Qt.AlignHCenter
@@ -120,7 +124,7 @@ ApplicationWindow {
                 spacing: 16
 
                 Label {
-                    text: i18n.tr("home.title")
+                    text: root.t("home.title")
                     font.pixelSize: 28
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
@@ -128,7 +132,7 @@ ApplicationWindow {
                 }
 
                 Label {
-                    text: i18n.tr("home.dropHint")
+                    text: root.t("home.dropHint")
                     font.pixelSize: 14
                     color: palette.placeholderText
                     horizontalAlignment: Text.AlignHCenter
@@ -136,7 +140,7 @@ ApplicationWindow {
                 }
 
                 GroupBox {
-                    title: i18n.tr("ffmpeg.status")
+                    title: root.t("ffmpeg.status")
                     visible: ffmpegLocator.isValid
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 500
@@ -147,7 +151,7 @@ ApplicationWindow {
 
                         RowLayout {
                             Label {
-                                text: i18n.tr("ffmpeg.version") + ":"
+                                text: root.t("ffmpeg.version") + ":"
                                 font.weight: Font.Medium
                             }
                             Label {
@@ -158,7 +162,7 @@ ApplicationWindow {
                         }
 
                         Button {
-                            text: i18n.tr("ffmpeg.rescan")
+                            text: root.t("ffmpeg.rescan")
                             onClicked: {
                                 ffmpegLocator.autoDetect()
                                 ffmpegCaps.scan()

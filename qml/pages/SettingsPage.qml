@@ -5,19 +5,21 @@ import QtQuick.Layouts
 Page {
     id: settingsPage
 
+    function t(key) { return t(key, i18n.languageVersion) }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 24
         spacing: 16
 
         Label {
-            text: i18n.tr("settings.title")
+            text: t("settings.title")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
 
         GroupBox {
-            title: i18n.tr("ffmpeg.status")
+            title: t("ffmpeg.status")
             Layout.fillWidth: true
 
             GridLayout {
@@ -26,21 +28,21 @@ Page {
                 columnSpacing: 16
                 rowSpacing: 8
 
-                Label { text: i18n.tr("ffmpeg.ffmpegPath"); font.weight: Font.Medium }
+                Label { text: t("ffmpeg.ffmpegPath"); font.weight: Font.Medium }
                 Label {
                     text: ffmpegLocator.ffmpegPath || qsTr("Not found")
                     elide: Text.ElideMiddle
                     Layout.fillWidth: true
                 }
 
-                Label { text: i18n.tr("ffmpeg.ffprobePath"); font.weight: Font.Medium }
+                Label { text: t("ffmpeg.ffprobePath"); font.weight: Font.Medium }
                 Label {
                     text: ffmpegLocator.ffprobePath || qsTr("Not found")
                     elide: Text.ElideMiddle
                     Layout.fillWidth: true
                 }
 
-                Label { text: i18n.tr("ffmpeg.version"); font.weight: Font.Medium }
+                Label { text: t("ffmpeg.version"); font.weight: Font.Medium }
                 Label {
                     text: ffmpegLocator.ffmpegVersion || qsTr("Unknown")
                     Layout.fillWidth: true
@@ -48,7 +50,7 @@ Page {
 
                 Item {}
                 Button {
-                    text: i18n.tr("ffmpeg.rescan")
+                    text: t("ffmpeg.rescan")
                     onClicked: {
                         ffmpegLocator.autoDetect()
                         ffmpegCaps.scan()
@@ -58,14 +60,14 @@ Page {
         }
 
         GroupBox {
-            title: i18n.tr("settings.language")
+            title: t("settings.language")
             Layout.fillWidth: true
 
             RowLayout {
                 anchors.fill: parent
                 spacing: 16
 
-                Label { text: i18n.tr("settings.language") + ":" }
+                Label { text: t("settings.language") + ":" }
 
                 ComboBox {
                     model: ["English", "中文"]
@@ -114,3 +116,4 @@ Page {
         Item { Layout.fillHeight: true }
     }
 }
+
