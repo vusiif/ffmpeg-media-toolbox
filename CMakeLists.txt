@@ -31,6 +31,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS
     Quick
     Qml
     QuickControls2
+    LinguistTools
 )
 
 qt_standard_project_setup(REQUIRES 6.5)
