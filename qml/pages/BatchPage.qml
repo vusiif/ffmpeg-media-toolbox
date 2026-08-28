@@ -6,9 +6,9 @@ import QtQuick.Dialogs
 Page {
     id: batchPage
 
-    property int _lang: i18n.languageVersion
+    
 
-    function t(key) { void _lang; return i18n.tr(key) }
+    
 
     property var inputFiles: []
     property string outputFormat: "mp4"
@@ -34,7 +34,7 @@ Page {
             spacing: 16
 
             GroupBox {
-                title: t("convert.input")
+                title: qsTrId("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
 
@@ -79,12 +79,12 @@ Page {
                         Layout.fillWidth: true
 
                         Button {
-                            text: t("common.browse")
+                            text: qsTrId("common.browse")
                             onClicked: batchFileDialog.open()
                         }
 
                         Button {
-                            text: t("common.clear")
+                            text: qsTrId("common.clear")
                             onClicked: batchPage.inputFiles = []
                         }
                     }
@@ -102,7 +102,7 @@ Page {
                     columnSpacing: 16
                     rowSpacing: 12
 
-                    Label { text: t("convert.outputFormat") + ":" }
+                    Label { text: qsTrId("convert.outputFormat") + ":" }
                     ComboBox {
                         model: ["mp4", "mkv", "mov", "webm", "avi", "png", "jpeg", "webp"]
                         currentIndex: 0
@@ -110,7 +110,7 @@ Page {
                         Layout.fillWidth: true
                     }
 
-                    Label { text: t("convert.codec") + ":" }
+                    Label { text: qsTrId("convert.codec") + ":" }
                     ComboBox {
                         model: ["auto", "copy", "libx264", "libx265", "libvpx-vp9", "libaom-av1"]
                         currentIndex: 0
@@ -129,7 +129,7 @@ Page {
                         Layout.fillWidth: true
                     }
 
-                    Label { text: t("convert.quality") + ":" }
+                    Label { text: qsTrId("convert.quality") + ":" }
                     RowLayout {
                         Slider {
                             from: 0; to: 51; value: 23; stepSize: 1
@@ -153,7 +153,7 @@ Page {
                         }
 
                         Button {
-                            text: t("common.browse")
+                            text: qsTrId("common.browse")
                             onClicked: outputDirDialog.open()
                         }
                     }

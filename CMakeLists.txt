@@ -56,8 +56,6 @@ set(APP_SOURCES
     src/jobs/JobListModel.cpp
     src/jobs/JobQueue.h
     src/jobs/JobQueue.cpp
-    src/app/TranslationManager.h
-    src/app/TranslationManager.cpp
 )
 
 set(QML_SOURCES
@@ -71,9 +69,9 @@ set(QML_SOURCES
     qml/pages/SettingsPage.qml
 )
 
-set(RESOURCE_FILES
-    translations/en.json
-    translations/zh.json
+set(TS_FILES
+    i18n/ffmedia_en.ts
+    i18n/ffmedia_zh_CN.ts
 )
 
 qt_add_executable(ffmedia-toolbox
@@ -85,9 +83,12 @@ qt_add_qml_module(ffmedia-toolbox
     VERSION 1.0
     QML_FILES
         ${QML_SOURCES}
-    RESOURCES
-        ${RESOURCE_FILES}
-    RESOURCE_PREFIX /
+)
+
+qt_add_translations(ffmedia-toolbox
+    TS_FILES ${TS_FILES}
+    SOURCES ${QML_SOURCES}
+    LUPDATE_OPTIONS -no-obsolete
 )
 
 target_include_directories(ffmedia-toolbox PRIVATE

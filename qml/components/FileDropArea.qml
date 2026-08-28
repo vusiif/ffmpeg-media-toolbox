@@ -34,7 +34,7 @@ DropArea {
             }
 
             Label {
-                text: i18n.tr("home.dropHint")
+                text: qsTrId("home.dropHint")
                 font.pixelSize: 14
                 color: palette.placeholderText
                 horizontalAlignment: Text.AlignHCenter

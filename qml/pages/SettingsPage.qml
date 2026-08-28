@@ -5,9 +5,9 @@ import QtQuick.Layouts
 Page {
     id: settingsPage
 
-    property int _lang: i18n.languageVersion
+    
 
-    function t(key) { void _lang; return i18n.tr(key) }
+    
 
     ColumnLayout {
         anchors.fill: parent
@@ -15,13 +15,13 @@ Page {
         spacing: 16
 
         Label {
-            text: t("settings.title")
+            text: qsTrId("settings.title")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
 
         GroupBox {
-            title: t("ffmpeg.status")
+            title: qsTrId("ffmpeg.status")
             Layout.fillWidth: true
 
             GridLayout {
@@ -30,29 +30,29 @@ Page {
                 columnSpacing: 16
                 rowSpacing: 8
 
-                Label { text: t("ffmpeg.ffmpegPath"); font.weight: Font.Medium }
+                Label { text: qsTrId("ffmpeg.ffmpegPath"); font.weight: Font.Medium }
                 Label {
-                    text: ffmpegLocator.ffmpegPath || qsTr("Not found")
+                    text: ffmpegLocator.ffmpegPath || qsTrId("Not found")
                     elide: Text.ElideMiddle
                     Layout.fillWidth: true
                 }
 
-                Label { text: t("ffmpeg.ffprobePath"); font.weight: Font.Medium }
+                Label { text: qsTrId("ffmpeg.ffprobePath"); font.weight: Font.Medium }
                 Label {
-                    text: ffmpegLocator.ffprobePath || qsTr("Not found")
+                    text: ffmpegLocator.ffprobePath || qsTrId("Not found")
                     elide: Text.ElideMiddle
                     Layout.fillWidth: true
                 }
 
-                Label { text: t("ffmpeg.version"); font.weight: Font.Medium }
+                Label { text: qsTrId("ffmpeg.version"); font.weight: Font.Medium }
                 Label {
-                    text: ffmpegLocator.ffmpegVersion || qsTr("Unknown")
+                    text: ffmpegLocator.ffmpegVersion || qsTrId("Unknown")
                     Layout.fillWidth: true
                 }
 
                 Item {}
                 Button {
-                    text: t("ffmpeg.rescan")
+                    text: qsTrId("ffmpeg.rescan")
                     onClicked: {
                         ffmpegLocator.autoDetect()
                         ffmpegCaps.scan()
@@ -62,20 +62,20 @@ Page {
         }
 
         GroupBox {
-            title: t("settings.language")
+            title: qsTrId("settings.language")
             Layout.fillWidth: true
 
             RowLayout {
                 anchors.fill: parent
                 spacing: 16
 
-                Label { text: t("settings.language") + ":" }
+                Label { text: qsTrId("settings.language") + ":" }
 
                 ComboBox {
                     model: ["English", "中文"]
-                    currentIndex: i18n.currentLanguage === "zh" ? 1 : 0
+                    currentIndex: Qt.uiLanguage.startsWith("zh") ? 1 : 0
                     onActivated: (index) => {
-                        i18n.setLanguage(index === 0 ? "en" : "zh")
+                        Qt.uiLanguage = index === 0 ? "en" : "zh_CN"
                     }
                     Layout.fillWidth: true
                 }
@@ -83,7 +83,7 @@ Page {
         }
 
         GroupBox {
-            title: qsTr("Capabilities")
+            title: qsTrId("Capabilities")
             Layout.fillWidth: true
 
             GridLayout {
@@ -92,24 +92,24 @@ Page {
                 columnSpacing: 16
                 rowSpacing: 8
 
-                Label { text: qsTr("Formats:"); font.weight: Font.Medium }
-                Label { text: ffmpegCaps.loaded ? ffmpegCaps.formatCount : qsTr("Not scanned") }
+                Label { text: qsTrId("Formats:"); font.weight: Font.Medium }
+                Label { text: ffmpegCaps.loaded ? ffmpegCaps.formatCount : qsTrId("Not scanned") }
 
-                Label { text: qsTr("Encoders:"); font.weight: Font.Medium }
-                Label { text: ffmpegCaps.loaded ? ffmpegCaps.encoderCount : qsTr("Not scanned") }
+                Label { text: qsTrId("Encoders:"); font.weight: Font.Medium }
+                Label { text: ffmpegCaps.loaded ? ffmpegCaps.encoderCount : qsTrId("Not scanned") }
 
-                Label { text: qsTr("Decoders:"); font.weight: Font.Medium }
-                Label { text: ffmpegCaps.loaded ? ffmpegCaps.decoderCount : qsTr("Not scanned") }
+                Label { text: qsTrId("Decoders:"); font.weight: Font.Medium }
+                Label { text: ffmpegCaps.loaded ? ffmpegCaps.decoderCount : qsTrId("Not scanned") }
 
-                Label { text: qsTr("Filters:"); font.weight: Font.Medium }
-                Label { text: ffmpegCaps.loaded ? ffmpegCaps.filterCount : qsTr("Not scanned") }
+                Label { text: qsTrId("Filters:"); font.weight: Font.Medium }
+                Label { text: ffmpegCaps.loaded ? ffmpegCaps.filterCount : qsTrId("Not scanned") }
 
-                Label { text: qsTr("HW Accels:"); font.weight: Font.Medium }
-                Label { text: ffmpegCaps.loaded ? ffmpegCaps.hwAccelCount : qsTr("Not scanned") }
+                Label { text: qsTrId("HW Accels:"); font.weight: Font.Medium }
+                Label { text: ffmpegCaps.loaded ? ffmpegCaps.hwAccelCount : qsTrId("Not scanned") }
 
                 Item {}
                 Button {
-                    text: qsTr("Scan Capabilities")
+                    text: qsTrId("Scan Capabilities")
                     onClicked: ffmpegCaps.scan()
                 }
             }

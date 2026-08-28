@@ -12,17 +12,11 @@ ApplicationWindow {
     height: 680
     minimumWidth: 800
     minimumHeight: 600
-    title: i18n.tr("app.title", i18n.languageVersion)
+    title: qsTrId("app.title")
 
     color: palette.window
 
     property string currentPage: "home"
-    property int _lang: i18n.languageVersion
-
-    function t(key) {
-        void _lang  // force binding dependency
-        return i18n.tr(key)
-    }
 
     header: ToolBar {
         RowLayout {
@@ -40,9 +34,9 @@ ApplicationWindow {
             ComboBox {
                 id: langCombo
                 model: ["English", "中文"]
-                currentIndex: i18n.currentLanguage === "zh" ? 1 : 0
+                currentIndex: Qt.uiLanguage.startsWith("zh") ? 1 : 0
                 onActivated: (index) => {
-                    i18n.setLanguage(index === 0 ? "en" : "zh")
+                    Qt.uiLanguage = index === 0 ? "en" : "zh_CN"
                 }
                 Layout.rightMargin: 12
             }
@@ -86,7 +80,7 @@ ApplicationWindow {
                         }
 
                         Label {
-                            text: root.t(modelData.label)
+                            text: qsTrId(modelData.label)
                             font.pixelSize: 10
                             horizontalAlignment: Text.AlignHCenter
                             Layout.alignment: Qt.AlignHCenter
@@ -126,7 +120,7 @@ ApplicationWindow {
                 spacing: 16
 
                 Label {
-                    text: root.t("home.title")
+                    text: qsTrId("home.title")
                     font.pixelSize: 28
                     font.weight: Font.Bold
                     horizontalAlignment: Text.AlignHCenter
@@ -134,7 +128,7 @@ ApplicationWindow {
                 }
 
                 Label {
-                    text: root.t("home.dropHint")
+                    text: qsTrId("home.dropHint")
                     font.pixelSize: 14
                     color: palette.placeholderText
                     horizontalAlignment: Text.AlignHCenter
@@ -142,7 +136,7 @@ ApplicationWindow {
                 }
 
                 GroupBox {
-                    title: root.t("ffmpeg.status")
+                    title: qsTrId("ffmpeg.status")
                     visible: ffmpegLocator.isValid
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 500
@@ -153,7 +147,7 @@ ApplicationWindow {
 
                         RowLayout {
                             Label {
-                                text: root.t("ffmpeg.version") + ":"
+                                text: qsTrId("ffmpeg.version") + ":"
                                 font.weight: Font.Medium
                             }
                             Label {
@@ -164,7 +158,7 @@ ApplicationWindow {
                         }
 
                         Button {
-                            text: root.t("ffmpeg.rescan")
+                            text: qsTrId("ffmpeg.rescan")
                             onClicked: {
                                 ffmpegLocator.autoDetect()
                                 ffmpegCaps.scan()
