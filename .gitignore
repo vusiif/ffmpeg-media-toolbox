@@ -12,6 +12,7 @@ Testing/
 # IDE
 .idea/
 .vscode/
+.codex/
 *.swp
 *.swo
 *.user

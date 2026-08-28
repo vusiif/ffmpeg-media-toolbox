@@ -55,7 +55,8 @@ ApplicationWindow {
                     { icon: "🖼️", label: "nav.image", page: "image" },
                     { icon: "🔗", label: "image.join", page: "join" },
                     { icon: "📦", label: "nav.queue", page: "batch" },
-                    { icon: "📋", label: "nav.queue", page: "queue" }
+                    { icon: "📋", label: "nav.queue", page: "queue" },
+                    { icon: "⚙️", label: "nav.settings", page: "settings" }
                 ]
 
                 delegate: AbstractButton {
@@ -106,6 +107,7 @@ ApplicationWindow {
             case "join": return 3
             case "batch": return 4
             case "queue": return 5
+            case "settings": return 6
             default: return 0
             }
         }
@@ -184,5 +186,8 @@ ApplicationWindow {
 
         // Queue page
         Pages.QueuePage {}
+
+        // Settings page
+        Pages.SettingsPage {}
     }
 }

@@ -68,6 +68,7 @@ set(QML_SOURCES
     qml/pages/JoinPage.qml
     qml/pages/BatchPage.qml
     qml/pages/QueuePage.qml
+    qml/pages/SettingsPage.qml
 )
 
 set(RESOURCE_FILES
