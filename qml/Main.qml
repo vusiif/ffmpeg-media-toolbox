@@ -54,6 +54,7 @@ ApplicationWindow {
                     { icon: "🔄", label: "nav.convert", page: "convert" },
                     { icon: "🖼️", label: "nav.image", page: "image" },
                     { icon: "🔗", label: "image.join", page: "join" },
+                    { icon: "📦", label: "nav.queue", page: "batch" },
                     { icon: "📋", label: "nav.queue", page: "queue" }
                 ]
 
@@ -103,7 +104,8 @@ ApplicationWindow {
             case "convert": return 1
             case "image": return 2
             case "join": return 3
-            case "queue": return 4
+            case "batch": return 4
+            case "queue": return 5
             default: return 0
             }
         }
@@ -176,6 +178,9 @@ ApplicationWindow {
 
         // Join page
         Pages.JoinPage {}
+
+        // Batch page
+        Pages.BatchPage {}
 
         // Queue page
         Pages.QueuePage {}

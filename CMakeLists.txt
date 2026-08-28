@@ -66,6 +66,7 @@ set(QML_SOURCES
     qml/pages/ConvertPage.qml
     qml/pages/ImagePage.qml
     qml/pages/JoinPage.qml
+    qml/pages/BatchPage.qml
     qml/pages/QueuePage.qml
 )
 
