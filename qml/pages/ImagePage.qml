@@ -16,7 +16,7 @@ Page {
     property int cropH: 0
     property int resizeW: 0
     property int resizeH: 0
-    property int rotation: 0
+    property int rotateAngle: 0
     property bool flipH: false
     property bool flipV: false
 
@@ -107,8 +107,6 @@ Page {
                         GroupBox {
                             title: i18n.tr("image.crop")
                             Layout.fillWidth: true
-                            checkable: true
-                            checked: false
 
                             GridLayout {
                                 columns: 4
@@ -146,8 +144,6 @@ Page {
                         GroupBox {
                             title: i18n.tr("image.resize")
                             Layout.fillWidth: true
-                            checkable: true
-                            checked: false
 
                             GridLayout {
                                 columns: 2
@@ -184,22 +180,22 @@ Page {
                                     text: "0°"
                                     checked: true
                                     ButtonGroup.group: rotateGroup
-                                    onCheckedChanged: if (checked) imagePage.rotation = 0
+                                    onCheckedChanged: if (checked) imagePage.rotateAngle = 0
                                 }
                                 RadioButton {
                                     text: "90°"
                                     ButtonGroup.group: rotateGroup
-                                    onCheckedChanged: if (checked) imagePage.rotation = 90
+                                    onCheckedChanged: if (checked) imagePage.rotateAngle = 90
                                 }
                                 RadioButton {
                                     text: "180°"
                                     ButtonGroup.group: rotateGroup
-                                    onCheckedChanged: if (checked) imagePage.rotation = 180
+                                    onCheckedChanged: if (checked) imagePage.rotateAngle = 180
                                 }
                                 RadioButton {
                                     text: "270°"
                                     ButtonGroup.group: rotateGroup
-                                    onCheckedChanged: if (checked) imagePage.rotation = 270
+                                    onCheckedChanged: if (checked) imagePage.rotateAngle = 270
                                 }
                             }
                         }
@@ -260,7 +256,7 @@ Page {
                         outputPath,
                         imagePage.cropX, imagePage.cropY, imagePage.cropW, imagePage.cropH,
                         imagePage.resizeW, imagePage.resizeH,
-                        imagePage.rotation,
+                        imagePage.rotateAngle,
                         imagePage.flipH, imagePage.flipV,
                         imagePage.outputFormat,
                         imagePage.quality
