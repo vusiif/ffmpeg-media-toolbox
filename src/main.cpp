@@ -2,7 +2,6 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
-#include <QTranslator>
 #include <QtQml/qqml.h>
 
 #include "ffmpeg/FFmpegLocator.h"
@@ -38,8 +37,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("jobQueue"), &jobQueue);
     engine.rootContext()->setContextProperty(QStringLiteral("jobModel"), jobQueue.model());
 
-    const QUrl url(QStringLiteral("qrc:/qt/qml/ffmedia/qml/Main.qml"));
-
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
@@ -48,7 +45,7 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection
     );
 
-    engine.load(url);
+    engine.loadFromModule("ffmedia", "Main");
 
     if (engine.rootObjects().isEmpty()) {
         return -1;
