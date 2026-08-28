@@ -38,6 +38,8 @@ qt_policy(SET QTP0004 NEW)
 
 set(APP_SOURCES
     src/main.cpp
+    src/ffmpeg/FFmpegLocator.h
+    src/ffmpeg/FFmpegLocator.cpp
 )
 
 set(QML_SOURCES

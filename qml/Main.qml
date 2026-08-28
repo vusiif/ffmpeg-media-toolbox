@@ -43,7 +43,7 @@ ApplicationWindow {
         Page {
             ColumnLayout {
                 anchors.centerIn: parent
-                spacing: 16
+                spacing: 24
 
                 Label {
                     text: qsTr("FFmpeg Media Toolbox")
@@ -59,6 +59,73 @@ ApplicationWindow {
                     color: palette.placeholderText
                     horizontalAlignment: Text.AlignHCenter
                     Layout.alignment: Qt.AlignHCenter
+                }
+
+                GroupBox {
+                    title: qsTr("FFmpeg Status")
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 500
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 8
+
+                        RowLayout {
+                            Label {
+                                text: qsTr("Status:")
+                                font.weight: Font.Medium
+                            }
+                            Label {
+                                text: ffmpegLocator.isValid ? qsTr("Found") : qsTr("Not Found")
+                                color: ffmpegLocator.isValid ? "green" : "red"
+                            }
+                        }
+
+                        RowLayout {
+                            visible: ffmpegLocator.isValid
+                            Label {
+                                text: qsTr("FFmpeg:")
+                                font.weight: Font.Medium
+                            }
+                            Label {
+                                text: ffmpegLocator.ffmpegPath
+                                elide: Text.ElideMiddle
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        RowLayout {
+                            visible: ffmpegLocator.isValid
+                            Label {
+                                text: qsTr("FFprobe:")
+                                font.weight: Font.Medium
+                            }
+                            Label {
+                                text: ffmpegLocator.ffprobePath
+                                elide: Text.ElideMiddle
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        RowLayout {
+                            visible: ffmpegLocator.isValid
+                            Label {
+                                text: qsTr("Version:")
+                                font.weight: Font.Medium
+                            }
+                            Label {
+                                text: ffmpegLocator.ffmpegVersion
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        Button {
+                            text: qsTr("Rescan")
+                            onClicked: ffmpegLocator.autoDetect()
+                            Layout.alignment: Qt.AlignRight
+                        }
+                    }
                 }
             }
         }
