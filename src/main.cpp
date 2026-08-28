@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("jobModel"), jobQueue.model());
     engine.rootContext()->setContextProperty(QStringLiteral("i18n"), &i18n);
 
-    const QUrl url(QStringLiteral("qrc:/qt/qml/ffmedia/qml/Main.qml"));
+    const QUrl url(QStringLiteral("qrc:/ffmedia/qml/Main.qml"));
 
     QObject::connect(
         &engine,
