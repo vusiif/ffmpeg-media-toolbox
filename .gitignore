@@ -47,3 +47,6 @@ Desktop.ini
 # QML cache
 *.qmlc
 *.jsc
+
+# AI plan (local only)
+AI_PLAN.md
