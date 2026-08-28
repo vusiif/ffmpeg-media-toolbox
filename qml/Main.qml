@@ -101,7 +101,8 @@ ApplicationWindow {
             switch(root.currentPage) {
             case "home": return 0
             case "convert": return 1
-            case "queue": return 2
+            case "image": return 2
+            case "queue": return 3
             default: return 0
             }
         }
@@ -168,6 +169,9 @@ ApplicationWindow {
 
         // Convert page
         Pages.ConvertPage {}
+
+        // Image page
+        Pages.ImagePage {}
 
         // Queue page
         Pages.QueuePage {}
