@@ -8,8 +8,8 @@ Page {
 
     property var inputFiles: []
     property string joinMode: "horizontal"
-    property int spacing: 0
-    property int padding: 0
+    property int joinSpacing: 0
+    property int joinPadding: 0
     property string backgroundColor: "black"
 
     ColumnLayout {
@@ -113,15 +113,15 @@ Page {
 
                     Label { text: qsTr("Spacing:") }
                     SpinBox {
-                        from: 0; to: 100; value: joinPage.spacing
-                        onValueModified: joinPage.spacing = value
+                        from: 0; to: 100; value: joinPage.joinSpacing
+                        onValueModified: joinPage.joinSpacing = value
                         Layout.fillWidth: true
                     }
 
                     Label { text: qsTr("Padding:") }
                     SpinBox {
-                        from: 0; to: 100; value: joinPage.padding
-                        onValueModified: joinPage.padding = value
+                        from: 0; to: 100; value: joinPage.joinPadding
+                        onValueModified: joinPage.joinPadding = value
                         Layout.fillWidth: true
                     }
 
@@ -161,8 +161,8 @@ Page {
                         filter = "vstack=inputs=" + joinPage.inputFiles.length
                     }
 
-                    if (joinPage.spacing > 0) {
-                        filter = "pad=" + "iw+" + joinPage.spacing + ":ih+" + joinPage.spacing + ":" + (joinPage.spacing/2) + ":" + (joinPage.spacing/2) + ":color=" + joinPage.backgroundColor
+                    if (joinPage.joinSpacing > 0) {
+                        filter = "pad=" + "iw+" + joinPage.joinSpacing + ":ih+" + joinPage.joinSpacing + ":" + (joinPage.joinSpacing/2) + ":" + (joinPage.joinSpacing/2) + ":color=" + joinPage.backgroundColor
                     }
 
                     args.push("-filter_complex")
