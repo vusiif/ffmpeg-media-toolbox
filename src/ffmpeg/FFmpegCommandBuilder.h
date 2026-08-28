@@ -9,7 +9,6 @@
 class FFmpegCommandBuilder : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
 
 public:
     explicit FFmpegCommandBuilder(QObject *parent = nullptr);

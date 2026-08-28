@@ -30,7 +30,6 @@ struct JobLog {
 class Job : public QObject
 {
     Q_OBJECT
-    QML_ELEMENT
     Q_PROPERTY(QUuid id READ id CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(JobType type READ type NOTIFY statusChanged)

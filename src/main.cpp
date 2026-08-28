@@ -2,11 +2,13 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QtQml/qqml.h>
 
 #include "ffmpeg/FFmpegLocator.h"
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "media/MediaProbeService.h"
+#include "jobs/Job.h"
 #include "jobs/JobQueue.h"
 #include "app/TranslationManager.h"
 
@@ -17,6 +19,9 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setOrganizationName(QStringLiteral("FFMedia"));
     app.setApplicationName(QStringLiteral("FFmpeg Media Toolbox"));
+
+    qmlRegisterType<Job>("ffmedia", 1, 0, "Job");
+    qmlRegisterType<FFmpegCommandBuilder>("ffmedia", 1, 0, "FFmpegCommandBuilder");
 
     FFmpegLocator ffmpegLocator;
     FFmpegCapabilities ffmpegCaps(&ffmpegLocator);
