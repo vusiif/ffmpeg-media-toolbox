@@ -72,9 +72,8 @@ void TranslationManager::setLanguage(const QString &lang)
     emit languageChanged();
 }
 
-QString TranslationManager::tr(const QString &key, int version) const
+QString TranslationManager::tr(const QString &key) const
 {
-    Q_UNUSED(version)
     if (m_translations.contains(key)) {
         return m_translations.value(key);
     }

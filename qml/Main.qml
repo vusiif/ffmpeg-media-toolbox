@@ -17,9 +17,11 @@ ApplicationWindow {
     color: palette.window
 
     property string currentPage: "home"
+    property int _lang: i18n.languageVersion
 
     function t(key) {
-        return i18n.tr(key, i18n.languageVersion)
+        void _lang  // force binding dependency
+        return i18n.tr(key)
     }
 
     header: ToolBar {

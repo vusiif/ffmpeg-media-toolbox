@@ -18,7 +18,7 @@ public:
     int languageVersion() const;
 
     Q_INVOKABLE void setLanguage(const QString &lang);
-    Q_INVOKABLE QString tr(const QString &key, int version = 0) const;
+    Q_INVOKABLE QString tr(const QString &key) const;
 
     static QStringList availableLanguages();
 
