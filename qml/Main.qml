@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import "qml/pages" as Pages
+import "pages" as Pages
 
 ApplicationWindow {
     id: root
