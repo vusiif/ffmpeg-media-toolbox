@@ -6,7 +6,7 @@ import QtQuick.Dialogs
 Page {
     id: batchPage
 
-    function t(key) { return t(key, i18n.languageVersion) }
+    function t(key) { return i18n.tr(key, i18n.languageVersion) }
 
     property var inputFiles: []
     property string outputFormat: "mp4"

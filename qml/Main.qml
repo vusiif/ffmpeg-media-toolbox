@@ -12,14 +12,14 @@ ApplicationWindow {
     height: 680
     minimumWidth: 800
     minimumHeight: 600
-    title: root.t("app.title")
+    title: i18n.tr("app.title", i18n.languageVersion)
 
     color: palette.window
 
     property string currentPage: "home"
 
     function t(key) {
-        return root.t(key, i18n.languageVersion)
+        return i18n.tr(key, i18n.languageVersion)
     }
 
     header: ToolBar {
@@ -56,7 +56,7 @@ ApplicationWindow {
                 model: [
                     { icon: "🏠", label: "nav.home", page: "home" },
                     { icon: "🔄", label: "nav.convert", page: "convert" },
-                    { icon: "🖼�?, label: "nav.image", page: "image" },
+                    { icon: "🖼️", label: "nav.image", page: "image" },
                     { icon: "🔗", label: "image.join", page: "join" },
                     { icon: "📦", label: "nav.queue", page: "batch" },
                     { icon: "📋", label: "nav.queue", page: "queue" },

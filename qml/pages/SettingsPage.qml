@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Page {
     id: settingsPage
 
-    function t(key) { return t(key, i18n.languageVersion) }
+    function t(key) { return i18n.tr(key, i18n.languageVersion) }
 
     ColumnLayout {
         anchors.fill: parent

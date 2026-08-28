@@ -6,7 +6,7 @@ import QtQuick.Dialogs
 Page {
     id: convertPage
 
-    function t(key) { return t(key, i18n.languageVersion) }
+    function t(key) { return i18n.tr(key, i18n.languageVersion) }
 
     property string inputFile: ""
     property string outputFormat: "mp4"
