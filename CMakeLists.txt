@@ -50,6 +50,12 @@ set(APP_SOURCES
     src/media/MediaFile.h
     src/media/MediaProbeService.h
     src/media/MediaProbeService.cpp
+    src/jobs/Job.h
+    src/jobs/Job.cpp
+    src/jobs/JobListModel.h
+    src/jobs/JobListModel.cpp
+    src/jobs/JobQueue.h
+    src/jobs/JobQueue.cpp
     src/app/TranslationManager.h
     src/app/TranslationManager.cpp
 )
