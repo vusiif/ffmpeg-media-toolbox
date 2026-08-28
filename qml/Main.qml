@@ -12,6 +12,7 @@ ApplicationWindow {
     height: 680
     minimumWidth: 800
     minimumHeight: 600
+    //% "FFmpeg Media Toolbox"
     title: qsTrId("app.title")
 
     color: palette.window
@@ -34,9 +35,9 @@ ApplicationWindow {
             ComboBox {
                 id: langCombo
                 model: ["English", "中文"]
-                currentIndex: languageManager.language.startsWith("zh") ? 1 : 0
+                currentIndex: Qt.uiLanguage.startsWith("zh") ? 1 : 0
                 onActivated: (index) => {
-                    languageManager.language = index === 0 ? "en" : "zh_CN"
+                    Qt.uiLanguage = index === 0 ? "en" : "zh_CN"
                 }
                 Layout.rightMargin: 12
             }
@@ -120,6 +121,7 @@ ApplicationWindow {
                 spacing: 16
 
                 Label {
+                    //% "FFmpeg Media Toolbox"
                     text: qsTrId("home.title")
                     font.pixelSize: 28
                     font.weight: Font.Bold
@@ -128,6 +130,7 @@ ApplicationWindow {
                 }
 
                 Label {
+                    //% "Drop files here to start processing"
                     text: qsTrId("home.dropHint")
                     font.pixelSize: 14
                     color: palette.placeholderText
@@ -136,6 +139,7 @@ ApplicationWindow {
                 }
 
                 GroupBox {
+                    //% "FFmpeg Status"
                     title: qsTrId("ffmpeg.status")
                     visible: ffmpegLocator.isValid
                     Layout.alignment: Qt.AlignHCenter
@@ -147,6 +151,7 @@ ApplicationWindow {
 
                         RowLayout {
                             Label {
+                                //% "Version:"
                                 text: qsTrId("ffmpeg.version") + ":"
                                 font.weight: Font.Medium
                             }
@@ -158,6 +163,7 @@ ApplicationWindow {
                         }
 
                         Button {
+                            //% "Rescan"
                             text: qsTrId("ffmpeg.rescan")
                             onClicked: {
                                 ffmpegLocator.autoDetect()

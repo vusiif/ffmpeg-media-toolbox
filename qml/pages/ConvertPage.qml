@@ -23,12 +23,14 @@ Page {
         spacing: 16
 
         Label {
+            //% "Format Conversion"
             text: qsTrId("convert.title")
             font.pixelSize: 24
             font.weight: Font.Bold
         }
 
         GroupBox {
+            //% "Input File"
             title: qsTrId("convert.input")
             Layout.fillWidth: true
 
@@ -46,6 +48,7 @@ Page {
                     }
 
                     Button {
+                        //% "Browse..."
                         text: qsTrId("common.browse")
                         onClicked: inputFileDialog.open()
                     }
@@ -72,6 +75,7 @@ Page {
         }
 
         GroupBox {
+            //% "Output Format"
             title: qsTrId("convert.outputFormat")
             Layout.fillWidth: true
 
@@ -81,6 +85,7 @@ Page {
                 columnSpacing: 16
                 rowSpacing: 8
 
+                //% "Output Format"
                 Label { text: qsTrId("convert.outputFormat") + ":" }
                 ComboBox {
                     id: formatCombo
@@ -90,6 +95,7 @@ Page {
                     Layout.fillWidth: true
                 }
 
+                //% "Codec"
                 Label { text: qsTrId("convert.codec") + ":" }
                 ComboBox {
                     id: codecCombo
@@ -110,6 +116,7 @@ Page {
                     Layout.fillWidth: true
                 }
 
+                //% "Quality"
                 Label { text: qsTrId("convert.quality") + ":" }
                 RowLayout {
                     Slider {
@@ -134,6 +141,7 @@ Page {
             spacing: 12
 
             Button {
+                //% "Add to Queue"
                 text: qsTrId("convert.addToQueue")
                 enabled: convertPage.inputFile !== ""
                 onClicked: {
@@ -167,6 +175,7 @@ Page {
 
     FileDialog {
         id: inputFileDialog
+        //% "Input File"
         title: qsTrId("convert.input")
         nameFilters: ["Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv)", "All files (*)"]
         onAccepted: {

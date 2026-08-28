@@ -22,6 +22,7 @@ Page {
         spacing: 16
 
         Label {
+            //% "Join"
             text: qsTrId("image.join")
             font.pixelSize: 24
             font.weight: Font.Bold
@@ -32,6 +33,7 @@ Page {
             spacing: 16
 
             GroupBox {
+                //% "Input File"
                 title: qsTrId("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
@@ -79,11 +81,13 @@ Page {
                         Layout.fillWidth: true
 
                         Button {
+                            //% "Browse..."
                             text: qsTrId("common.browse")
                             onClicked: joinFileDialog.open()
                         }
 
                         Button {
+                            //% "Clear"
                             text: qsTrId("common.clear")
                             onClicked: joinPage.inputFiles = []
                         }
@@ -145,6 +149,7 @@ Page {
             spacing: 12
 
             Button {
+                //% "Add to Queue"
                 text: qsTrId("convert.addToQueue")
                 enabled: joinPage.inputFiles.length >= 2
                 onClicked: {
@@ -185,6 +190,7 @@ Page {
 
     FileDialog {
         id: joinFileDialog
+        //% "Join"
         title: qsTrId("image.join")
         nameFilters: ["Image files (*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.gif)", "All files (*)"]
         fileMode: FileDialog.OpenFiles

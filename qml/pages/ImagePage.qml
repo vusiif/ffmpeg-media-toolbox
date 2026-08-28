@@ -30,6 +30,7 @@ Page {
         spacing: 16
 
         Label {
+            //% "Image Processing"
             text: qsTrId("image.title")
             font.pixelSize: 24
             font.weight: Font.Bold
@@ -40,6 +41,7 @@ Page {
             spacing: 16
 
             GroupBox {
+                //% "Input File"
                 title: qsTrId("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
@@ -88,6 +90,7 @@ Page {
                         }
 
                         Button {
+                            //% "Browse..."
                             text: qsTrId("common.browse")
                             onClicked: imageFileDialog.open()
                         }
@@ -109,6 +112,7 @@ Page {
                         spacing: 12
 
                         GroupBox {
+                            //% "Crop"
                             title: qsTrId("image.crop")
                             Layout.fillWidth: true
 
@@ -146,6 +150,7 @@ Page {
                         }
 
                         GroupBox {
+                            //% "Resize"
                             title: qsTrId("image.resize")
                             Layout.fillWidth: true
 
@@ -171,6 +176,7 @@ Page {
                         }
 
                         GroupBox {
+                            //% "Rotate"
                             title: qsTrId("image.rotate")
                             Layout.fillWidth: true
 
@@ -205,6 +211,7 @@ Page {
                         }
 
                         GroupBox {
+                            //% "Flip"
                             title: qsTrId("image.flip")
                             Layout.fillWidth: true
 
@@ -233,6 +240,7 @@ Page {
             Layout.fillWidth: true
             spacing: 12
 
+            //% "Output Format"
             Label { text: qsTrId("convert.outputFormat") + ":" }
             ComboBox {
                 model: ["png", "jpeg", "webp", "bmp", "tiff"]
@@ -240,6 +248,7 @@ Page {
                 onCurrentTextChanged: imagePage.outputFormat = currentText
             }
 
+            //% "Quality"
             Label { text: qsTrId("convert.quality") + ":" }
             SpinBox {
                 from: 1; to: 100; value: imagePage.quality
@@ -249,6 +258,7 @@ Page {
             Item { Layout.fillWidth: true }
 
             Button {
+                //% "Add to Queue"
                 text: qsTrId("convert.addToQueue")
                 enabled: imagePage.inputFile !== ""
                 onClicked: {
@@ -278,6 +288,7 @@ Page {
 
     FileDialog {
         id: imageFileDialog
+        //% "Image Processing"
         title: qsTrId("image.title")
         nameFilters: ["Image files (*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.gif)", "All files (*)"]
         onAccepted: {

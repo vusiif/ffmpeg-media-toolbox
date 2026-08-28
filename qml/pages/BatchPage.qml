@@ -34,6 +34,7 @@ Page {
             spacing: 16
 
             GroupBox {
+                //% "Input File"
                 title: qsTrId("convert.input")
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
@@ -79,11 +80,13 @@ Page {
                         Layout.fillWidth: true
 
                         Button {
+                            //% "Browse..."
                             text: qsTrId("common.browse")
                             onClicked: batchFileDialog.open()
                         }
 
                         Button {
+                            //% "Clear"
                             text: qsTrId("common.clear")
                             onClicked: batchPage.inputFiles = []
                         }
@@ -102,6 +105,7 @@ Page {
                     columnSpacing: 16
                     rowSpacing: 12
 
+                    //% "Output Format"
                     Label { text: qsTrId("convert.outputFormat") + ":" }
                     ComboBox {
                         model: ["mp4", "mkv", "mov", "webm", "avi", "png", "jpeg", "webp"]
@@ -110,6 +114,7 @@ Page {
                         Layout.fillWidth: true
                     }
 
+                    //% "Codec"
                     Label { text: qsTrId("convert.codec") + ":" }
                     ComboBox {
                         model: ["auto", "copy", "libx264", "libx265", "libvpx-vp9", "libaom-av1"]
@@ -129,6 +134,7 @@ Page {
                         Layout.fillWidth: true
                     }
 
+                    //% "Quality"
                     Label { text: qsTrId("convert.quality") + ":" }
                     RowLayout {
                         Slider {
@@ -153,6 +159,7 @@ Page {
                         }
 
                         Button {
+                            //% "Browse..."
                             text: qsTrId("common.browse")
                             onClicked: outputDirDialog.open()
                         }

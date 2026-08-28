@@ -4,199 +4,199 @@
 <context>
     <name>Main</name>
     <message id="app.title">
-        <source>app.title</source>
+        <source>FFmpeg Media Toolbox</source>
         <translation>FFmpeg Media Toolbox</translation>
     </message>
     <message id="home.title">
-        <source>home.title</source>
+        <source>FFmpeg Media Toolbox</source>
         <translation>FFmpeg Media Toolbox</translation>
     </message>
     <message id="home.dropHint">
-        <source>home.dropHint</source>
-        <translation>Drop files here to get started</translation>
+        <source>Drop files here to start processing</source>
+        <translation>Drop files here to start processing</translation>
     </message>
     <message id="ffmpeg.status">
-        <source>ffmpeg.status</source>
+        <source>FFmpeg Status</source>
         <translation>FFmpeg Status</translation>
     </message>
     <message id="ffmpeg.found">
-        <source>ffmpeg.found</source>
+        <source>Found</source>
         <translation>Found</translation>
     </message>
     <message id="ffmpeg.notFound">
-        <source>ffmpeg.notFound</source>
+        <source>Not Found</source>
         <translation>Not Found</translation>
     </message>
     <message id="ffmpeg.ffmpegPath">
-        <source>ffmpeg.ffmpegPath</source>
-        <translation>FFmpeg:</translation>
+        <source>FFmpeg Path:</source>
+        <translation>FFmpeg Path:</translation>
     </message>
     <message id="ffmpeg.ffprobePath">
-        <source>ffmpeg.ffprobePath</source>
-        <translation>FFprobe:</translation>
+        <source>FFprobe Path:</source>
+        <translation>FFprobe Path:</translation>
     </message>
     <message id="ffmpeg.version">
-        <source>ffmpeg.version</source>
+        <source>Version:</source>
         <translation>Version:</translation>
     </message>
     <message id="ffmpeg.rescan">
-        <source>ffmpeg.rescan</source>
+        <source>Rescan</source>
         <translation>Rescan</translation>
     </message>
     <message id="nav.home">
-        <source>nav.home</source>
+        <source>Home</source>
         <translation>Home</translation>
     </message>
     <message id="nav.convert">
-        <source>nav.convert</source>
+        <source>Convert</source>
         <translation>Convert</translation>
     </message>
     <message id="nav.image">
-        <source>nav.image</source>
+        <source>Image</source>
         <translation>Image</translation>
     </message>
     <message id="nav.queue">
-        <source>nav.queue</source>
+        <source>Queue</source>
         <translation>Queue</translation>
     </message>
     <message id="nav.settings">
-        <source>nav.settings</source>
+        <source>Settings</source>
         <translation>Settings</translation>
     </message>
     <message id="convert.title">
-        <source>convert.title</source>
+        <source>Format Conversion</source>
         <translation>Format Conversion</translation>
     </message>
     <message id="convert.input">
-        <source>convert.input</source>
+        <source>Input File</source>
         <translation>Input File</translation>
     </message>
     <message id="convert.outputFormat">
-        <source>convert.outputFormat</source>
+        <source>Output Format</source>
         <translation>Output Format</translation>
     </message>
     <message id="convert.codec">
-        <source>convert.codec</source>
+        <source>Codec</source>
         <translation>Codec</translation>
     </message>
     <message id="convert.quality">
-        <source>convert.quality</source>
+        <source>Quality</source>
         <translation>Quality</translation>
     </message>
     <message id="convert.start">
-        <source>convert.start</source>
+        <source>Start Conversion</source>
         <translation>Start Conversion</translation>
     </message>
     <message id="convert.addToQueue">
-        <source>convert.addToQueue</source>
+        <source>Add to Queue</source>
         <translation>Add to Queue</translation>
     </message>
     <message id="image.title">
-        <source>image.title</source>
+        <source>Image Processing</source>
         <translation>Image Processing</translation>
     </message>
     <message id="image.crop">
-        <source>image.crop</source>
+        <source>Crop</source>
         <translation>Crop</translation>
     </message>
     <message id="image.resize">
-        <source>image.resize</source>
+        <source>Resize</source>
         <translation>Resize</translation>
     </message>
     <message id="image.rotate">
-        <source>image.rotate</source>
+        <source>Rotate</source>
         <translation>Rotate</translation>
     </message>
     <message id="image.flip">
-        <source>image.flip</source>
+        <source>Flip</source>
         <translation>Flip</translation>
     </message>
     <message id="image.join">
-        <source>image.join</source>
+        <source>Join</source>
         <translation>Join</translation>
     </message>
     <message id="queue.title">
-        <source>queue.title</source>
+        <source>Task Queue</source>
         <translation>Task Queue</translation>
     </message>
     <message id="queue.pending">
-        <source>queue.pending</source>
+        <source>Pending</source>
         <translation>Pending</translation>
     </message>
     <message id="queue.running">
-        <source>queue.running</source>
+        <source>Running</source>
         <translation>Running</translation>
     </message>
     <message id="queue.completed">
-        <source>queue.completed</source>
+        <source>Completed</source>
         <translation>Completed</translation>
     </message>
     <message id="queue.failed">
-        <source>queue.failed</source>
+        <source>Failed</source>
         <translation>Failed</translation>
     </message>
     <message id="queue.cancel">
-        <source>queue.cancel</source>
+        <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message id="queue.retry">
-        <source>queue.retry</source>
+        <source>Retry</source>
         <translation>Retry</translation>
     </message>
     <message id="common.ok">
-        <source>common.ok</source>
+        <source>OK</source>
         <translation>OK</translation>
     </message>
     <message id="common.cancel">
-        <source>common.cancel</source>
+        <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message id="common.apply">
-        <source>common.apply</source>
+        <source>Apply</source>
         <translation>Apply</translation>
     </message>
     <message id="common.close">
-        <source>common.close</source>
+        <source>Close</source>
         <translation>Close</translation>
     </message>
     <message id="common.browse">
-        <source>common.browse</source>
+        <source>Browse...</source>
         <translation>Browse...</translation>
     </message>
     <message id="common.clear">
-        <source>common.clear</source>
+        <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message id="common.copy">
-        <source>common.copy</source>
+        <source>Copy</source>
         <translation>Copy</translation>
     </message>
     <message id="common.paste">
-        <source>common.paste</source>
+        <source>Paste</source>
         <translation>Paste</translation>
     </message>
     <message id="common.delete">
-        <source>common.delete</source>
+        <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message id="common.save">
-        <source>common.save</source>
+        <source>Save</source>
         <translation>Save</translation>
     </message>
     <message id="common.open">
-        <source>common.open</source>
+        <source>Open</source>
         <translation>Open</translation>
     </message>
     <message id="media.title">
-        <source>media.title</source>
+        <source>Media Info</source>
         <translation>Media Info</translation>
     </message>
     <message id="settings.title">
-        <source>settings.title</source>
+        <source>Settings</source>
         <translation>Settings</translation>
     </message>
     <message id="settings.language">
-        <source>settings.language</source>
+        <source>Language</source>
         <translation>Language</translation>
     </message>
 </context>
