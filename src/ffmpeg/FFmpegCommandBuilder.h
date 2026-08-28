@@ -4,6 +4,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
+#include <QtQmlIntegration/qqmlintegration.h>
 
 class FFmpegCommandBuilder : public QObject
 {

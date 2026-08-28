@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QDateTime>
+#include <QtQmlIntegration/qqmlintegration.h>
 
 enum class JobType {
     Conversion,
@@ -32,7 +33,7 @@ class Job : public QObject
     QML_ELEMENT
     Q_PROPERTY(QUuid id READ id CONSTANT)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(JobType type READ type WRITE setType CONSTANT)
+    Q_PROPERTY(JobType type READ type NOTIFY statusChanged)
     Q_PROPERTY(JobStatus status READ status NOTIFY statusChanged)
     Q_PROPERTY(double progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY statusChanged)
