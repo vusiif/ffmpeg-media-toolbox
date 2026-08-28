@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
-import "qml/components" as Components
+import "qml/pages" as Pages
 
 ApplicationWindow {
     id: root
@@ -17,8 +16,7 @@ ApplicationWindow {
 
     color: palette.window
 
-    property string currentFile: ""
-    property var mediaInfo: null
+    property string currentPage: "home"
 
     header: ToolBar {
         RowLayout {
@@ -29,8 +27,6 @@ ApplicationWindow {
                 font.pixelSize: 16
                 font.weight: Font.Medium
                 elide: Label.ElideRight
-                horizontalAlignment: Qt.AlignLeft
-                verticalAlignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 leftPadding: 12
             }
@@ -47,33 +43,70 @@ ApplicationWindow {
         }
     }
 
-    FileDialog {
-        id: fileDialog
-        title: i18n.tr("common.open")
-        nameFilters: ["All files (*)"]
-        onAccepted: {
-            root.currentFile = selectedFile.toString().replace("file:///", "")
-            root.probeFile()
+    footer: ToolBar {
+        RowLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            Repeater {
+                model: [
+                    { icon: "🏠", label: "nav.home", page: "home" },
+                    { icon: "🔄", label: "nav.convert", page: "convert" },
+                    { icon: "🖼️", label: "nav.image", page: "image" },
+                    { icon: "📋", label: "nav.queue", page: "queue" },
+                    { icon: "⚙️", label: "nav.settings", page: "settings" }
+                ]
+
+                delegate: AbstractButton {
+                    required property var modelData
+                    required property int index
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 48
+
+                    checked: root.currentPage === modelData.page
+                    onClicked: root.currentPage = modelData.page
+
+                    contentItem: ColumnLayout {
+                        spacing: 2
+
+                        Label {
+                            text: modelData.icon
+                            font.pixelSize: 18
+                            horizontalAlignment: Text.AlignHCenter
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        Label {
+                            text: i18n.tr(modelData.label)
+                            font.pixelSize: 10
+                            horizontalAlignment: Text.AlignHCenter
+                            Layout.alignment: Qt.AlignHCenter
+                            color: parent.parent.checked ? palette.highlight : palette.windowText
+                        }
+                    }
+
+                    background: Rectangle {
+                        color: parent.checked ? Qt.rgba(0, 0.5, 1, 0.1) :
+                               parent.hovered ? Qt.rgba(0, 0, 0, 0.05) : "transparent"
+                    }
+                }
+            }
         }
     }
 
-    StackView {
-        id: stackView
+    StackLayout {
         anchors.fill: parent
-        initialItem: homePage
-    }
-
-    function probeFile() {
-        if (currentFile === "") {
-            mediaInfo = null
-            return
+        currentIndex: {
+            switch(root.currentPage) {
+            case "home": return 0
+            case "convert": return 1
+            case "queue": return 2
+            default: return 0
+            }
         }
-        mediaInfo = mediaProbe.probe(currentFile)
-    }
 
-    Component {
-        id: homePage
-
+        // Home page
         Page {
             ColumnLayout {
                 anchors.fill: parent
@@ -88,28 +121,19 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                 }
 
-                Components.FileDropArea {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150
-
-                    onDropped: (drop) => {
-                        if (drop.hasUrls) {
-                            root.currentFile = drop.urls[0].toString().replace("file:///", "")
-                            root.probeFile()
-                        }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: fileDialog.open()
-                        cursorShape: Qt.PointingHandCursor
-                    }
+                Label {
+                    text: i18n.tr("home.dropHint")
+                    font.pixelSize: 14
+                    color: palette.placeholderText
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
                 }
 
                 GroupBox {
                     title: i18n.tr("ffmpeg.status")
                     visible: ffmpegLocator.isValid
-                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 500
 
                     ColumnLayout {
                         anchors.fill: parent
@@ -138,67 +162,14 @@ ApplicationWindow {
                     }
                 }
 
-                GroupBox {
-                    title: "Media Info"
-                    visible: root.currentFile !== "" && root.mediaInfo !== null && root.mediaInfo.isValid()
-                    Layout.fillWidth: true
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        spacing: 6
-
-                        RowLayout {
-                            Label { text: "File:"; font.weight: Font.Medium }
-                            Label { text: root.currentFile; elide: Text.ElideMiddle; Layout.fillWidth: true }
-                        }
-
-                        RowLayout {
-                            Label { text: "Format:"; font.weight: Font.Medium }
-                            Label { text: root.mediaInfo ? root.mediaInfo.formatName : "" }
-                        }
-
-                        RowLayout {
-                            Label { text: "Duration:"; font.weight: Font.Medium }
-                            Label {
-                                text: root.mediaInfo ? formatDuration(root.mediaInfo.duration) : ""
-                            }
-                        }
-
-                        RowLayout {
-                            visible: root.mediaInfo && root.mediaInfo.hasVideo()
-                            Label { text: "Video:"; font.weight: Font.Medium }
-                            Label {
-                                text: {
-                                    if (!root.mediaInfo || !root.mediaInfo.hasVideo()) return ""
-                                    var v = root.mediaInfo.primaryVideo()
-                                    return v.codec.toUpperCase() + " " + v.width + "x" + v.height + " " + v.frameRate.toFixed(2) + "fps"
-                                }
-                            }
-                        }
-
-                        RowLayout {
-                            visible: root.mediaInfo && root.mediaInfo.hasAudio()
-                            Label { text: "Audio:"; font.weight: Font.Medium }
-                            Label {
-                                text: {
-                                    if (!root.mediaInfo || !root.mediaInfo.hasAudio()) return ""
-                                    var a = root.mediaInfo.primaryAudio()
-                                    return a.codec.toUpperCase() + " " + a.sampleRate + "Hz " + a.channels + "ch"
-                                }
-                            }
-                        }
-                    }
-                }
+                Item { Layout.fillHeight: true }
             }
         }
-    }
 
-    function formatDuration(seconds) {
-        if (!seconds || seconds <= 0) return "0:00"
-        var h = Math.floor(seconds / 3600)
-        var m = Math.floor((seconds % 3600) / 60)
-        var s = Math.floor(seconds % 60)
-        if (h > 0) return h + ":" + String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0')
-        return m + ":" + String(s).padStart(2, '0')
+        // Convert page
+        Pages.ConvertPage {}
+
+        // Queue page
+        Pages.QueuePage {}
     }
 }

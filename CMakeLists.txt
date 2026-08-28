@@ -63,6 +63,8 @@ set(APP_SOURCES
 set(QML_SOURCES
     qml/Main.qml
     qml/components/FileDropArea.qml
+    qml/pages/ConvertPage.qml
+    qml/pages/QueuePage.qml
 )
 
 set(RESOURCE_FILES
