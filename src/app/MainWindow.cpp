@@ -35,6 +35,10 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
 
     initPages();
 
+    // Detect once at startup so the codec lists only offer encoders this
+    // build actually ships (see AI_PLAN §42); failures fall back silently.
+    m_ffmpegCaps->scan();
+
     connect(m_languageManager, &LanguageManager::languageChanged,
             this, &MainWindow::retranslateUi);
 }
@@ -44,10 +48,12 @@ MainWindow::~MainWindow() = default;
 void MainWindow::initPages()
 {
     m_homePage = new HomePage(m_ffmpegLocator, m_ffmpegCaps, this);
-    m_convertPage = new ConvertPage(m_ffmpegLocator, m_commandBuilder, m_mediaProbe, m_jobQueue, this);
+    m_convertPage = new ConvertPage(m_ffmpegLocator, m_commandBuilder, m_mediaProbe,
+                                    m_ffmpegCaps, m_jobQueue, this);
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_joinPage = new JoinPage(m_ffmpegLocator, m_jobQueue, this);
-    m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
+    m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
+                                this);
     m_queuePage = new QueuePage(m_jobQueue, this);
     m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_languageManager, this);
     m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);

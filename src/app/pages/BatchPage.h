@@ -5,6 +5,7 @@
 
 class FFmpegLocator;
 class FFmpegCommandBuilder;
+class FFmpegCapabilities;
 class JobQueue;
 class QListWidget;
 class ElaText;
@@ -19,7 +20,8 @@ class BatchPage : public QWidget
 
 public:
     explicit BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                       JobQueue *queue, QWidget *parent = nullptr);
+                       FFmpegCapabilities *caps, JobQueue *queue,
+                       QWidget *parent = nullptr);
 
     void retranslateUi();
 
@@ -28,9 +30,11 @@ private:
     void clearFiles();
     void browseOutputDir();
     void addAllToQueue();
+    void rebuildCodecList();
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
+    FFmpegCapabilities *m_caps;
     JobQueue *m_queue;
 
     QStringList m_inputFiles;

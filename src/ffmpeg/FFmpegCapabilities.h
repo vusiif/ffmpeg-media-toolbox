@@ -1,8 +1,9 @@
 #pragma once
 
 #include <QObject>
-#include <QString>
 #include <QSet>
+#include <QString>
+#include <QStringList>
 
 class FFmpegLocator;
 
@@ -46,6 +47,16 @@ public:
     // Parses `ffmpeg -formats/-encoders/-decoders/-filters` listing output
     // (or the plain `ffmpeg -hwaccels` list) into a name set.
     static QSet<QString> parseListOutput(const QString &output);
+
+    // Encoder names worth offering in the UI. They still have to be filtered
+    // through filterEncoders() because not every build ships every encoder.
+    static QStringList videoEncoderCandidates();
+    static QStringList audioEncoderCandidates();
+
+    // Subset of candidates this build can encode with. Before the first
+    // scan() the candidates pass through unchanged so the UI still has
+    // something to offer.
+    QStringList filterEncoders(const QStringList &candidates) const;
 
 signals:
     void capabilitiesChanged();

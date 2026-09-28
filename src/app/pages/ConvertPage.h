@@ -8,6 +8,7 @@
 class FFmpegLocator;
 class FFmpegCommandBuilder;
 class MediaProbeService;
+class FFmpegCapabilities;
 class JobQueue;
 class PresetManager;
 class ElaText;
@@ -23,8 +24,8 @@ class ConvertPage : public QWidget
 
 public:
     explicit ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                         MediaProbeService *probe, JobQueue *queue,
-                         QWidget *parent = nullptr);
+                         MediaProbeService *probe, FFmpegCapabilities *caps,
+                         JobQueue *queue, QWidget *parent = nullptr);
 
     void retranslateUi();
 
@@ -39,6 +40,7 @@ private:
     void enqueueJob(const MediaFile &info);
     void addToQueue();
     void updateCommandPreview();
+    void rebuildCodecLists();
     void savePreset();
     void loadPreset(const QString &name);
     void deletePreset();
@@ -47,6 +49,7 @@ private:
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
     MediaProbeService *m_probe;
+    FFmpegCapabilities *m_caps;
     JobQueue *m_queue;
     PresetManager *m_presets;
 

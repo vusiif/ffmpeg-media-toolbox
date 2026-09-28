@@ -15,6 +15,7 @@
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "conversion/RemuxPolicy.h"
+#include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
@@ -22,10 +23,11 @@
 #include "output/OutputNaming.h"
 
 BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                     JobQueue *queue, QWidget *parent)
+                     FFmpegCapabilities *caps, JobQueue *queue, QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_builder(builder)
+    , m_caps(caps)
     , m_queue(queue)
 {
     auto *root = new QVBoxLayout(this);
@@ -74,9 +76,6 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     m_codecCaption = new ElaText(QString(), 13, this);
     m_codecCombo = new ElaComboBox(this);
-    m_codecCombo->addItems({QStringLiteral(""), QStringLiteral("copy"), QStringLiteral("libx264"),
-                            QStringLiteral("libx265"), QStringLiteral("libvpx-vp9"),
-                            QStringLiteral("h264_nvenc"), QStringLiteral("hevc_nvenc")});
 
     m_qualityCaption = new ElaText(QString(), 13, this);
     m_qualitySpin = new ElaSpinBox(this);
@@ -104,6 +103,10 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_queueButton, &ElaPushButton::clicked, this, &BatchPage::addAllToQueue);
     buttonRow->addWidget(m_queueButton);
     root->addLayout(buttonRow);
+
+    connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
+            this, &BatchPage::rebuildCodecList);
+    rebuildCodecList();
 
     retranslateUi();
 }
@@ -158,6 +161,22 @@ void BatchPage::addAllToQueue()
         job->setCommand(m_locator->ffmpegPath(), args);
         m_queue->addJob(job);
     }
+}
+
+void BatchPage::rebuildCodecList()
+{
+    const QString codec = m_codecCombo->currentText();
+
+    m_codecCombo->blockSignals(true);
+    m_codecCombo->clear();
+    m_codecCombo->addItems({QString(), QStringLiteral("copy")});
+    m_codecCombo->addItems(
+        m_caps->filterEncoders(FFmpegCapabilities::videoEncoderCandidates()));
+    const int index = m_codecCombo->findText(codec);
+    if (index >= 0) {
+        m_codecCombo->setCurrentIndex(index);
+    }
+    m_codecCombo->blockSignals(false);
 }
 
 void BatchPage::retranslateUi()

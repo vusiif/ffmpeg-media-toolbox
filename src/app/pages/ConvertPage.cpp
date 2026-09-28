@@ -21,6 +21,7 @@
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "conversion/RemuxPolicy.h"
+#include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/TrId.h"
@@ -52,12 +53,14 @@ QString defaultOutputDirectory()
 } // namespace
 
 ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                         MediaProbeService *probe, JobQueue *queue,
+                         MediaProbeService *probe, FFmpegCapabilities *caps,
+                         JobQueue *queue,
                          QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_builder(builder)
     , m_probe(probe)
+    , m_caps(caps)
     , m_queue(queue)
 {
     m_presets = new PresetManager(this);
@@ -112,17 +115,9 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     m_codecCaption = new ElaText(QString(), 13, this);
     m_codecCombo = new ElaComboBox(this);
-    m_codecCombo->addItems({QStringLiteral(""), QStringLiteral("copy"), QStringLiteral("libx264"),
-                            QStringLiteral("libx265"), QStringLiteral("libvpx-vp9"),
-                            QStringLiteral("h264_nvenc"), QStringLiteral("hevc_nvenc"),
-                            QStringLiteral("h264_qsv"), QStringLiteral("hevc_qsv"),
-                            QStringLiteral("h264_amf"), QStringLiteral("hevc_amf")});
 
     m_audioCodecCaption = new ElaText(QString(), 13, this);
     m_audioCodecCombo = new ElaComboBox(this);
-    m_audioCodecCombo->addItems({QStringLiteral(""), QStringLiteral("copy"), QStringLiteral("aac"),
-                                 QStringLiteral("libmp3lame"), QStringLiteral("flac"),
-                                 QStringLiteral("libopus"), QStringLiteral("pcm_s16le")});
 
     m_qualityCaption = new ElaText(QString(), 13, this);
     m_qualitySpin = new ElaSpinBox(this);
@@ -162,7 +157,10 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_audioCodecCombo, &ElaComboBox::currentTextChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
+            this, &ConvertPage::rebuildCodecLists);
 
+    rebuildCodecLists();
     refreshPresetList();
     retranslateUi();
 }
@@ -291,6 +289,36 @@ void ConvertPage::updateCommandPreview()
                                        m_audioCodecCombo->currentText(),
                                        m_qualitySpin->value(), copy);
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
+}
+
+void ConvertPage::rebuildCodecLists()
+{
+    const QString videoCodec = m_codecCombo->currentText();
+    const QString audioCodec = m_audioCodecCombo->currentText();
+
+    m_codecCombo->blockSignals(true);
+    m_codecCombo->clear();
+    m_codecCombo->addItems({QString(), QStringLiteral("copy")});
+    m_codecCombo->addItems(
+        m_caps->filterEncoders(FFmpegCapabilities::videoEncoderCandidates()));
+    const int videoIndex = m_codecCombo->findText(videoCodec);
+    if (videoIndex >= 0) {
+        m_codecCombo->setCurrentIndex(videoIndex);
+    }
+    m_codecCombo->blockSignals(false);
+
+    m_audioCodecCombo->blockSignals(true);
+    m_audioCodecCombo->clear();
+    m_audioCodecCombo->addItems({QString(), QStringLiteral("copy")});
+    m_audioCodecCombo->addItems(
+        m_caps->filterEncoders(FFmpegCapabilities::audioEncoderCandidates()));
+    const int audioIndex = m_audioCodecCombo->findText(audioCodec);
+    if (audioIndex >= 0) {
+        m_audioCodecCombo->setCurrentIndex(audioIndex);
+    }
+    m_audioCodecCombo->blockSignals(false);
+
+    updateCommandPreview();
 }
 
 void ConvertPage::savePreset()

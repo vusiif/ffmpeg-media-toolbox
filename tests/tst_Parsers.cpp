@@ -19,6 +19,9 @@ private slots:
     void probeJsonImageDetectsImage();
     void probeJsonInvalidReturnsEmpty();
     void detectMediaTypeByFormatName();
+
+    void filterEncodersKeepsCandidatesBeforeScan();
+    void encoderCandidateListsAreNonEmpty();
 };
 
 void ParsersTest::capabilitiesListEntries()
@@ -227,6 +230,30 @@ void ParsersTest::detectMediaTypeByFormatName()
     QCOMPARE(MediaProbeService::detectMediaType(QStringLiteral("mp4"), {VideoStream()},
                                                 {AudioStream()}),
              MediaType::Video);
+}
+
+void ParsersTest::filterEncodersKeepsCandidatesBeforeScan()
+{
+    // Until the first scan() the encoder sets are empty; candidates must pass
+    // through so the codec combo is never left empty.
+    FFmpegCapabilities caps(nullptr);
+    QVERIFY(!caps.isLoaded());
+
+    const QStringList candidates = {QStringLiteral("libx264"),
+                                    QStringLiteral("h264_nvenc")};
+    QCOMPARE(caps.filterEncoders(candidates), candidates);
+    QVERIFY(caps.filterEncoders({}).isEmpty());
+}
+
+void ParsersTest::encoderCandidateListsAreNonEmpty()
+{
+    const QStringList video = FFmpegCapabilities::videoEncoderCandidates();
+    const QStringList audio = FFmpegCapabilities::audioEncoderCandidates();
+    QVERIFY(!video.isEmpty());
+    QVERIFY(!audio.isEmpty());
+    QVERIFY(video.contains(QStringLiteral("libx264")));
+    QVERIFY(video.contains(QStringLiteral("h264_nvenc")));
+    QVERIFY(audio.contains(QStringLiteral("aac")));
 }
 
 QTEST_GUILESS_MAIN(ParsersTest)
