@@ -2,10 +2,14 @@
 
 #include "i18n/TrId.h"
 
+#include <QApplication>
+#include <QClipboard>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPlainTextEdit>
 #include <QScrollArea>
+#include <QTextCursor>
 #include <QVBoxLayout>
 
 #include "ElaProgressBar.h"
@@ -55,6 +59,29 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
     connect(m_queue->model(), &QAbstractItemModel::rowsInserted,
             this, &QueuePage::onRowsInserted);
 
+    // Resolve ids while the rows still exist, then drop the widgets once the
+    // model has actually removed them - otherwise "Clear" leaves stale frames.
+    connect(m_queue->model(), &QAbstractItemModel::rowsAboutToBeRemoved,
+            this, [this](const QModelIndex &, int first, int last) {
+                m_pendingRemoval.clear();
+                for (int i = first; i <= last; ++i) {
+                    if (Job *job = m_queue->model()->getJob(i)) {
+                        m_pendingRemoval.append(job->id());
+                    }
+                }
+            });
+    connect(m_queue->model(), &QAbstractItemModel::rowsRemoved,
+            this, [this](const QModelIndex &, int first, int last) {
+                Q_UNUSED(first)
+                Q_UNUSED(last)
+                for (const QUuid &id : std::as_const(m_pendingRemoval)) {
+                    destroyRow(id);
+                }
+                m_pendingRemoval.clear();
+                m_emptyLabel->setVisible(m_rows.isEmpty());
+                m_rowsLayout->invalidate();
+            });
+
     retranslateUi();
 }
 
@@ -103,19 +130,67 @@ QFrame* QueuePage::createRow(Job *job)
     errorLabel->setVisible(false);
     layout->addWidget(errorLabel);
 
+    // Collapsible details: the exact command that will run plus the job log.
+    auto *detailsContainer = new QWidget(row);
+    detailsContainer->setVisible(false);
+    auto *detailsLayout = new QVBoxLayout(detailsContainer);
+    detailsLayout->setContentsMargins(0, 4, 0, 0);
+    detailsLayout->setSpacing(4);
+
+    auto *commandCaption = new QLabel(detailsContainer);
+    auto *commandLabel = new QLabel(job->commandDisplayString(), detailsContainer);
+    commandLabel->setWordWrap(true);
+    commandLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    auto *copyButton = new ElaPushButton(detailsContainer);
+    connect(copyButton, &ElaPushButton::clicked, this, [job]() {
+        QApplication::clipboard()->setText(job->commandDisplayString());
+    });
+    detailsLayout->addWidget(commandCaption);
+    detailsLayout->addWidget(commandLabel);
+    detailsLayout->addWidget(copyButton, 0, Qt::AlignRight);
+
+    auto *logsCaption = new QLabel(detailsContainer);
+    auto *logView = new QPlainTextEdit(detailsContainer);
+    logView->setReadOnly(true);
+    logView->setMaximumHeight(140);
+    logView->setPlaceholderText(trId("queue.noLogs"));
+    detailsLayout->addWidget(logsCaption);
+    detailsLayout->addWidget(logView);
+    layout->addWidget(detailsContainer);
+
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
+    auto *detailsButton = new ElaPushButton(row);
     auto *cancelButton = new ElaPushButton(row);
     auto *retryButton = new ElaPushButton(row);
+    connect(detailsButton, &ElaPushButton::clicked, this, [this, job]() {
+        auto it = m_details.find(job->id());
+        if (it == m_details.end()) return;
+        it->open = !it->open;
+        it->container->setVisible(it->open);
+        it->button->setText(it->open ? trId("queue.hideDetails") : trId("queue.details"));
+        if (it->open) refreshLogView(job);
+    });
     connect(cancelButton, &ElaPushButton::clicked, this, [=]() {
         m_queue->cancelJob(job->id().toString());
     });
     connect(retryButton, &ElaPushButton::clicked, this, [=]() {
         m_queue->retryJob(job->id().toString());
     });
+    buttonRow->addWidget(detailsButton);
     buttonRow->addWidget(cancelButton);
     buttonRow->addWidget(retryButton);
     layout->addLayout(buttonRow);
+
+    DetailsState details;
+    details.button = detailsButton;
+    details.container = detailsContainer;
+    details.copyButton = copyButton;
+    details.commandCaption = commandCaption;
+    details.logsCaption = logsCaption;
+    details.logView = logView;
+    m_details.insert(job->id(), details);
+    setDetailsTexts(m_details[job->id()]);
 
     m_statusLabels.insert(job->id(), statusLabel);
     m_errorLabels.insert(job->id(), errorLabel);
@@ -147,12 +222,56 @@ void QueuePage::updateRow(Job *job)
     m_errorLabels[id]->setText(job->errorMessage());
     m_errorLabels[id]->setVisible(failed && !job->errorMessage().isEmpty());
 
+    const auto detailsIt = m_details.constFind(id);
+    if (detailsIt != m_details.constEnd() && detailsIt->open) {
+        refreshLogView(job);
+    }
+
     m_cancelButtons[id]->setVisible(status == static_cast<int>(JobStatus::Pending)
                                     || status == static_cast<int>(JobStatus::Running));
     m_retryButtons[id]->setVisible(status == static_cast<int>(JobStatus::Failed)
                                    || status == static_cast<int>(JobStatus::Cancelled));
     m_cancelButtons[id]->setText(trId("queue.cancel"));
     m_retryButtons[id]->setText(trId("queue.retry"));
+}
+
+void QueuePage::refreshLogView(Job *job)
+{
+    const auto it = m_details.constFind(job->id());
+    if (it == m_details.constEnd()) return;
+
+    QStringList lines;
+    const QList<JobLog> logs = job->logs();
+    lines.reserve(logs.size());
+    for (const JobLog &log : logs) {
+        lines << log.timestamp.toString(QStringLiteral("HH:mm:ss"))
+                     + QStringLiteral("  ") + log.message;
+    }
+    it->logView->setPlainText(lines.join(QLatin1Char('\n')));
+    it->logView->moveCursor(QTextCursor::End);
+}
+
+void QueuePage::setDetailsTexts(const DetailsState &details)
+{
+    details.button->setText(details.open ? trId("queue.hideDetails")
+                                         : trId("queue.details"));
+    details.commandCaption->setText(trId("queue.command") + QStringLiteral(":"));
+    details.logsCaption->setText(trId("queue.logs") + QStringLiteral(":"));
+    details.copyButton->setText(trId("common.copy"));
+    details.logView->setPlaceholderText(trId("queue.noLogs"));
+}
+
+void QueuePage::destroyRow(const QUuid &id)
+{
+    if (QFrame *row = m_rows.take(id)) {
+        delete row;
+    }
+    m_statusLabels.remove(id);
+    m_errorLabels.remove(id);
+    m_progressBars.remove(id);
+    m_cancelButtons.remove(id);
+    m_retryButtons.remove(id);
+    m_details.remove(id);
 }
 
 QString QueuePage::statusText(int status) const
@@ -173,6 +292,10 @@ void QueuePage::retranslateUi()
     m_titleLabel->setText(trId("queue.title"));
     m_clearButton->setText(trId("common.clear"));
     m_emptyLabel->setText(trId("queue.pending"));
+
+    for (auto it = m_details.constBegin(); it != m_details.constEnd(); ++it) {
+        setDetailsTexts(it.value());
+    }
 
     for (auto it = m_rows.constBegin(); it != m_rows.constEnd(); ++it) {
         Job *job = m_queue->model()->findJobById(it.key().toString());

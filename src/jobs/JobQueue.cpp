@@ -4,6 +4,8 @@
 #include "ffmpeg/FFmpegProcess.h"
 #include "media/MediaProbeService.h"
 
+#include <QPointer>
+
 JobQueue::JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService, QObject *parent)
     : QObject(parent)
     , m_locator(locator)
@@ -107,12 +109,15 @@ void JobQueue::startJob(Job *job)
 
     FFmpegProcess *process = new FFmpegProcess(this);
 
-    connect(process, &FFmpegProcess::progressChanged, this, [job, process]() {
-        job->setProgress(process->progress());
+    // The job can be cleared while its process is still winding down
+    // (cancel + clear), so the handlers must not assume it is alive.
+    const QPointer<Job> guard = job;
+    connect(process, &FFmpegProcess::progressChanged, this, [guard, process]() {
+        if (guard) guard->setProgress(process->progress());
     });
 
-    connect(process, &FFmpegProcess::logMessage, this, [job](const QString &msg) {
-        job->addLog(msg);
+    connect(process, &FFmpegProcess::logMessage, this, [guard](const QString &msg) {
+        if (guard) guard->addLog(msg);
     });
 
     connect(process, &FFmpegProcess::finished, this, &JobQueue::onJobFinished);

@@ -219,6 +219,26 @@
         <source>settings.clearHistory</source>
         <translation>清除历史</translation>
     </message>
+    <message id="queue.details">
+        <source>queue.details</source>
+        <translation>详情</translation>
+    </message>
+    <message id="queue.hideDetails">
+        <source>queue.hideDetails</source>
+        <translation>收起详情</translation>
+    </message>
+    <message id="queue.command">
+        <source>queue.command</source>
+        <translation>命令</translation>
+    </message>
+    <message id="queue.logs">
+        <source>queue.logs</source>
+        <translation>日志</translation>
+    </message>
+    <message id="queue.noLogs">
+        <source>queue.noLogs</source>
+        <translation>暂无日志</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>格式: %1  编码器: %2  解码器: %3  滤镜: %4  硬件加速: %5</translation>

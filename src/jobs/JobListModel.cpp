@@ -101,8 +101,11 @@ void JobListModel::removeJob(int index)
     }
 
     beginRemoveRows(QModelIndex(), index, index);
-    m_jobs.removeAt(index);
+    Job *job = m_jobs.takeAt(index);
     endRemoveRows();
+    // Deferred so queued signal handlers and the still-winding-down process
+    // lambdas never touch a freed job.
+    job->deleteLater();
     emit countChanged();
 }
 
@@ -122,12 +125,9 @@ void JobListModel::clearCompleted()
     for (int i = m_jobs.size() - 1; i >= 0; --i) {
         JobStatus status = m_jobs.at(i)->status();
         if (status == JobStatus::Completed || status == JobStatus::Failed || status == JobStatus::Cancelled) {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_jobs.removeAt(i);
-            endRemoveRows();
+            removeJob(i);
         }
     }
-    emit countChanged();
 }
 
 void JobListModel::connectJobSignals(Job *job)

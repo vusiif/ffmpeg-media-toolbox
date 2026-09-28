@@ -8,6 +8,7 @@ class JobQueue;
 class Job;
 class QLabel;
 class QFrame;
+class QPlainTextEdit;
 class QVBoxLayout;
 class ElaProgressBar;
 class ElaPushButton;
@@ -27,9 +28,22 @@ private slots:
     void updateJobRow();
 
 private:
+    struct DetailsState {
+        ElaPushButton *button = nullptr;
+        QWidget *container = nullptr;
+        ElaPushButton *copyButton = nullptr;
+        QLabel *commandCaption = nullptr;
+        QLabel *logsCaption = nullptr;
+        QPlainTextEdit *logView = nullptr;
+        bool open = false;
+    };
+
     QFrame* createRow(Job *job);
     void updateRow(Job *job);
     QString statusText(int status) const;
+    void refreshLogView(Job *job);
+    void setDetailsTexts(const DetailsState &details);
+    void destroyRow(const QUuid &id);
 
     JobQueue *m_queue;
 
@@ -45,4 +59,6 @@ private:
     QMap<QUuid, ElaProgressBar *> m_progressBars;
     QMap<QUuid, ElaPushButton *> m_cancelButtons;
     QMap<QUuid, ElaPushButton *> m_retryButtons;
+    QMap<QUuid, DetailsState> m_details;
+    QList<QUuid> m_pendingRemoval;
 };

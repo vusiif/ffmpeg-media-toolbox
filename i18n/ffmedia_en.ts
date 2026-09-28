@@ -219,6 +219,26 @@
         <source>settings.clearHistory</source>
         <translation>Clear history</translation>
     </message>
+    <message id="queue.details">
+        <source>queue.details</source>
+        <translation>Details</translation>
+    </message>
+    <message id="queue.hideDetails">
+        <source>queue.hideDetails</source>
+        <translation>Hide details</translation>
+    </message>
+    <message id="queue.command">
+        <source>queue.command</source>
+        <translation>Command</translation>
+    </message>
+    <message id="queue.logs">
+        <source>queue.logs</source>
+        <translation>Logs</translation>
+    </message>
+    <message id="queue.noLogs">
+        <source>queue.noLogs</source>
+        <translation>No logs yet</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>Formats: %1  Encoders: %2  Decoders: %3  Filters: %4  HW Accels: %5</translation>
