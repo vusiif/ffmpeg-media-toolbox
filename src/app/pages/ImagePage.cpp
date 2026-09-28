@@ -8,7 +8,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPixmap>
-#include <QRegularExpression>
 #include <QVBoxLayout>
 
 #include "ElaCheckBox.h"
@@ -21,6 +20,7 @@
 #include "i18n/TrId.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "output/OutputNaming.h"
 
 ImagePage::ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                      JobQueue *queue, QWidget *parent)
@@ -162,9 +162,8 @@ void ImagePage::addToQueue()
     QString ext = m_formatCombo->currentText();
     if (ext == QLatin1String("jpeg")) ext = QStringLiteral("jpg");
 
-    QString outputPath = m_inputFile;
-    outputPath.replace(QRegularExpression(QStringLiteral("\\.[^.]+$")),
-                       QStringLiteral(".") + ext);
+    const QString outputPath = OutputNaming::build(m_inputFile,
+                                                   QStringLiteral("{name}.{format}"), ext);
 
     const QStringList args = m_builder->buildImageOperation(
         m_inputFile, outputPath,

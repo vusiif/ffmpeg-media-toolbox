@@ -25,6 +25,7 @@
 #include "i18n/TrId.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "output/OutputNaming.h"
 
 VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                      JobQueue *queue, QWidget *parent)
@@ -316,8 +317,8 @@ void VideoPage::trim()
     const QString ext = m_trimFormat->currentText().isEmpty()
         ? QFileInfo(m_inputFile).suffix()
         : m_trimFormat->currentText();
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral("_trim.") + ext;
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_trim.{format}"), ext);
     enqueue(trId("video.job.trim").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildTrim(m_inputFile, output,
                                  m_trimStart->value(), m_trimEnd->value(),
@@ -330,8 +331,8 @@ void VideoPage::extractAudio()
 {
     if (m_inputFile.isEmpty()) return;
     const QString format = m_audioFormat->currentText();
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral(".") + format;
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}.{format}"), format);
     enqueue(trId("video.job.audio").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildExtractAudio(m_inputFile, output, format, QString(),
                                          m_audioBitrate->value()));
@@ -343,8 +344,8 @@ void VideoPage::mute()
     const QString ext = m_muteFormat->currentText().isEmpty()
         ? QFileInfo(m_inputFile).suffix()
         : m_muteFormat->currentText();
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral("_muted.") + ext;
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_muted.{format}"), ext);
     enqueue(trId("video.job.mute").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildMute(m_inputFile, output, m_muteFormat->currentText(),
                                  QString(), -1, true));
@@ -356,8 +357,8 @@ void VideoPage::screenshot()
     const QString format = m_shotFormat->currentText();
     QString ext = format;
     if (format == QLatin1String("jpeg")) ext = QStringLiteral("jpg");
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral("_shot.") + ext;
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_shot.{format}"), ext);
     enqueue(trId("video.job.screenshot").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildScreenshot(m_inputFile, output, m_shotTime->value(), format));
 }
@@ -365,8 +366,9 @@ void VideoPage::screenshot()
 void VideoPage::makeGif()
 {
     if (m_inputFile.isEmpty()) return;
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral(".gif");
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}.{format}"),
+                                               QStringLiteral("gif"));
     enqueue(trId("video.job.gif").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildGif(m_inputFile, output,
                                 m_gifFps->value(), m_gifWidth->value(),
@@ -376,8 +378,9 @@ void VideoPage::makeGif()
 void VideoPage::joinVideos()
 {
     if (m_joinFiles.size() < 2) return;
-    const QString output = QFileInfo(m_joinFiles.first()).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_joinFiles.first()).completeBaseName() + QStringLiteral("_joined.mp4");
+    const QString output = OutputNaming::build(m_joinFiles.first(),
+                                               QStringLiteral("{name}_joined.{format}"),
+                                               QStringLiteral("mp4"));
     enqueue(trId("video.job.join").arg(m_joinFiles.size()),
             m_builder->buildVideoJoin(m_joinFiles, output));
 }
@@ -405,9 +408,9 @@ void VideoPage::watermark()
 {
     const QString wmPath = m_wmPath->text();
     if (m_inputFile.isEmpty() || wmPath.isEmpty()) return;
-    const QString output = QFileInfo(m_inputFile).absolutePath() + QStringLiteral("/")
-                           + QFileInfo(m_inputFile).completeBaseName() + QStringLiteral("_wm.")
-                           + QFileInfo(m_inputFile).suffix();
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_wm.{format}"),
+                                               QFileInfo(m_inputFile).suffix());
     enqueue(trId("video.job.watermark").arg(QFileInfo(m_inputFile).fileName()),
             m_builder->buildWatermark(m_inputFile, wmPath, output,
                                       m_wmPosition->currentData().toString(),

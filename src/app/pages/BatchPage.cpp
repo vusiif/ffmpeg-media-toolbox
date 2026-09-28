@@ -7,7 +7,6 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QListWidget>
-#include <QRegularExpression>
 #include <QVBoxLayout>
 
 #include "ElaCheckBox.h"
@@ -20,6 +19,7 @@
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "output/OutputNaming.h"
 
 BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                      JobQueue *queue, QWidget *parent)
@@ -136,19 +136,13 @@ void BatchPage::browseOutputDir()
 
 void BatchPage::addAllToQueue()
 {
+    const QString format = m_formatCombo->currentText();
     for (const QString &inputFile : m_inputFiles) {
-        QString outputPath;
         const QFileInfo info(inputFile);
-        if (!m_outputDirectory.isEmpty()) {
-            outputPath = m_outputDirectory + QStringLiteral("/") + info.completeBaseName()
-                         + QStringLiteral(".") + m_formatCombo->currentText();
-        } else {
-            outputPath = inputFile;
-            outputPath.replace(QRegularExpression(QStringLiteral("\\.[^.]+$")),
-                               QStringLiteral(".") + m_formatCombo->currentText());
-        }
+        const QString outputPath = OutputNaming::build(inputFile,
+                                                       QStringLiteral("{name}.{format}"),
+                                                       format, m_outputDirectory);
 
-        const QString format = m_formatCombo->currentText();
         const bool copy = m_smartCopyCheck->isChecked() &&
                           RemuxPolicy::canCopyByExtension(inputFile, format);
         const QStringList args = m_builder->buildConversion(

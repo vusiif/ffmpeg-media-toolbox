@@ -10,7 +10,6 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QMimeData>
-#include <QRegularExpression>
 #include <QSettings>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -262,6 +261,11 @@ void ConvertPage::enqueueJob(const MediaFile &info)
     job->setCommand(m_locator->ffmpegPath(), args);
     job->setTotalDuration(info.duration);
     m_queue->addJob(job);
+
+    // The stamp is generated per call, so sync the preview to the command
+    // that was actually queued instead of a stale one.
+    m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ")
+                           + args.join(QLatin1Char(' ')));
 }
 
 void ConvertPage::addToQueue()

@@ -10,7 +10,6 @@
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QMimeData>
-#include <QRegularExpression>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -21,6 +20,7 @@
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "output/OutputNaming.h"
 
 JoinPage::JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent)
     : QWidget(parent)
@@ -159,9 +159,9 @@ void JoinPage::addToQueue()
 {
     if (m_inputFiles.size() < 2) return;
 
-    QString outputPath = m_inputFiles.first();
-    outputPath.replace(QRegularExpression(QStringLiteral("\\.[^.]+$")),
-                       QStringLiteral("_joined.png"));
+    const QString outputPath = OutputNaming::build(m_inputFiles.first(),
+                                                   QStringLiteral("{name}_joined.{format}"),
+                                                   QStringLiteral("png"));
 
     QStringList args;
     args << QStringLiteral("-y");
