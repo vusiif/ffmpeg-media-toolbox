@@ -81,12 +81,16 @@ public:
         const QString &outputPath
     ) const;
 
+    // Stacks images into a grid with `cols` images per row (rows grow as
+    // needed); spacing > 0 pads every input with the background color first,
+    // padding > 0 adds an outer margin around the finished stack.
     QStringList buildGridJoin(
         const QStringList &inputPaths,
         const QString &outputPath,
-        int rows, int cols,
+        int cols,
         int spacing,
-        const QString &backgroundColor
+        const QString &backgroundColor,
+        int padding = 0
     ) const;
 
     QStringList buildImageSequenceToVideo(

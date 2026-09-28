@@ -415,10 +415,6 @@
         <source>common.background</source>
         <translation>背景</translation>
     </message>
-    <message id="common.rows">
-        <source>common.rows</source>
-        <translation>行数</translation>
-    </message>
     <message id="common.cols">
         <source>common.cols</source>
         <translation>列数</translation>

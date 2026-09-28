@@ -4,6 +4,7 @@
 #include <QWidget>
 
 class FFmpegLocator;
+class FFmpegCommandBuilder;
 class JobQueue;
 class QListWidget;
 class ElaText;
@@ -16,7 +17,8 @@ class JoinPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent = nullptr);
+    explicit JoinPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
+                       JobQueue *queue, QWidget *parent = nullptr);
 
     void retranslateUi();
 
@@ -31,6 +33,7 @@ private:
     void updateModeVisibility();
 
     FFmpegLocator *m_locator;
+    FFmpegCommandBuilder *m_builder;
     JobQueue *m_queue;
 
     QStringList m_inputFiles;
@@ -41,8 +44,6 @@ private:
     ElaPushButton *m_removeButton = nullptr;
     ElaText *m_modeCaption = nullptr;
     ElaComboBox *m_modeCombo = nullptr;
-    ElaText *m_rowsCaption = nullptr;
-    ElaSpinBox *m_rowsSpin = nullptr;
     ElaText *m_colsCaption = nullptr;
     ElaSpinBox *m_colsSpin = nullptr;
     ElaText *m_spacingCaption = nullptr;

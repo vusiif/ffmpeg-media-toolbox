@@ -71,7 +71,7 @@ void MainWindow::initPages()
     m_convertPage = new ConvertPage(m_ffmpegLocator, m_commandBuilder, m_mediaProbe,
                                     m_ffmpegCaps, m_recentFiles, m_jobQueue, this);
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
-    m_joinPage = new JoinPage(m_ffmpegLocator, m_jobQueue, this);
+    m_joinPage = new JoinPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
                                 this);
     m_queuePage = new QueuePage(m_jobQueue, this);

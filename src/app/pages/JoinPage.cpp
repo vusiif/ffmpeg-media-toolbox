@@ -17,14 +17,17 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
 #include "output/OutputNaming.h"
 
-JoinPage::JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent)
+JoinPage::JoinPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
+                   JobQueue *queue, QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
+    , m_builder(builder)
     , m_queue(queue)
 {
     auto *root = new QVBoxLayout(this);
@@ -62,10 +65,6 @@ JoinPage::JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent)
     connect(m_modeCombo, &ElaComboBox::currentTextChanged,
             this, &JoinPage::updateModeVisibility);
 
-    m_rowsCaption = new ElaText(QString(), 13, this);
-    m_rowsSpin = new ElaSpinBox(this);
-    m_rowsSpin->setRange(1, 16);
-    m_rowsSpin->setValue(2);
     m_colsCaption = new ElaText(QString(), 13, this);
     m_colsSpin = new ElaSpinBox(this);
     m_colsSpin->setRange(1, 16);
@@ -85,7 +84,6 @@ JoinPage::JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent)
                                  QStringLiteral("transparent")});
 
     form->addRow(m_modeCaption, m_modeCombo);
-    form->addRow(m_rowsCaption, m_rowsSpin);
     form->addRow(m_colsCaption, m_colsSpin);
     form->addRow(m_spacingCaption, m_spacingSpin);
     form->addRow(m_paddingCaption, m_paddingSpin);
@@ -109,8 +107,6 @@ JoinPage::JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent)
 void JoinPage::updateModeVisibility()
 {
     const bool isGrid = m_modeCombo->currentIndex() == 2;
-    m_rowsCaption->setVisible(isGrid);
-    m_rowsSpin->setVisible(isGrid);
     m_colsCaption->setVisible(isGrid);
     m_colsSpin->setVisible(isGrid);
 }
@@ -163,28 +159,34 @@ void JoinPage::addToQueue()
                                                    QStringLiteral("{name}_joined.{format}"),
                                                    QStringLiteral("png"));
 
-    QStringList args;
-    args << QStringLiteral("-y");
-    for (const QString &file : m_inputFiles) {
-        args << QStringLiteral("-i") << file;
-    }
-
-    QString filter;
-    if (m_modeCombo->currentIndex() == 0) {
-        filter = QStringLiteral("hstack=inputs=%1").arg(m_inputFiles.size());
-    } else {
-        filter = QStringLiteral("vstack=inputs=%1").arg(m_inputFiles.size());
-    }
-
+    const int mode = m_modeCombo->currentIndex();
     const int spacing = m_spacingSpin->value();
-    if (spacing > 0) {
-        filter = QStringLiteral("pad=iw+%1:ih+%1:%2:%2:color=%3")
-                     .arg(spacing)
-                     .arg(spacing / 2)
-                     .arg(m_backgroundCombo->currentText());
+    const int padding = m_paddingSpin->value();
+
+    QStringList args;
+    if (mode == 2 || spacing > 0 || padding > 0) {
+        // Grid mode or any margin/gap: route through the tested grid builder,
+        // which pads each input (gaps), lays out by columns and wraps the
+        // finished stack in an outer margin.
+        const int cols = mode == 0 ? m_inputFiles.size()
+                       : mode == 1 ? 1
+                                   : m_colsSpin->value();
+        args = m_builder->buildGridJoin(m_inputFiles, outputPath, cols, spacing,
+                                        m_backgroundCombo->currentText(), padding);
+    } else {
+        // Plain stacking without gaps keeps the forgiving hstack/vstack,
+        // which tolerate mixed image sizes.
+        args << QStringLiteral("-y");
+        for (const QString &file : m_inputFiles) {
+            args << QStringLiteral("-i") << file;
+        }
+        const QString filter = (mode == 0)
+            ? QStringLiteral("hstack=inputs=%1").arg(m_inputFiles.size())
+            : QStringLiteral("vstack=inputs=%1").arg(m_inputFiles.size());
+        args << QStringLiteral("-filter_complex") << filter << outputPath;
     }
 
-    args << QStringLiteral("-filter_complex") << filter << outputPath;
+    if (args.isEmpty()) return;
 
     auto *job = new Job();
     job->setName(trId("image.joinJob").arg(m_inputFiles.size()));
@@ -201,7 +203,6 @@ void JoinPage::retranslateUi()
     m_modeCombo->setItemText(0, trId("image.join.horizontal"));
     m_modeCombo->setItemText(1, trId("image.join.vertical"));
     m_modeCombo->setItemText(2, trId("image.join.grid"));
-    m_rowsCaption->setText(trId("common.rows") + QStringLiteral(":"));
     m_colsCaption->setText(trId("common.cols") + QStringLiteral(":"));
     m_spacingCaption->setText(trId("common.spacing") + QStringLiteral(":"));
     m_paddingCaption->setText(trId("common.padding") + QStringLiteral(":"));

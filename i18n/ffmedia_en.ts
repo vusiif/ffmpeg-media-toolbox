@@ -415,10 +415,6 @@
         <source>common.background</source>
         <translation>Background</translation>
     </message>
-    <message id="common.rows">
-        <source>common.rows</source>
-        <translation>Rows</translation>
-    </message>
     <message id="common.cols">
         <source>common.cols</source>
         <translation>Columns</translation>

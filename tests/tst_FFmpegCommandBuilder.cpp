@@ -28,7 +28,8 @@ private slots:
     void videoJoinNeedsAtLeastTwoInputs();
     void gridJoinBuildsXstackLayout();
     void gridJoinAddsPaddingAndColor();
-    void gridJoinClampsRowsAndCols();
+    void gridJoinClampsColumns();
+    void gridJoinAddsOuterMargin();
     void imageSequenceToVideo();
     void videoToImageSequence();
     void videoToImageSequenceZeroFpsDropsFilter();
@@ -244,7 +245,7 @@ void FFmpegCommandBuilderTest::videoJoinNeedsAtLeastTwoInputs()
 void FFmpegCommandBuilderTest::gridJoinBuildsXstackLayout()
 {
     QCOMPARE(m_builder.buildGridJoin({QStringLiteral("a.png"), QStringLiteral("b.png")},
-                                     QStringLiteral("out.png"), 1, 2, 0, QString()),
+                                       QStringLiteral("out.png"), 2, 0, QString()),
              QStringList({QStringLiteral("-y"),
                           QStringLiteral("-i"), QStringLiteral("a.png"),
                           QStringLiteral("-i"), QStringLiteral("b.png"),
@@ -257,8 +258,8 @@ void FFmpegCommandBuilderTest::gridJoinBuildsXstackLayout()
 void FFmpegCommandBuilderTest::gridJoinAddsPaddingAndColor()
 {
     QCOMPARE(m_builder.buildGridJoin({QStringLiteral("a.png"), QStringLiteral("b.png")},
-                                     QStringLiteral("out.png"), 1, 2, 10,
-                                     QStringLiteral("white")),
+                                       QStringLiteral("out.png"), 2, 10,
+                                       QStringLiteral("white")),
              QStringList({QStringLiteral("-y"),
                           QStringLiteral("-i"), QStringLiteral("a.png"),
                           QStringLiteral("-i"), QStringLiteral("b.png"),
@@ -270,10 +271,10 @@ void FFmpegCommandBuilderTest::gridJoinAddsPaddingAndColor()
                           QStringLiteral("out.png")}));
 }
 
-void FFmpegCommandBuilderTest::gridJoinClampsRowsAndCols()
+void FFmpegCommandBuilderTest::gridJoinClampsColumns()
 {
     QCOMPARE(m_builder.buildGridJoin({QStringLiteral("a.png"), QStringLiteral("b.png")},
-                                     QStringLiteral("out.png"), 0, 0, 5, QString()),
+                                       QStringLiteral("out.png"), 0, 5, QString()),
              QStringList({QStringLiteral("-y"),
                           QStringLiteral("-i"), QStringLiteral("a.png"),
                           QStringLiteral("-i"), QStringLiteral("b.png"),
@@ -282,6 +283,21 @@ void FFmpegCommandBuilderTest::gridJoinClampsRowsAndCols()
                                          "[1:v]pad=iw+5:ih+5:5:5:color=black[p1];"
                                          "[p0][p1]xstack=inputs=2:layout=0_0|0_1*h0[outv]"),
                           QStringLiteral("-map"), QStringLiteral("[outv]"),
+                          QStringLiteral("out.png")}));
+}
+
+void FFmpegCommandBuilderTest::gridJoinAddsOuterMargin()
+{
+    QCOMPARE(m_builder.buildGridJoin({QStringLiteral("a.png"), QStringLiteral("b.png")},
+                                     QStringLiteral("out.png"), 2, 0,
+                                     QStringLiteral("white"), 10),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("a.png"),
+                          QStringLiteral("-i"), QStringLiteral("b.png"),
+                          QStringLiteral("-filter_complex"),
+                          QStringLiteral("[0:v][1:v]xstack=inputs=2:layout=0_0|1*w0_0[outv];"
+                                         "[outv]pad=iw+20:ih+20:10:10:color=white[outp]"),
+                          QStringLiteral("-map"), QStringLiteral("[outp]"),
                           QStringLiteral("out.png")}));
 }
 

@@ -288,14 +288,14 @@ QStringList FFmpegCommandBuilder::buildVideoJoin(
 QStringList FFmpegCommandBuilder::buildGridJoin(
     const QStringList &inputPaths,
     const QString &outputPath,
-    int rows, int cols,
+    int cols,
     int spacing,
-    const QString &backgroundColor
+    const QString &backgroundColor,
+    int padding
 ) const
 {
     QStringList args;
     if (inputPaths.isEmpty() || outputPath.isEmpty()) return args;
-    if (rows < 1) rows = 1;
     if (cols < 1) cols = 1;
 
     args << QStringLiteral("-y");
@@ -329,8 +329,17 @@ QStringList FFmpegCommandBuilder::buildGridJoin(
     filter += layout.join(QLatin1Char('|'));
     filter += QStringLiteral("[outv]");
 
+    QString mapTarget = QStringLiteral("[outv]");
+    if (padding > 0) {
+        filter += QStringLiteral(";[outv]pad=iw+%1:ih+%1:%2:%2:color=%3[outp]")
+                      .arg(padding * 2)
+                      .arg(padding)
+                      .arg(backgroundColor);
+        mapTarget = QStringLiteral("[outp]");
+    }
+
     args << QStringLiteral("-filter_complex") << filter;
-    args << QStringLiteral("-map") << QStringLiteral("[outv]");
+    args << QStringLiteral("-map") << mapTarget;
     args << outputPath;
     return args;
 }
