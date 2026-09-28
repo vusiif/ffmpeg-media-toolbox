@@ -43,12 +43,14 @@ public:
     int filterCount() const;
     int hwAccelCount() const;
 
+    // Parses `ffmpeg -formats/-encoders/-decoders/-filters` listing output
+    // (or the plain `ffmpeg -hwaccels` list) into a name set.
+    static QSet<QString> parseListOutput(const QString &output);
+
 signals:
     void capabilitiesChanged();
 
 private:
-    QSet<QString> parseListOutput(const QString &output) const;
-
     const FFmpegLocator *m_locator;
     QSet<QString> m_formats;
     QSet<QString> m_codecs;

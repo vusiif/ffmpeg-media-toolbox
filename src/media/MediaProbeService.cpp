@@ -48,7 +48,7 @@ MediaFile MediaProbeService::probe(const QString &filePath) const
     return parseProbeJson(json, filePath);
 }
 
-MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &filePath) const
+MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &filePath)
 {
     QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
     if (!doc.isObject()) {
@@ -139,8 +139,8 @@ MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &
 }
 
 MediaType MediaProbeService::detectMediaType(const QString &formatName,
-                                              const QList<VideoStream> &videos,
-                                              const QList<AudioStream> &audios) const
+                                             const QList<VideoStream> &videos,
+                                             const QList<AudioStream> &audios)
 {
     if (!videos.isEmpty()) {
         return MediaType::Video;

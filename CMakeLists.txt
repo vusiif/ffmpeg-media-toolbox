@@ -28,6 +28,7 @@ endif()
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS
     Concurrent
+    Test
     Widgets
     WidgetsPrivate
     LinguistTools
@@ -35,26 +36,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 
 add_subdirectory(ElaWidgetTools)
 
-set(APP_SOURCES
-    src/main.cpp
-    src/app/MainWindow.h
-    src/app/MainWindow.cpp
-    src/app/pages/HomePage.h
-    src/app/pages/HomePage.cpp
-    src/app/pages/ConvertPage.h
-    src/app/pages/ConvertPage.cpp
-    src/app/pages/ImagePage.h
-    src/app/pages/ImagePage.cpp
-    src/app/pages/JoinPage.h
-    src/app/pages/JoinPage.cpp
-    src/app/pages/BatchPage.h
-    src/app/pages/BatchPage.cpp
-    src/app/pages/QueuePage.h
-    src/app/pages/QueuePage.cpp
-    src/app/pages/SettingsPage.h
-    src/app/pages/SettingsPage.cpp
-    src/app/pages/VideoPage.h
-    src/app/pages/VideoPage.cpp
+set(FFMEDIA_CORE_SOURCES
     src/ffmpeg/FFmpegLocator.h
     src/ffmpeg/FFmpegLocator.cpp
     src/ffmpeg/FFmpegCapabilities.h
@@ -82,9 +64,42 @@ set(APP_SOURCES
     src/presets/PresetManager.cpp
 )
 
+set(APP_SOURCES
+    src/main.cpp
+    src/app/MainWindow.h
+    src/app/MainWindow.cpp
+    src/app/pages/HomePage.h
+    src/app/pages/HomePage.cpp
+    src/app/pages/ConvertPage.h
+    src/app/pages/ConvertPage.cpp
+    src/app/pages/ImagePage.h
+    src/app/pages/ImagePage.cpp
+    src/app/pages/JoinPage.h
+    src/app/pages/JoinPage.cpp
+    src/app/pages/BatchPage.h
+    src/app/pages/BatchPage.cpp
+    src/app/pages/QueuePage.h
+    src/app/pages/QueuePage.cpp
+    src/app/pages/SettingsPage.h
+    src/app/pages/SettingsPage.cpp
+    src/app/pages/VideoPage.h
+    src/app/pages/VideoPage.cpp
+)
+
 set(TS_FILES
     i18n/ffmedia_en.ts
     i18n/ffmedia_zh_CN.ts
+)
+
+add_library(ffmedia-core STATIC ${FFMEDIA_CORE_SOURCES})
+
+target_include_directories(ffmedia-core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(ffmedia-core PUBLIC
+    Qt6::Concurrent
+    Qt6::Widgets
 )
 
 qt_add_executable(ffmedia-toolbox WIN32
@@ -98,13 +113,8 @@ qt_add_translations(ffmedia-toolbox
     LRELEASE_OPTIONS -idbased
 )
 
-target_include_directories(ffmedia-toolbox PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
 target_link_libraries(ffmedia-toolbox PRIVATE
-    Qt6::Concurrent
-    Qt6::Widgets
+    ffmedia-core
     Ela::WidgetTools
 )
 
@@ -119,3 +129,17 @@ add_custom_command(TARGET ffmedia-toolbox POST_BUILD
         "$<TARGET_FILE_DIR:ffmedia-toolbox>"
     COMMENT "Deploying Qt runtime and ElaWidgetTools..."
 )
+
+enable_testing()
+
+foreach(test_name IN ITEMS FFmpegCommandBuilder OutputNaming Parsers Job)
+    add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
+    target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
+    add_test(NAME ${test_name} COMMAND tst_${test_name})
+    add_custom_command(TARGET tst_${test_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:Qt6::Test>"
+            "$<TARGET_FILE:Qt6::Concurrent>"
+            "$<TARGET_FILE_DIR:tst_${test_name}>"
+        COMMENT "Deploying Qt runtime for tst_${test_name}...")
+endforeach()

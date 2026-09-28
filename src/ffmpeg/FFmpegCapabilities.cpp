@@ -61,7 +61,27 @@ int FFmpegCapabilities::decoderCount() const { return m_decoders.size(); }
 int FFmpegCapabilities::filterCount() const { return m_filters.size(); }
 int FFmpegCapabilities::hwAccelCount() const { return m_hwAccels.size(); }
 
-QSet<QString> FFmpegCapabilities::parseListOutput(const QString &output) const
+namespace {
+// Listing rows start with one or two flag columns (e.g. "DE", "V....D",
+// or "D d" where the lone "d" marks a capture device) before the name.
+bool isFlagsColumnToken(const QString &token)
+{
+    if (token == QLatin1String("d")) {
+        return true;
+    }
+    if (token.isEmpty() || token.size() > 6) {
+        return false;
+    }
+    for (const QChar &c : token) {
+        if (!c.isUpper() && c != QLatin1Char('.')) {
+            return false;
+        }
+    }
+    return true;
+}
+}
+
+QSet<QString> FFmpegCapabilities::parseListOutput(const QString &output)
 {
     QSet<QString> result;
 
@@ -76,29 +96,44 @@ QSet<QString> FFmpegCapabilities::parseListOutput(const QString &output) const
             continue;
         }
 
+        if (trimmed.startsWith(QLatin1String("--"))) {
+            continue;
+        }
+
         if (!inList || trimmed.isEmpty()) {
             continue;
         }
 
         auto parts = trimmed.split(QLatin1Char(' '), Qt::SkipEmptyParts);
-        if (parts.size() >= 2) {
-            QString flags = parts[0];
-            QString name = parts[1];
-
-            if (name.contains(QLatin1Char('='))) {
-                continue;
-            }
-
-            result.insert(name.toLower());
+        int nameIndex = 0;
+        while (nameIndex < parts.size() && isFlagsColumnToken(parts[nameIndex])) {
+            ++nameIndex;
         }
+        if (nameIndex >= parts.size()) {
+            continue;
+        }
+        QString name = parts[nameIndex];
+
+        if (name.contains(QLatin1Char('='))) {
+            continue;
+        }
+
+        result.insert(name.toLower());
     }
 
     if (result.isEmpty()) {
         for (const QString &line : lines) {
             QString trimmed = line.trimmed();
-            if (!trimmed.isEmpty() && !trimmed.startsWith(QLatin1String("--"))) {
-                result.insert(trimmed.toLower());
+            if (trimmed.isEmpty() || trimmed.startsWith(QLatin1String("--"))
+                || trimmed.endsWith(QLatin1Char(':')) || trimmed.contains(QLatin1String(" = "))) {
+                continue;
             }
+            // Plain lists (e.g. `ffmpeg -hwaccels`) have single-token entries
+            // followed by the names only; anything with spaces is not an entry.
+            if (trimmed.contains(QLatin1Char(' '))) {
+                continue;
+            }
+            result.insert(trimmed.toLower());
         }
     }
 
