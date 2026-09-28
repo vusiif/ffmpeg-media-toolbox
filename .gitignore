@@ -49,5 +49,9 @@ Desktop.ini
 *.qmlc
 *.jsc
 
-# AI plan (local only)
+# AI plan & local notes (local only)
 AI_PLAN.md
+ISSUE.md
+
+# External UI references (not built)
+Others/
