@@ -296,6 +296,22 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     subPathRow->addWidget(m_subPathButton);
     m_subCaption = makeCaption(m_subBox);
     subForm->addRow(m_subCaption, subPathRow);
+
+    m_subBurnCheck = new ElaCheckBox(m_subBox);
+    subForm->addRow(new ElaText(QString(), 13, m_subBox), m_subBurnCheck);
+
+    m_subQualityCaption = makeCaption(m_subBox);
+    m_subQualitySpin = new ElaSpinBox(m_subBox);
+    m_subQualitySpin->setRange(0, 51);
+    m_subQualitySpin->setValue(23);
+    m_subQualityCaption->setVisible(false);
+    m_subQualitySpin->setVisible(false);
+    subForm->addRow(m_subQualityCaption, m_subQualitySpin);
+    connect(m_subBurnCheck, &ElaCheckBox::toggled, this, [this](bool checked) {
+        m_subQualityCaption->setVisible(checked);
+        m_subQualitySpin->setVisible(checked);
+    });
+
     m_subButton = makeQueueButton(m_subBox);
     connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
     body->addWidget(m_subBox);
@@ -448,6 +464,17 @@ void VideoPage::subtitleMux()
     if (m_inputFile.isEmpty() || m_subtitleFile.isEmpty()) return;
 
     const QString suffix = QFileInfo(m_inputFile).suffix();
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_sub.{format}"),
+                                               suffix);
+
+    if (m_subBurnCheck->isChecked()) {
+        enqueue(trId("video.job.subtitleBurn").arg(QFileInfo(m_subtitleFile).fileName()),
+                m_builder->buildSubtitleBurnin(m_inputFile, m_subtitleFile, output,
+                                               m_subQualitySpin->value()));
+        return;
+    }
+
     const auto codec = RemuxPolicy::subtitleCodecForContainer(suffix);
     if (!codec) {
         QMessageBox::warning(this, trId("video.subtitle"),
@@ -455,9 +482,6 @@ void VideoPage::subtitleMux()
         return;
     }
 
-    const QString output = OutputNaming::build(m_inputFile,
-                                               QStringLiteral("{name}_sub.{format}"),
-                                               suffix);
     enqueue(trId("video.job.subtitle").arg(QFileInfo(m_subtitleFile).fileName()),
             m_builder->buildSubtitleMux(m_inputFile, m_subtitleFile, output,
                                         *codec));
@@ -525,5 +549,7 @@ void VideoPage::retranslateUi()
     m_subBox->setTitle(trId("video.subtitle"));
     m_subCaption->setText(trId("video.sub.file") + QStringLiteral(":"));
     m_subPathButton->setText(trId("common.browse"));
+    m_subBurnCheck->setText(trId("video.sub.burn"));
+    m_subQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_subButton->setText(trId("convert.addToQueue"));
 }

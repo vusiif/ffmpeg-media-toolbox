@@ -383,6 +383,14 @@
         <source>video.subUnsupported</source>
         <translation>该容器不支持字幕</translation>
     </message>
+    <message id="video.sub.burn">
+        <source>video.sub.burn</source>
+        <translation>烧录（硬字幕）</translation>
+    </message>
+    <message id="video.job.subtitleBurn">
+        <source>video.job.subtitleBurn</source>
+        <translation>烧录字幕: %1</translation>
+    </message>
     <message id="common.format">
         <source>common.format</source>
         <translation>格式</translation>

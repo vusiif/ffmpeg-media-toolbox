@@ -115,6 +115,16 @@ public:
         const QString &subtitleCodec
     ) const;
 
+    // Burns the subtitle into the picture (hard subtitle): video is
+    // re-encoded through the subtitles filter, audio is copied. crf < 0
+    // keeps the encoder default.
+    QStringList buildSubtitleBurnin(
+        const QString &inputPath,
+        const QString &subtitlePath,
+        const QString &outputPath,
+        int crf
+    ) const;
+
     QStringList buildWatermark(
         const QString &inputPath,
         const QString &watermarkPath,
@@ -125,5 +135,9 @@ public:
     ) const;
 
     static QString escapeFilterValue(const QString &value);
+    // Quotes a filesystem path for use as a filter option value: forward
+    // slashes, escaped colon, single-quoted (the form the subtitles filter
+    // expects on Windows).
+    static QString escapeFilterPath(const QString &path);
     static QString formatTime(double seconds);
 };

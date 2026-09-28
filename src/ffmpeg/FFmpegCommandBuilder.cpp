@@ -405,6 +405,34 @@ QStringList FFmpegCommandBuilder::buildSubtitleMux(
     return args;
 }
 
+QStringList FFmpegCommandBuilder::buildSubtitleBurnin(
+    const QString &inputPath,
+    const QString &subtitlePath,
+    const QString &outputPath,
+    int crf
+) const
+{
+    if (inputPath.isEmpty() || subtitlePath.isEmpty() || outputPath.isEmpty()) {
+        return {};
+    }
+
+    QStringList args;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
+    args << QStringLiteral("-i") << subtitlePath;
+    args << QStringLiteral("-filter_complex")
+         << QStringLiteral("[0:v][1:s]subtitles=filename=%1[v]")
+                .arg(escapeFilterPath(subtitlePath));
+    args << QStringLiteral("-map") << QStringLiteral("[v]");
+    args << QStringLiteral("-map") << QStringLiteral("0:a?");
+    args << QStringLiteral("-c:a") << QStringLiteral("copy");
+    if (crf >= 0) {
+        args << QStringLiteral("-crf") << QString::number(crf);
+    }
+    args << outputPath;
+    return args;
+}
+
 QStringList FFmpegCommandBuilder::buildWatermark(
     const QString &inputPath,
     const QString &watermarkPath,
@@ -447,6 +475,17 @@ QStringList FFmpegCommandBuilder::buildWatermark(
     }
     args << outputPath;
     return args;
+}
+
+QString FFmpegCommandBuilder::escapeFilterPath(const QString &path)
+{
+    QString result = path;
+    // Forward slashes work in ffmpeg on Windows and dodge the backslash
+    // escaping maze; the colon still has to be escaped for the option parser.
+    result.replace(QLatin1Char('\\'), QLatin1Char('/'));
+    result.replace(QLatin1Char(':'), QStringLiteral("\\:"));
+    result.replace(QLatin1Char('\''), QStringLiteral("\\'"));
+    return QStringLiteral("'") + result + QStringLiteral("'");
 }
 
 QString FFmpegCommandBuilder::formatTime(double seconds)

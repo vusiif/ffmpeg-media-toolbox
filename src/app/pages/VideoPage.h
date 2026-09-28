@@ -124,6 +124,9 @@ private:
     ElaText *m_subCaption = nullptr;
     ElaLineEdit *m_subPath = nullptr;
     ElaPushButton *m_subPathButton = nullptr;
+    ElaCheckBox *m_subBurnCheck = nullptr;
+    ElaText *m_subQualityCaption = nullptr;
+    ElaSpinBox *m_subQualitySpin = nullptr;
     ElaPushButton *m_subButton = nullptr;
     QString m_subtitleFile;
 

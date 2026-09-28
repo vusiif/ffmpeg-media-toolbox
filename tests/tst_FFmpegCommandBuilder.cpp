@@ -16,6 +16,9 @@ private slots:
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
     void subtitleMuxRejectsEmptyPaths();
+    void escapeFilterPathQuotesForFfmpeg();
+    void subtitleBurninBuildsFilterAndMaps();
+    void subtitleBurninOmitsCrfAndRejectsEmpty();
     void trimPlacesSeekBeforeInput();
     void trimZeroTimesOmitSeek();
     void trimCopyWithFormat();
@@ -150,6 +153,55 @@ void FFmpegCommandBuilderTest::subtitleMuxRejectsEmptyPaths()
     QVERIFY(m_builder.buildSubtitleMux(QStringLiteral("in.mp4"),
                                        QStringLiteral("s.srt"), QString(),
                                        QStringLiteral("mov_text")).isEmpty());
+}
+
+void FFmpegCommandBuilderTest::escapeFilterPathQuotesForFfmpeg()
+{
+    // Windows path: slashes normalized, colon escaped, whole thing quoted.
+    QCOMPARE(FFmpegCommandBuilder::escapeFilterPath(QStringLiteral("C:\\media\\sub.srt")),
+             QStringLiteral("'C\\:/media/sub.srt'"));
+
+    // Plain relative paths stay as they are (still quoted).
+    QCOMPARE(FFmpegCommandBuilder::escapeFilterPath(QStringLiteral("subs.srt")),
+             QStringLiteral("'subs.srt'"));
+
+    // Embedded quotes must not break out of the wrapping quotes.
+    QCOMPARE(FFmpegCommandBuilder::escapeFilterPath(QStringLiteral("it's.srt")),
+             QStringLiteral("'it\\'s.srt'"));
+}
+
+void FFmpegCommandBuilderTest::subtitleBurninBuildsFilterAndMaps()
+{
+    QCOMPARE(m_builder.buildSubtitleBurnin(QStringLiteral("C:\\media\\in.mp4"),
+                                           QStringLiteral("C:\\media\\sub.srt"),
+                                           QStringLiteral("C:\\media\\out.mp4"),
+                                           23),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("C:\\media\\in.mp4"),
+                          QStringLiteral("-i"), QStringLiteral("C:\\media\\sub.srt"),
+                          QStringLiteral("-filter_complex"),
+                          QStringLiteral("[0:v][1:s]subtitles=filename='C\\:/media/sub.srt'[v]"),
+                          QStringLiteral("-map"), QStringLiteral("[v]"),
+                          QStringLiteral("-map"), QStringLiteral("0:a?"),
+                          QStringLiteral("-c:a"), QStringLiteral("copy"),
+                          QStringLiteral("-crf"), QStringLiteral("23"),
+                          QStringLiteral("C:\\media\\out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleBurninOmitsCrfAndRejectsEmpty()
+{
+    const QStringList args = m_builder.buildSubtitleBurnin(QStringLiteral("in.mp4"),
+                                                           QStringLiteral("subs.srt"),
+                                                           QStringLiteral("out.mp4"), -1);
+    QVERIFY(!args.contains(QStringLiteral("-crf")));
+
+    QVERIFY(m_builder.buildSubtitleBurnin(QString(), QStringLiteral("s.srt"),
+                                          QStringLiteral("o.mp4"), 23).isEmpty());
+    QVERIFY(m_builder.buildSubtitleBurnin(QStringLiteral("in.mp4"), QString(),
+                                          QStringLiteral("o.mp4"), 23).isEmpty());
+    QVERIFY(m_builder.buildSubtitleBurnin(QStringLiteral("in.mp4"),
+                                          QStringLiteral("s.srt"), QString(),
+                                          23).isEmpty());
 }
 
 void FFmpegCommandBuilderTest::trimPlacesSeekBeforeInput()

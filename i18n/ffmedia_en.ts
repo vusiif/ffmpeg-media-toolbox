@@ -383,6 +383,14 @@
         <source>video.subUnsupported</source>
         <translation>This container cannot carry subtitles</translation>
     </message>
+    <message id="video.sub.burn">
+        <source>video.sub.burn</source>
+        <translation>Burn in (hard subtitle)</translation>
+    </message>
+    <message id="video.job.subtitleBurn">
+        <source>video.job.subtitleBurn</source>
+        <translation>Burn subtitle: %1</translation>
+    </message>
     <message id="common.format">
         <source>common.format</source>
         <translation>Format</translation>
