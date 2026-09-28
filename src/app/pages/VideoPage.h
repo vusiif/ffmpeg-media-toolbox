@@ -1,0 +1,123 @@
+#pragma once
+
+#include <QWidget>
+
+class FFmpegLocator;
+class FFmpegCommandBuilder;
+class JobQueue;
+class QGroupBox;
+class QListWidget;
+class ElaText;
+class ElaPushButton;
+class ElaLineEdit;
+class ElaComboBox;
+class ElaSpinBox;
+class ElaDoubleSpinBox;
+class ElaCheckBox;
+
+class VideoPage : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
+                       JobQueue *queue, QWidget *parent = nullptr);
+
+    void retranslateUi();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
+private:
+    QString browseFile(const QString &title, const QString &filters);
+    void enqueue(const QString &name, const QStringList &args);
+
+    void trim();
+    void extractAudio();
+    void mute();
+    void screenshot();
+    void makeGif();
+    void joinVideos();
+    void sequence();
+    void watermark();
+
+    FFmpegLocator *m_locator;
+    FFmpegCommandBuilder *m_builder;
+    JobQueue *m_queue;
+
+    QString m_inputFile;
+
+    ElaText *m_titleLabel = nullptr;
+    ElaText *m_inputCaption = nullptr;
+    ElaLineEdit *m_inputEdit = nullptr;
+    ElaPushButton *m_browseButton = nullptr;
+
+    QGroupBox *m_trimBox = nullptr;
+    ElaText *m_trimStartCaption = nullptr;
+    ElaDoubleSpinBox *m_trimStart = nullptr;
+    ElaText *m_trimEndCaption = nullptr;
+    ElaDoubleSpinBox *m_trimEnd = nullptr;
+    ElaText *m_trimFormatCaption = nullptr;
+    ElaComboBox *m_trimFormat = nullptr;
+    ElaText *m_trimCopyCaption = nullptr;
+    ElaCheckBox *m_trimCopy = nullptr;
+    ElaPushButton *m_trimButton = nullptr;
+
+    QGroupBox *m_audioBox = nullptr;
+    ElaText *m_audioFormatCaption = nullptr;
+    ElaComboBox *m_audioFormat = nullptr;
+    ElaText *m_audioBitrateCaption = nullptr;
+    ElaSpinBox *m_audioBitrate = nullptr;
+    ElaPushButton *m_audioButton = nullptr;
+
+    QGroupBox *m_muteBox = nullptr;
+    ElaText *m_muteFormatCaption = nullptr;
+    ElaComboBox *m_muteFormat = nullptr;
+    ElaPushButton *m_muteButton = nullptr;
+
+    QGroupBox *m_shotBox = nullptr;
+    ElaText *m_shotTimeCaption = nullptr;
+    ElaDoubleSpinBox *m_shotTime = nullptr;
+    ElaText *m_shotFormatCaption = nullptr;
+    ElaComboBox *m_shotFormat = nullptr;
+    ElaPushButton *m_shotButton = nullptr;
+
+    QGroupBox *m_gifBox = nullptr;
+    ElaText *m_gifStartCaption = nullptr;
+    ElaDoubleSpinBox *m_gifStart = nullptr;
+    ElaText *m_gifEndCaption = nullptr;
+    ElaDoubleSpinBox *m_gifEnd = nullptr;
+    ElaText *m_gifFpsCaption = nullptr;
+    ElaSpinBox *m_gifFps = nullptr;
+    ElaText *m_gifWidthCaption = nullptr;
+    ElaSpinBox *m_gifWidth = nullptr;
+    ElaPushButton *m_gifButton = nullptr;
+
+    QGroupBox *m_joinBox = nullptr;
+    QListWidget *m_joinList = nullptr;
+    ElaPushButton *m_joinAddButton = nullptr;
+    ElaPushButton *m_joinRemoveButton = nullptr;
+    ElaPushButton *m_joinButton = nullptr;
+
+    QGroupBox *m_seqBox = nullptr;
+    ElaText *m_seqModeCaption = nullptr;
+    ElaComboBox *m_seqMode = nullptr;
+    ElaText *m_seqPatternCaption = nullptr;
+    ElaLineEdit *m_seqPattern = nullptr;
+    ElaText *m_seqFpsCaption = nullptr;
+    ElaDoubleSpinBox *m_seqFps = nullptr;
+    ElaPushButton *m_seqButton = nullptr;
+
+    QGroupBox *m_wmBox = nullptr;
+    ElaText *m_wmImageCaption = nullptr;
+    ElaLineEdit *m_wmPath = nullptr;
+    ElaPushButton *m_wmBrowseButton = nullptr;
+    ElaText *m_wmPositionCaption = nullptr;
+    ElaComboBox *m_wmPosition = nullptr;
+    ElaText *m_wmOpacityCaption = nullptr;
+    ElaSpinBox *m_wmOpacity = nullptr;
+    ElaPushButton *m_wmButton = nullptr;
+
+    QStringList m_joinFiles;
+};

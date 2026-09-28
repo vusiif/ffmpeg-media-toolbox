@@ -1,11 +1,11 @@
 #include "LanguageManager.h"
-#include <QQmlEngine>
 #include <QDebug>
 #include <QFile>
 
 LanguageManager::LanguageManager(QObject *parent)
     : QObject(parent)
 {
+    loadTranslation(m_language);
 }
 
 QString LanguageManager::language() const
@@ -21,35 +21,25 @@ void LanguageManager::setLanguage(const QString &lang)
     emit languageChanged();
 }
 
-void LanguageManager::setQmlEngine(QQmlEngine *engine)
-{
-    m_engine = engine;
-}
-
 void LanguageManager::loadTranslation(const QString &lang)
 {
     QCoreApplication::removeTranslator(&m_translator);
 
-    if (lang.isEmpty() || lang == "en") {
-        if (m_engine) m_engine->retranslate();
+    if (lang.isEmpty()) {
         return;
     }
 
-    const QString qmPath = QCoreApplication::applicationDirPath()
-                           + QStringLiteral("/ffmedia_%1.qm").arg(lang);
+    const QString name = QStringLiteral("ffmedia_%1.qm").arg(lang);
+    const QString resourcePath = QStringLiteral(":/i18n/") + name;
+    const QString filePath = QCoreApplication::applicationDirPath() + QStringLiteral("/") + name;
 
-    if (!QFile::exists(qmPath)) {
-        qWarning() << "Translation file not found:" << qmPath;
-        if (m_engine) m_engine->retranslate();
-        return;
-    }
-
-    if (m_translator.load(qmPath)) {
+    if (QFile::exists(resourcePath) && m_translator.load(resourcePath)) {
         QCoreApplication::installTranslator(&m_translator);
-        qDebug() << "Loaded translation:" << qmPath;
+        qDebug() << "Loaded translation:" << resourcePath;
+    } else if (QFile::exists(filePath) && m_translator.load(filePath)) {
+        QCoreApplication::installTranslator(&m_translator);
+        qDebug() << "Loaded translation:" << filePath;
     } else {
-        qWarning() << "Failed to load translation:" << qmPath;
+        qWarning() << "Translation not found for" << lang << "- tried" << resourcePath << filePath;
     }
-
-    if (m_engine) m_engine->retranslate();
 }

@@ -4,200 +4,432 @@
 <context>
     <name>Main</name>
     <message id="app.title">
-        <source>FFmpeg Media Toolbox</source>
+        <source>app.title</source>
         <translation>FFmpeg 媒体工具箱</translation>
     </message>
     <message id="home.title">
-        <source>FFmpeg Media Toolbox</source>
+        <source>home.title</source>
         <translation>FFmpeg 媒体工具箱</translation>
     </message>
     <message id="home.dropHint">
-        <source>Drop files here to start processing</source>
+        <source>home.dropHint</source>
         <translation>拖拽文件到此处开始处理</translation>
     </message>
     <message id="ffmpeg.status">
-        <source>FFmpeg Status</source>
+        <source>ffmpeg.status</source>
         <translation>FFmpeg 状态</translation>
     </message>
     <message id="ffmpeg.found">
-        <source>Found</source>
+        <source>ffmpeg.found</source>
         <translation>已找到</translation>
     </message>
     <message id="ffmpeg.notFound">
-        <source>Not Found</source>
+        <source>ffmpeg.notFound</source>
         <translation>未找到</translation>
     </message>
     <message id="ffmpeg.ffmpegPath">
-        <source>FFmpeg Path:</source>
-        <translation>FFmpeg 路径:</translation>
+        <source>ffmpeg.ffmpegPath</source>
+        <translation>FFmpeg 路径</translation>
     </message>
     <message id="ffmpeg.ffprobePath">
-        <source>FFprobe Path:</source>
-        <translation>FFprobe 路径:</translation>
+        <source>ffmpeg.ffprobePath</source>
+        <translation>FFprobe 路径</translation>
     </message>
     <message id="ffmpeg.version">
-        <source>Version:</source>
-        <translation>版本:</translation>
+        <source>ffmpeg.version</source>
+        <translation>版本</translation>
     </message>
     <message id="ffmpeg.rescan">
-        <source>Rescan</source>
+        <source>ffmpeg.rescan</source>
         <translation>重新扫描</translation>
     </message>
     <message id="nav.home">
-        <source>Home</source>
+        <source>nav.home</source>
         <translation>首页</translation>
     </message>
     <message id="nav.convert">
-        <source>Convert</source>
+        <source>nav.convert</source>
         <translation>格式转换</translation>
     </message>
     <message id="nav.image">
-        <source>Image</source>
+        <source>nav.image</source>
         <translation>图片处理</translation>
     </message>
     <message id="nav.queue">
-        <source>Queue</source>
+        <source>nav.queue</source>
         <translation>任务队列</translation>
     </message>
     <message id="nav.settings">
-        <source>Settings</source>
+        <source>nav.settings</source>
         <translation>设置</translation>
     </message>
     <message id="convert.title">
-        <source>Format Conversion</source>
+        <source>convert.title</source>
         <translation>格式转换</translation>
     </message>
     <message id="convert.input">
-        <source>Input File</source>
+        <source>convert.input</source>
         <translation>输入文件</translation>
     </message>
     <message id="convert.outputFormat">
-        <source>Output Format</source>
+        <source>convert.outputFormat</source>
         <translation>输出格式</translation>
     </message>
     <message id="convert.codec">
-        <source>Codec</source>
+        <source>convert.codec</source>
         <translation>编码器</translation>
     </message>
     <message id="convert.quality">
-        <source>Quality</source>
+        <source>convert.quality</source>
         <translation>质量</translation>
     </message>
     <message id="convert.start">
-        <source>Start Conversion</source>
+        <source>convert.start</source>
         <translation>开始转换</translation>
     </message>
     <message id="convert.addToQueue">
-        <source>Add to Queue</source>
+        <source>convert.addToQueue</source>
         <translation>加入队列</translation>
     </message>
     <message id="image.title">
-        <source>Image Processing</source>
+        <source>image.title</source>
         <translation>图片处理</translation>
     </message>
     <message id="image.crop">
-        <source>Crop</source>
+        <source>image.crop</source>
         <translation>裁剪</translation>
     </message>
     <message id="image.resize">
-        <source>Resize</source>
+        <source>image.resize</source>
         <translation>缩放</translation>
     </message>
     <message id="image.rotate">
-        <source>Rotate</source>
+        <source>image.rotate</source>
         <translation>旋转</translation>
     </message>
     <message id="image.flip">
-        <source>Flip</source>
+        <source>image.flip</source>
         <translation>翻转</translation>
     </message>
     <message id="image.join">
-        <source>Join</source>
+        <source>image.join</source>
         <translation>拼接</translation>
     </message>
     <message id="queue.title">
-        <source>Task Queue</source>
+        <source>queue.title</source>
         <translation>任务队列</translation>
     </message>
     <message id="queue.pending">
-        <source>Pending</source>
+        <source>queue.pending</source>
         <translation>等待中</translation>
     </message>
     <message id="queue.running">
-        <source>Running</source>
+        <source>queue.running</source>
         <translation>运行中</translation>
     </message>
     <message id="queue.completed">
-        <source>Completed</source>
+        <source>queue.completed</source>
         <translation>已完成</translation>
     </message>
     <message id="queue.failed">
-        <source>Failed</source>
+        <source>queue.failed</source>
         <translation>失败</translation>
     </message>
     <message id="queue.cancel">
-        <source>Cancel</source>
+        <source>queue.cancel</source>
         <translation>取消</translation>
     </message>
     <message id="queue.retry">
-        <source>Retry</source>
+        <source>queue.retry</source>
         <translation>重试</translation>
     </message>
     <message id="common.ok">
-        <source>OK</source>
+        <source>common.ok</source>
         <translation>确定</translation>
     </message>
     <message id="common.cancel">
-        <source>Cancel</source>
+        <source>common.cancel</source>
         <translation>取消</translation>
     </message>
     <message id="common.apply">
-        <source>Apply</source>
+        <source>common.apply</source>
         <translation>应用</translation>
     </message>
     <message id="common.close">
-        <source>Close</source>
+        <source>common.close</source>
         <translation>关闭</translation>
     </message>
     <message id="common.browse">
-        <source>Browse...</source>
+        <source>common.browse</source>
         <translation>浏览...</translation>
     </message>
     <message id="common.clear">
-        <source>Clear</source>
+        <source>common.clear</source>
         <translation>清除</translation>
     </message>
     <message id="common.copy">
-        <source>Copy</source>
+        <source>common.copy</source>
         <translation>复制</translation>
     </message>
     <message id="common.paste">
-        <source>Paste</source>
+        <source>common.paste</source>
         <translation>粘贴</translation>
     </message>
     <message id="common.delete">
-        <source>Delete</source>
+        <source>common.delete</source>
         <translation>删除</translation>
     </message>
     <message id="common.save">
-        <source>Save</source>
+        <source>common.save</source>
         <translation>保存</translation>
     </message>
     <message id="common.open">
-        <source>Open</source>
+        <source>common.open</source>
         <translation>打开</translation>
     </message>
     <message id="media.title">
-        <source>Media Info</source>
+        <source>media.title</source>
         <translation>媒体信息</translation>
     </message>
     <message id="settings.title">
-        <source>Settings</source>
+        <source>settings.title</source>
         <translation>设置</translation>
     </message>
     <message id="settings.language">
-        <source>Language</source>
+        <source>settings.language</source>
         <translation>语言</translation>
+    </message>
+    <message id="settings.caps">
+        <source>settings.caps</source>
+        <translation>格式: %1  编码器: %2  解码器: %3  滤镜: %4  硬件加速: %5</translation>
+    </message>
+    <message id="nav.video">
+        <source>nav.video</source>
+        <translation>视频</translation>
+    </message>
+    <message id="video.title">
+        <source>video.title</source>
+        <translation>视频工具</translation>
+    </message>
+    <message id="video.trim">
+        <source>video.trim</source>
+        <translation>剪辑</translation>
+    </message>
+    <message id="video.trim.copy">
+        <source>video.trim.copy</source>
+        <translation>流复制</translation>
+    </message>
+    <message id="video.audio">
+        <source>video.audio</source>
+        <translation>提取音频</translation>
+    </message>
+    <message id="video.audio.bitrate">
+        <source>video.audio.bitrate</source>
+        <translation>码率 (kbps)</translation>
+    </message>
+    <message id="video.mute">
+        <source>video.mute</source>
+        <translation>静音</translation>
+    </message>
+    <message id="video.screenshot">
+        <source>video.screenshot</source>
+        <translation>截图</translation>
+    </message>
+    <message id="video.shot.time">
+        <source>video.shot.time</source>
+        <translation>时间 (秒)</translation>
+    </message>
+    <message id="video.gif">
+        <source>video.gif</source>
+        <translation>GIF</translation>
+    </message>
+    <message id="video.join">
+        <source>video.join</source>
+        <translation>视频合并</translation>
+    </message>
+    <message id="video.sequence">
+        <source>video.sequence</source>
+        <translation>序列</translation>
+    </message>
+    <message id="video.seq.imagesToVideo">
+        <source>video.seq.imagesToVideo</source>
+        <translation>图片转视频</translation>
+    </message>
+    <message id="video.seq.videoToImages">
+        <source>video.seq.videoToImages</source>
+        <translation>视频转图片</translation>
+    </message>
+    <message id="video.seq.pattern">
+        <source>video.seq.pattern</source>
+        <translation>文件名模板</translation>
+    </message>
+    <message id="video.watermark">
+        <source>video.watermark</source>
+        <translation>水印</translation>
+    </message>
+    <message id="video.wm.bottomRight">
+        <source>video.wm.bottomRight</source>
+        <translation>右下</translation>
+    </message>
+    <message id="video.wm.bottomLeft">
+        <source>video.wm.bottomLeft</source>
+        <translation>左下</translation>
+    </message>
+    <message id="video.wm.topRight">
+        <source>video.wm.topRight</source>
+        <translation>右上</translation>
+    </message>
+    <message id="video.wm.topLeft">
+        <source>video.wm.topLeft</source>
+        <translation>左上</translation>
+    </message>
+    <message id="video.wm.center">
+        <source>video.wm.center</source>
+        <translation>居中</translation>
+    </message>
+    <message id="video.job.trim">
+        <source>video.job.trim</source>
+        <translation>剪辑: %1</translation>
+    </message>
+    <message id="video.job.audio">
+        <source>video.job.audio</source>
+        <translation>提取音频: %1</translation>
+    </message>
+    <message id="video.job.mute">
+        <source>video.job.mute</source>
+        <translation>静音: %1</translation>
+    </message>
+    <message id="video.job.screenshot">
+        <source>video.job.screenshot</source>
+        <translation>截图: %1</translation>
+    </message>
+    <message id="video.job.gif">
+        <source>video.job.gif</source>
+        <translation>GIF: %1</translation>
+    </message>
+    <message id="video.job.join">
+        <source>video.job.join</source>
+        <translation>合并 %1 个视频</translation>
+    </message>
+    <message id="video.job.seqToVideo">
+        <source>video.job.seqToVideo</source>
+        <translation>序列转视频</translation>
+    </message>
+    <message id="video.job.videoToSeq">
+        <source>video.job.videoToSeq</source>
+        <translation>视频转序列</translation>
+    </message>
+    <message id="video.job.watermark">
+        <source>video.job.watermark</source>
+        <translation>水印: %1</translation>
+    </message>
+    <message id="common.format">
+        <source>common.format</source>
+        <translation>格式</translation>
+    </message>
+    <message id="common.mode">
+        <source>common.mode</source>
+        <translation>模式</translation>
+    </message>
+    <message id="common.start">
+        <source>common.start</source>
+        <translation>开始 (秒)</translation>
+    </message>
+    <message id="common.end">
+        <source>common.end</source>
+        <translation>结束 (秒)</translation>
+    </message>
+    <message id="common.fps">
+        <source>common.fps</source>
+        <translation>帧率</translation>
+    </message>
+    <message id="common.width">
+        <source>common.width</source>
+        <translation>宽度</translation>
+    </message>
+    <message id="common.image">
+        <source>common.image</source>
+        <translation>图片</translation>
+    </message>
+    <message id="common.position">
+        <source>common.position</source>
+        <translation>位置</translation>
+    </message>
+    <message id="common.opacity">
+        <source>common.opacity</source>
+        <translation>不透明度 (%)</translation>
+    </message>
+    <message id="common.spacing">
+        <source>common.spacing</source>
+        <translation>间距</translation>
+    </message>
+    <message id="common.padding">
+        <source>common.padding</source>
+        <translation>留白</translation>
+    </message>
+    <message id="common.background">
+        <source>common.background</source>
+        <translation>背景</translation>
+    </message>
+    <message id="common.rows">
+        <source>common.rows</source>
+        <translation>行数</translation>
+    </message>
+    <message id="common.cols">
+        <source>common.cols</source>
+        <translation>列数</translation>
+    </message>
+    <message id="common.smartCopy">
+        <source>common.smartCopy</source>
+        <translation>智能复制</translation>
+    </message>
+    <message id="convert.preset">
+        <source>convert.preset</source>
+        <translation>预设</translation>
+    </message>
+    <message id="convert.presetName">
+        <source>convert.presetName</source>
+        <translation>预设名称</translation>
+    </message>
+    <message id="convert.audioCodec">
+        <source>convert.audioCodec</source>
+        <translation>音频编码</translation>
+    </message>
+    <message id="convert.preview">
+        <source>convert.preview</source>
+        <translation>命令预览</translation>
+    </message>
+    <message id="convert.invalidFile">
+        <source>convert.invalidFile</source>
+        <translation>无效文件</translation>
+    </message>
+    <message id="image.flipH">
+        <source>image.flipH</source>
+        <translation>水平</translation>
+    </message>
+    <message id="image.flipV">
+        <source>image.flipV</source>
+        <translation>垂直</translation>
+    </message>
+    <message id="image.job">
+        <source>image.job</source>
+        <translation>图片: %1</translation>
+    </message>
+    <message id="image.joinJob">
+        <source>image.joinJob</source>
+        <translation>合并 %1 张图片</translation>
+    </message>
+    <message id="image.join.horizontal">
+        <source>image.join.horizontal</source>
+        <translation>水平</translation>
+    </message>
+    <message id="image.join.vertical">
+        <source>image.join.vertical</source>
+        <translation>垂直</translation>
+    </message>
+    <message id="image.join.grid">
+        <source>image.join.grid</source>
+        <translation>网格</translation>
     </message>
 </context>
 </TS>

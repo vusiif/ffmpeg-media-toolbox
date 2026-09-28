@@ -5,8 +5,6 @@
 #include <QTranslator>
 #include <QString>
 
-class QQmlEngine;
-
 class LanguageManager : public QObject
 {
     Q_OBJECT
@@ -18,8 +16,6 @@ public:
     QString language() const;
     void setLanguage(const QString &lang);
 
-    void setQmlEngine(QQmlEngine *engine);
-
 signals:
     void languageChanged();
 
@@ -27,6 +23,5 @@ private:
     void loadTranslation(const QString &lang);
 
     QTranslator m_translator;
-    QString m_language;
-    QQmlEngine *m_engine = nullptr;
+    QString m_language = QStringLiteral("zh_CN");
 };

@@ -1,0 +1,55 @@
+#pragma once
+
+#include <QStringList>
+#include <QWidget>
+
+class FFmpegLocator;
+class JobQueue;
+class QListWidget;
+class ElaText;
+class ElaPushButton;
+class ElaComboBox;
+class ElaSpinBox;
+
+class JoinPage : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit JoinPage(FFmpegLocator *locator, JobQueue *queue, QWidget *parent = nullptr);
+
+    void retranslateUi();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
+private:
+    void addFiles();
+    void removeSelected();
+    void addToQueue();
+    void updateModeVisibility();
+
+    FFmpegLocator *m_locator;
+    JobQueue *m_queue;
+
+    QStringList m_inputFiles;
+
+    ElaText *m_titleLabel = nullptr;
+    QListWidget *m_fileList = nullptr;
+    ElaPushButton *m_addButton = nullptr;
+    ElaPushButton *m_removeButton = nullptr;
+    ElaText *m_modeCaption = nullptr;
+    ElaComboBox *m_modeCombo = nullptr;
+    ElaText *m_rowsCaption = nullptr;
+    ElaSpinBox *m_rowsSpin = nullptr;
+    ElaText *m_colsCaption = nullptr;
+    ElaSpinBox *m_colsSpin = nullptr;
+    ElaText *m_spacingCaption = nullptr;
+    ElaSpinBox *m_spacingSpin = nullptr;
+    ElaText *m_paddingCaption = nullptr;
+    ElaSpinBox *m_paddingSpin = nullptr;
+    ElaText *m_backgroundCaption = nullptr;
+    ElaComboBox *m_backgroundCombo = nullptr;
+    ElaPushButton *m_queueButton = nullptr;
+};

@@ -1,84 +1,64 @@
-# Qt / QML Project Rules
+# Qt Widgets Project Rules
 
-This project uses Qt 6.11 with CMake and modern QML modules.
+This project uses Qt 6.11 Widgets with CMake. The UI framework is
+ElaWidgetTools (vendored at `ElaWidgetTools/`, MIT licensed, see
+`ElaWidgetTools/LICENSE`).
 
-## QML module rules
+## UI framework rules
 
-1. Use `qt_add_qml_module()` for all QML files.
+1. Main window derives from `ElaWindow`. Pages are plain `QWidget` pages
+   registered via `addPageNode()` / `addFooterNode()`.
 
-2. The main QML module URI is: `ffmedia`
+2. Prefer Ela controls (`ElaText`, `ElaPushButton`, `ElaComboBox`,
+   `ElaLineEdit`, `ElaSpinBox`, `ElaCheckBox`, `ElaProgressBar`) over stock
+   widgets for visible UI chrome.
 
-3. Load the application entry point only with:
-   ```cpp
-   engine.loadFromModule("ffmedia", "Main");
-   ```
+3. `ElaWidgetTools/` is vendored third-party code. Patches to it are allowed
+   (that is the point of vendoring), but keep them minimal and mechanical
+   (e.g. Qt 6.11 API compatibility). Never reformat unrelated code in it.
 
-4. Never load QML using hard-coded resource URLs such as `qrc:/...`. Do not invent or guess Qt Resource System paths.
+4. On startup: `eApp->init()` must be called before any Ela widget is created.
 
-5. Do not add custom `RESOURCE_PREFIX` values unless explicitly requested.
+## Build-system rules
 
-6. Do not manually call `QQmlEngine::addImportPath()` unless there is a demonstrated requirement.
-
-7. Every newly created `.qml`, `.js`, or `.mjs` file belonging to the application must also be registered in the appropriate `qt_add_qml_module(... QML_FILES ...)` declaration.
-
-8. Whenever a QML file is added, removed, renamed, or moved, update `CMakeLists.txt` in the same change.
-
-9. Before changing QML module configuration, inspect the existing:
-   - `qt_add_qml_module()`
-   - `URI`
-   - `QML_FILES`
-   - `qt_standard_project_setup()`
-   - `engine.loadFromModule()`
-
-   Do not infer these values from directory names.
-
-10. Do not mix these approaches unless explicitly requested:
-    - manual `.qrc` files
-    - `qt_add_resources()`
-    - `qt_add_qml_module()`
-
-    Application QML should use `qt_add_qml_module()`.
-
-## Entry point invariant
-
-The following relationship must always remain valid:
-
-```cmake
-qt_add_qml_module(... URI ffmedia ...)
-```
-
-corresponds to:
-
-```cpp
-engine.loadFromModule("ffmedia", "Main");
-```
-
-Do not replace this with a filesystem path or `qrc:` URL.
-
-## Build-system rule
-
-Changes involving QML files must be treated as build-system changes. If a new QML file is created, ensure it is included by CMake before considering the task complete. After modifying `CMakeLists.txt`, assume CMake must be reconfigured before diagnosing the QML source itself.
-
-## Error diagnosis
-
-For errors such as:
-- `No such file or directory`
-- `Type ... unavailable`
-- `module ... is not installed`
-- `QQmlApplicationEngine failed to load component`
-
-check the CMake QML module configuration and imports before changing QML application logic. Never "fix" these errors by guessing a different `qrc:/...` path.
+- `ElaWidgetTools` is added via `add_subdirectory(ElaWidgetTools)` and linked
+  as `Ela::WidgetTools`.
+- `Qt6::WidgetsPrivate` is required by ElaWidgetTools and must stay in
+  `find_package`.
+- The Ela shared library is copied next to the executable by a POST_BUILD
+  command. Keep it when touching deploy logic.
+- MSVC needs `/utf-8` (already set in CMakeLists) because sources contain
+  non-ASCII text.
 
 ## Directory structure
 
 ```
-src/  → C++
-qml/  → QML
-i18n/ → Translation files (.ts)
+src/         → C++ (backend + UI)
+  app/       → MainWindow + pages
+  ffmpeg/    → FFmpeg process/command layer
+  media/     → media probing
+  jobs/      → job model/queue
+  i18n/      → LanguageManager
+ElaWidgetTools/ → vendored UI framework (MIT)
+i18n/       → Translation files (.ts)
+Others/     → external UI references (not built)
 ```
 
 ## i18n
 
-- Use `qsTrId("key")` for all translatable strings
-- Translation files: `i18n/ffmedia_en.ts`, `i18n/ffmedia_zh_CN.ts`
-- Language switching: `Qt.uiLanguage = "zh_CN"`
+- Use `trId("key")` (from `src/i18n/TrId.h`) for all translatable strings.
+  Do NOT use `qtTrId`/`qsTrId`: with this project's .ts/.qm setup they do
+  not resolve. `trId()` looks up `QCoreApplication::translate("Main", id)`.
+- Translation files: `i18n/ffmedia_en.ts`, `i18n/ffmedia_zh_CN.ts`.
+  Convention: every `<message>` lives in context `Main` and its `<source>`
+  equals its id. Keep this shape when editing .ts files by hand.
+- `LanguageManager` installs the translator at construction (before any UI
+  is built) and reloads on language change; `MainWindow::retranslateUi()`
+  then refreshes all page texts.
+
+## UI rewrite in progress
+
+The project was migrated from QML to Widgets. Backend classes in
+`src/ffmpeg`, `src/media`, `src/jobs` are shared with the old QML UI and
+still carry `Q_PROPERTY`/`Q_INVOKABLE` declarations; these are harmless and
+may be pruned lazily.

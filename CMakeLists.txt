@@ -13,6 +13,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 if(NOT DEFINED CMAKE_PREFIX_PATH)
     if(DEFINED ENV{Qt6_DIR})
         set(CMAKE_PREFIX_PATH "$ENV{Qt6_DIR}")
@@ -20,25 +22,39 @@ if(NOT DEFINED CMAKE_PREFIX_PATH)
         set(CMAKE_PREFIX_PATH "$ENV{QT_DIR}")
     elseif(EXISTS "C:/Qt/6.11.1/msvc2022_64")
         set(CMAKE_PREFIX_PATH "C:/Qt/6.11.1/msvc2022_64")
-    elseif(EXISTS "$ENV{HOME}/Qt/6.11.1/msvc2022_64")
-        set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.11.1/msvc2022_64")
     endif()
 endif()
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS
-    Core
-    Gui
-    Quick
-    Qml
-    QuickControls2
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS
+    Concurrent
+    Widgets
+    WidgetsPrivate
     LinguistTools
 )
 
-qt_standard_project_setup(REQUIRES 6.5)
-qt_policy(SET QTP0004 NEW)
+add_subdirectory(ElaWidgetTools)
 
 set(APP_SOURCES
     src/main.cpp
+    src/app/MainWindow.h
+    src/app/MainWindow.cpp
+    src/app/pages/HomePage.h
+    src/app/pages/HomePage.cpp
+    src/app/pages/ConvertPage.h
+    src/app/pages/ConvertPage.cpp
+    src/app/pages/ImagePage.h
+    src/app/pages/ImagePage.cpp
+    src/app/pages/JoinPage.h
+    src/app/pages/JoinPage.cpp
+    src/app/pages/BatchPage.h
+    src/app/pages/BatchPage.cpp
+    src/app/pages/QueuePage.h
+    src/app/pages/QueuePage.cpp
+    src/app/pages/SettingsPage.h
+    src/app/pages/SettingsPage.cpp
+    src/app/pages/VideoPage.h
+    src/app/pages/VideoPage.cpp
     src/ffmpeg/FFmpegLocator.h
     src/ffmpeg/FFmpegLocator.cpp
     src/ffmpeg/FFmpegCapabilities.h
@@ -59,17 +75,11 @@ set(APP_SOURCES
     src/jobs/JobQueue.cpp
     src/i18n/LanguageManager.h
     src/i18n/LanguageManager.cpp
-)
-
-set(QML_SOURCES
-    qml/Main.qml
-    qml/components/FileDropArea.qml
-    qml/pages/ConvertPage.qml
-    qml/pages/ImagePage.qml
-    qml/pages/JoinPage.qml
-    qml/pages/BatchPage.qml
-    qml/pages/QueuePage.qml
-    qml/pages/SettingsPage.qml
+    src/i18n/TrId.h
+    src/output/OutputNaming.h
+    src/output/OutputNaming.cpp
+    src/presets/PresetManager.h
+    src/presets/PresetManager.cpp
 )
 
 set(TS_FILES
@@ -77,19 +87,12 @@ set(TS_FILES
     i18n/ffmedia_zh_CN.ts
 )
 
-qt_add_executable(ffmedia-toolbox
+qt_add_executable(ffmedia-toolbox WIN32
     ${APP_SOURCES}
 )
 
-qt_add_qml_module(ffmedia-toolbox
-    URI ffmedia
-    VERSION 1.0
-    QML_FILES
-        ${QML_SOURCES}
-)
-
 qt_add_translations(ffmedia-toolbox
-    TS_FILE_BASE ffmedia
+    TS_FILES ${TS_FILES}
     TS_OUTPUT_DIRECTORY i18n
     LUPDATE_OPTIONS -no-obsolete
     LRELEASE_OPTIONS -idbased
@@ -100,26 +103,19 @@ target_include_directories(ffmedia-toolbox PRIVATE
 )
 
 target_link_libraries(ffmedia-toolbox PRIVATE
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Quick
-    Qt6::Qml
-    Qt6::QuickControls2
+    Qt6::Concurrent
+    Qt6::Widgets
+    Ela::WidgetTools
 )
-
-qt_generate_deploy_app_script(
-    TARGET ffmedia-toolbox
-    OUTPUT_SCRIPT deploy_script
-    NO_TRANSLATIONS
-)
-install(SCRIPT ${deploy_script})
 
 add_custom_command(TARGET ffmedia-toolbox POST_BUILD
     COMMAND "${CMAKE_PREFIX_PATH}/bin/windeployqt.exe"
-        --qmldir "${CMAKE_SOURCE_DIR}/qml"
         --no-translations
         --no-opengl-sw
         --no-compiler-runtime
         "$<TARGET_FILE:ffmedia-toolbox>"
-    COMMENT "Deploying Qt runtime..."
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:ElaWidgetTools>"
+        "$<TARGET_FILE_DIR:ffmedia-toolbox>"
+    COMMENT "Deploying Qt runtime and ElaWidgetTools..."
 )

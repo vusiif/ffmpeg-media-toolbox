@@ -34,5 +34,82 @@ public:
         int quality = -1
     ) const;
 
+    QStringList buildTrim(
+        const QString &inputPath,
+        const QString &outputPath,
+        double startSec, double endSec,
+        const QString &outputFormat = {},
+        const QString &videoCodec = {},
+        const QString &audioCodec = {},
+        int crf = -1,
+        bool copyStreams = false
+    ) const;
+
+    QStringList buildExtractAudio(
+        const QString &inputPath,
+        const QString &outputPath,
+        const QString &audioFormat = {},
+        const QString &audioCodec = {},
+        int bitrateKbps = -1
+    ) const;
+
+    QStringList buildMute(
+        const QString &inputPath,
+        const QString &outputPath,
+        const QString &outputFormat = {},
+        const QString &videoCodec = {},
+        int crf = -1,
+        bool copyStreams = false
+    ) const;
+
+    QStringList buildScreenshot(
+        const QString &inputPath,
+        const QString &outputPath,
+        double timeSec,
+        const QString &imageFormat = {}
+    ) const;
+
+    QStringList buildGif(
+        const QString &inputPath,
+        const QString &outputPath,
+        int fps, int width,
+        double startSec, double endSec
+    ) const;
+
+    QStringList buildVideoJoin(
+        const QStringList &inputPaths,
+        const QString &outputPath
+    ) const;
+
+    QStringList buildGridJoin(
+        const QStringList &inputPaths,
+        const QString &outputPath,
+        int rows, int cols,
+        int spacing,
+        const QString &backgroundColor
+    ) const;
+
+    QStringList buildImageSequenceToVideo(
+        const QString &inputPattern,
+        const QString &outputPath,
+        int fps
+    ) const;
+
+    QStringList buildVideoToImageSequence(
+        const QString &inputPath,
+        const QString &outputPattern,
+        double fps
+    ) const;
+
+    QStringList buildWatermark(
+        const QString &inputPath,
+        const QString &watermarkPath,
+        const QString &outputPath,
+        const QString &position,
+        int opacityPercent,
+        const QString &outputFormat = {}
+    ) const;
+
     static QString escapeFilterValue(const QString &value);
+    static QString formatTime(double seconds);
 };
