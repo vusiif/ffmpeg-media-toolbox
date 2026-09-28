@@ -16,11 +16,11 @@ public:
     Q_INVOKABLE QStringList buildConversion(
         const QString &inputPath,
         const QString &outputPath,
-        const QString &outputFormat = {},
         const QString &videoCodec = {},
         const QString &audioCodec = {},
         int crf = -1,
-        bool copyStreams = false
+        bool copyStreams = false,
+        bool stripMetadata = false
     ) const;
 
     Q_INVOKABLE QStringList buildImageOperation(

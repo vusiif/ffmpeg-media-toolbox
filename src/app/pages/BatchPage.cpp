@@ -150,7 +150,6 @@ void BatchPage::addAllToQueue()
                           RemuxPolicy::canCopyByExtension(inputFile, format);
         const QStringList args = m_builder->buildConversion(
             inputFile, outputPath,
-            format,
             m_codecCombo->currentText(),
             QString(),
             m_qualitySpin->value(),

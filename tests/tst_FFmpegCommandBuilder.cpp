@@ -11,6 +11,8 @@ private slots:
     void conversionWithoutCodecs();
     void conversionWithCodecsAndCrf();
     void conversionCopyOverridesCodecs();
+    void conversionStripsMetadataOnRequest();
+    void conversionKeepsMetadataByDefault();
     void trimPlacesSeekBeforeInput();
     void trimZeroTimesOmitSeek();
     void trimCopyWithFormat();
@@ -57,7 +59,7 @@ void FFmpegCommandBuilderTest::conversionWithoutCodecs()
 void FFmpegCommandBuilderTest::conversionWithCodecsAndCrf()
 {
     QCOMPARE(m_builder.buildConversion(QStringLiteral("in.mp4"), QStringLiteral("out.mkv"),
-                                       QString(), QStringLiteral("libx264"),
+                                       QStringLiteral("libx264"),
                                        QStringLiteral("aac"), 23, false),
              QStringList({QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mp4"),
                           QStringLiteral("-c:v"), QStringLiteral("libx264"),
@@ -69,11 +71,37 @@ void FFmpegCommandBuilderTest::conversionWithCodecsAndCrf()
 void FFmpegCommandBuilderTest::conversionCopyOverridesCodecs()
 {
     QCOMPARE(m_builder.buildConversion(QStringLiteral("in.mp4"), QStringLiteral("out.mkv"),
-                                       QString(), QStringLiteral("libx264"),
+                                       QStringLiteral("libx264"),
                                        QStringLiteral("aac"), 23, true),
              QStringList({QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mp4"),
                           QStringLiteral("-c"), QStringLiteral("copy"),
                           QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::conversionStripsMetadataOnRequest()
+{
+    QCOMPARE(m_builder.buildConversion(QStringLiteral("in.mp4"), QStringLiteral("out.mkv"),
+                                       QStringLiteral("libx264"), QString(), 23, false, true),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("libx264"),
+                          QStringLiteral("-crf"), QStringLiteral("23"),
+                          QStringLiteral("-map_metadata"), QStringLiteral("-1"),
+                          QStringLiteral("out.mkv")}));
+
+    QCOMPARE(m_builder.buildConversion(QStringLiteral("in.mp4"), QStringLiteral("out.mkv"),
+                                       QString(), QString(), -1, true, true),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c"), QStringLiteral("copy"),
+                          QStringLiteral("-map_metadata"), QStringLiteral("-1"),
+                          QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::conversionKeepsMetadataByDefault()
+{
+    const QStringList args = m_builder.buildConversion(QStringLiteral("in.mp4"),
+                                                       QStringLiteral("out.mkv"),
+                                                       QStringLiteral("libx264"));
+    QVERIFY(!args.contains(QStringLiteral("-map_metadata")));
 }
 
 void FFmpegCommandBuilderTest::trimPlacesSeekBeforeInput()

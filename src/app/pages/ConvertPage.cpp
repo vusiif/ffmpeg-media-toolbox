@@ -33,10 +33,10 @@
 
 namespace {
 QStringList buildArgs(FFmpegCommandBuilder *builder, const QString &input, const QString &output,
-                      const QString &format, const QString &vCodec, const QString &aCodec,
-                      int crf, bool copy)
+                      const QString &vCodec, const QString &aCodec,
+                      int crf, bool copy, bool stripMetadata)
 {
-    return builder->buildConversion(input, output, format, vCodec, aCodec, crf, copy);
+    return builder->buildConversion(input, output, vCodec, aCodec, crf, copy, stripMetadata);
 }
 
 QString defaultNamingTemplate()
@@ -89,6 +89,14 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_infoLabel->setTextPixelSize(12);
     root->addWidget(m_infoLabel);
 
+    m_metaCaption = new ElaText(QString(), 13, this);
+    m_metaValue = new ElaText(QString(), 13, this);
+    m_metaValue->setWordWrap(true);
+    m_metaCaption->setVisible(false);
+    m_metaValue->setVisible(false);
+    root->addWidget(m_metaCaption);
+    root->addWidget(m_metaValue);
+
     auto *presetRow = new QHBoxLayout();
     m_presetCaption = new ElaText(QString(), 13, this);
     m_presetCombo = new ElaComboBox(this);
@@ -126,11 +134,14 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     m_smartCopyCheck = new ElaCheckBox(this);
 
+    m_stripMetaCheck = new ElaCheckBox(this);
+
     form->addRow(m_formatCaption, m_formatCombo);
     form->addRow(m_codecCaption, m_codecCombo);
     form->addRow(m_audioCodecCaption, m_audioCodecCombo);
     form->addRow(m_qualityCaption, m_qualitySpin);
     form->addRow(new ElaText(QString(), 13, this), m_smartCopyCheck);
+    form->addRow(new ElaText(QString(), 13, this), m_stripMetaCheck);
     root->addLayout(form);
 
     m_previewCaption = new ElaText(QString(), 13, this);
@@ -203,6 +214,7 @@ void ConvertPage::startProbe(bool enqueueAfter)
 
     m_enqueueAfterProbe = enqueueAfter;
     m_probeInfo = MediaFile();
+    showMetadata({});
     MediaProbeService *probe = m_probe;
     const QString path = m_inputFile;
     m_probeWatcher->setFuture(QtConcurrent::run([probe, path]() {
@@ -221,6 +233,7 @@ void ConvertPage::onProbeFinished()
 
     if (!info.isValid()) {
         m_infoLabel->setText(trId("convert.invalidFile"));
+        showMetadata({});
         return;
     }
 
@@ -236,6 +249,7 @@ void ConvertPage::onProbeFinished()
         parts << info.primaryAudio().codec;
     }
     m_infoLabel->setText(parts.join(QStringLiteral(" | ")));
+    showMetadata(info.formatMetadata);
     updateCommandPreview();
 }
 
@@ -250,9 +264,10 @@ void ConvertPage::enqueueJob(const MediaFile &info)
     const bool copy = m_smartCopyCheck->isChecked() &&
                       RemuxPolicy::canCopyAllStreams(info, format);
     const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
-                                       format, m_codecCombo->currentText(),
+                                       m_codecCombo->currentText(),
                                        m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), copy);
+                                       m_qualitySpin->value(), copy,
+                                       m_stripMetaCheck->isChecked());
 
     auto *job = new Job();
     job->setName(QFileInfo(m_inputFile).fileName());
@@ -285,10 +300,24 @@ void ConvertPage::updateCommandPreview()
     const bool copy = m_smartCopyCheck->isChecked() &&
                       RemuxPolicy::canCopyAllStreams(m_probeInfo, format);
     const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
-                                       format, m_codecCombo->currentText(),
+                                       m_codecCombo->currentText(),
                                        m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), copy);
+                                       m_qualitySpin->value(), copy,
+                                       m_stripMetaCheck->isChecked());
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
+}
+
+void ConvertPage::showMetadata(const QVariantMap &tags)
+{
+    QStringList parts;
+    for (auto it = tags.constBegin(); it != tags.constEnd(); ++it) {
+        parts << QStringLiteral("%1: %2").arg(it.key(), it.value().toString());
+    }
+
+    m_metaValue->setText(parts.join(QStringLiteral(" | ")));
+    const bool visible = !parts.isEmpty();
+    m_metaCaption->setVisible(visible);
+    m_metaValue->setVisible(visible);
 }
 
 void ConvertPage::rebuildCodecLists()
@@ -335,6 +364,7 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("audioCodec"), m_audioCodecCombo->currentText());
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
     values.insert(QStringLiteral("smartCopy"), m_smartCopyCheck->isChecked());
+    values.insert(QStringLiteral("stripMetadata"), m_stripMetaCheck->isChecked());
     m_presets->save(name, values);
     refreshPresetList();
     m_presetCombo->setCurrentText(name.trimmed());
@@ -355,6 +385,7 @@ void ConvertPage::loadPreset(const QString &name)
     setCombo(m_audioCodecCombo, values.value(QStringLiteral("audioCodec")).toString());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
+    m_stripMetaCheck->setChecked(values.value(QStringLiteral("stripMetadata"), false).toBool());
 }
 
 void ConvertPage::deletePreset()
@@ -390,6 +421,9 @@ void ConvertPage::retranslateUi()
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
+    m_stripMetaCheck->setText(trId("metadata.remove"));
+    m_metaCaption->setText(trId("metadata.title"));
+    m_metaCaption->setVisible(!m_metaValue->text().isEmpty());
     m_previewCaption->setText(trId("convert.preview") + QStringLiteral(":"));
     m_addButton->setText(trId("convert.addToQueue"));
     updateCommandPreview();

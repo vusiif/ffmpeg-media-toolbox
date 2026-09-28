@@ -199,6 +199,14 @@
         <source>settings.language</source>
         <translation>语言</translation>
     </message>
+    <message id="metadata.title">
+        <source>metadata.title</source>
+        <translation>元数据</translation>
+    </message>
+    <message id="metadata.remove">
+        <source>metadata.remove</source>
+        <translation>移除元数据</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>格式: %1  编码器: %2  解码器: %3  滤镜: %4  硬件加速: %5</translation>

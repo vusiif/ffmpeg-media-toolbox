@@ -41,6 +41,7 @@ private:
     void addToQueue();
     void updateCommandPreview();
     void rebuildCodecLists();
+    void showMetadata(const QVariantMap &tags);
     void savePreset();
     void loadPreset(const QString &name);
     void deletePreset();
@@ -63,6 +64,8 @@ private:
     ElaLineEdit *m_inputEdit = nullptr;
     ElaPushButton *m_browseButton = nullptr;
     ElaText *m_infoLabel = nullptr;
+    ElaText *m_metaCaption = nullptr;
+    ElaText *m_metaValue = nullptr;
     ElaText *m_presetCaption = nullptr;
     ElaComboBox *m_presetCombo = nullptr;
     ElaPushButton *m_presetSaveButton = nullptr;
@@ -76,6 +79,7 @@ private:
     ElaText *m_qualityCaption = nullptr;
     ElaSpinBox *m_qualitySpin = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
+    ElaCheckBox *m_stripMetaCheck = nullptr;
     ElaText *m_previewCaption = nullptr;
     ElaLineEdit *m_previewEdit = nullptr;
     ElaPushButton *m_addButton = nullptr;

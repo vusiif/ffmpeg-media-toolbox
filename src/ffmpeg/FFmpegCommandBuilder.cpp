@@ -8,11 +8,11 @@ FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
 QStringList FFmpegCommandBuilder::buildConversion(
     const QString &inputPath,
     const QString &outputPath,
-    const QString &outputFormat,
     const QString &videoCodec,
     const QString &audioCodec,
     int crf,
-    bool copyStreams
+    bool copyStreams,
+    bool stripMetadata
 ) const
 {
     QStringList args;
@@ -36,6 +36,10 @@ QStringList FFmpegCommandBuilder::buildConversion(
         if (crf >= 0) {
             args << QStringLiteral("-crf") << QString::number(crf);
         }
+    }
+
+    if (stripMetadata) {
+        args << QStringLiteral("-map_metadata") << QStringLiteral("-1");
     }
 
     args << outputPath;

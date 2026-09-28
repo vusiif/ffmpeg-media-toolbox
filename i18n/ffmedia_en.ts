@@ -199,6 +199,14 @@
         <source>settings.language</source>
         <translation>Language</translation>
     </message>
+    <message id="metadata.title">
+        <source>metadata.title</source>
+        <translation>Metadata</translation>
+    </message>
+    <message id="metadata.remove">
+        <source>metadata.remove</source>
+        <translation>Remove metadata</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>Formats: %1  Encoders: %2  Decoders: %3  Filters: %4  HW Accels: %5</translation>
