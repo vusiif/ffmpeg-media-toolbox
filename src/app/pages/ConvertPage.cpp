@@ -28,6 +28,7 @@
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
 #include "media/MediaProbeService.h"
+#include "output/OutputEstimate.h"
 #include "output/OutputNaming.h"
 #include "presets/PresetManager.h"
 
@@ -143,6 +144,10 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(new ElaText(QString(), 13, this), m_smartCopyCheck);
     form->addRow(new ElaText(QString(), 13, this), m_stripMetaCheck);
     root->addLayout(form);
+
+    m_estLabel = new ElaText(QString(), 13, this);
+    m_estLabel->setVisible(false);
+    root->addWidget(m_estLabel);
 
     m_previewCaption = new ElaText(QString(), 13, this);
     m_previewEdit = new ElaLineEdit(this);
@@ -291,6 +296,8 @@ void ConvertPage::updateCommandPreview()
 {
     if (m_inputFile.isEmpty()) {
         m_previewEdit->clear();
+        m_estLabel->clear();
+        m_estLabel->setVisible(false);
         return;
     }
 
@@ -305,6 +312,18 @@ void ConvertPage::updateCommandPreview()
                                        m_qualitySpin->value(), copy,
                                        m_stripMetaCheck->isChecked());
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
+
+    const qint64 estimate = OutputEstimate::estimateBytes(
+        m_probeInfo, m_codecCombo->currentText(), m_audioCodecCombo->currentText(),
+        m_qualitySpin->value(), copy);
+    if (estimate > 0) {
+        m_estLabel->setText(trId("convert.estimate") + QStringLiteral(": ≈")
+                            + OutputEstimate::humanizeBytes(estimate));
+        m_estLabel->setVisible(true);
+    } else {
+        m_estLabel->clear();
+        m_estLabel->setVisible(false);
+    }
 }
 
 void ConvertPage::showMetadata(const QVariantMap &tags)

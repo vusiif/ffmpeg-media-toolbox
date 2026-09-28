@@ -207,6 +207,10 @@
         <source>metadata.remove</source>
         <translation>移除元数据</translation>
     </message>
+    <message id="convert.estimate">
+        <source>convert.estimate</source>
+        <translation>预计输出</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>格式: %1  编码器: %2  解码器: %3  滤镜: %4  硬件加速: %5</translation>

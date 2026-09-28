@@ -66,6 +66,7 @@ private:
     ElaText *m_infoLabel = nullptr;
     ElaText *m_metaCaption = nullptr;
     ElaText *m_metaValue = nullptr;
+    ElaText *m_estLabel = nullptr;
     ElaText *m_presetCaption = nullptr;
     ElaComboBox *m_presetCombo = nullptr;
     ElaPushButton *m_presetSaveButton = nullptr;

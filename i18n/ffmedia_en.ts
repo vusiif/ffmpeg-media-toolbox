@@ -207,6 +207,10 @@
         <source>metadata.remove</source>
         <translation>Remove metadata</translation>
     </message>
+    <message id="convert.estimate">
+        <source>convert.estimate</source>
+        <translation>Estimated output</translation>
+    </message>
     <message id="settings.caps">
         <source>settings.caps</source>
         <translation>Formats: %1  Encoders: %2  Decoders: %3  Filters: %4  HW Accels: %5</translation>
