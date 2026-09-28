@@ -99,7 +99,12 @@ void FFmpegProcess::onReadyReadStdout()
         m_progressBuffer = m_progressBuffer.mid(newlineIdx + 1);
 
         if (!line.isEmpty()) {
-            parseProgressLine(line);
+            double fraction = m_progress;
+            if (parseProgressLine(line, m_currentProgress, m_totalDuration, fraction)) {
+                m_progress = fraction;
+                emit progressChanged();
+            }
+            emit logMessage(line);
         }
     }
 }
@@ -137,43 +142,44 @@ void FFmpegProcess::onErrorOccurred(QProcess::ProcessError error)
     }
 }
 
-void FFmpegProcess::parseProgressLine(const QString &line)
+bool FFmpegProcess::parseProgressLine(const QString &line, FFmpegProgress &progress,
+                                      double totalDuration, double &fraction)
 {
     int eqIdx = line.indexOf(QLatin1Char('='));
     if (eqIdx < 0) {
-        return;
+        return false;
     }
 
     QString key = line.left(eqIdx).trimmed();
     QString value = line.mid(eqIdx + 1).trimmed();
 
     if (key == QStringLiteral("frame")) {
-        m_currentProgress.frame = value.toLongLong();
+        progress.frame = value.toLongLong();
     } else if (key == QStringLiteral("fps")) {
-        m_currentProgress.fps = value.toDouble();
+        progress.fps = value.toDouble();
     } else if (key == QStringLiteral("out_time_us")) {
-        m_currentProgress.outTimeUs = value.toLongLong();
+        progress.outTimeUs = value.toLongLong();
 
-        if (m_totalDuration > 0) {
-            double currentSec = m_currentProgress.outTimeUs / 1000000.0;
-            m_progress = qBound(0.0, currentSec / m_totalDuration, 1.0);
-            m_currentProgress.percent = m_progress * 100.0;
-            emit progressChanged();
+        if (totalDuration > 0) {
+            double currentSec = progress.outTimeUs / 1000000.0;
+            fraction = qBound(0.0, currentSec / totalDuration, 1.0);
+            progress.percent = fraction * 100.0;
+            return true;
         }
     } else if (key == QStringLiteral("speed")) {
         QString speedStr = value;
         if (speedStr.endsWith(QLatin1Char('x'))) {
             speedStr.chop(1);
         }
-        m_currentProgress.speed = speedStr.toDouble();
+        progress.speed = speedStr.toDouble();
     } else if (key == QStringLiteral("progress")) {
         if (value == QStringLiteral("end")) {
-            m_progress = 1.0;
-            emit progressChanged();
+            fraction = 1.0;
+            return true;
         }
     }
 
-    emit logMessage(line);
+    return false;
 }
 
 void FFmpegProcess::setState(State state)

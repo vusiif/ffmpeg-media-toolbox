@@ -48,6 +48,13 @@ public:
 
     FFmpegProgress currentProgress() const;
 
+    // Parses one `key=value` line from `ffmpeg -progress` output.
+    // Updates `progress`; when the line determines an overall fraction
+    // (out_time_us with a known duration, or progress=end) the new fraction
+    // is written to `fraction` and true is returned.
+    static bool parseProgressLine(const QString &line, FFmpegProgress &progress,
+                                  double totalDuration, double &fraction);
+
 signals:
     void stateChanged();
     void progressChanged();
@@ -61,7 +68,6 @@ private slots:
     void onErrorOccurred(QProcess::ProcessError error);
 
 private:
-    void parseProgressLine(const QString &line);
     void setState(State state);
 
     QProcess *m_process = nullptr;
