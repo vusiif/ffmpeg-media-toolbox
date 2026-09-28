@@ -39,6 +39,7 @@ private slots:
     void canCopyAllStreamsRejectsEmptyMedia();
     void canCopyByExtensionOnlyWithinSameContainer();
     void canCopyByExtensionRejectsMissingSuffix();
+    void subtitleCodecPerContainer();
 };
 
 void RemuxPolicyTest::unknownFormatCopiesNothing()
@@ -137,6 +138,29 @@ void RemuxPolicyTest::canCopyByExtensionRejectsMissingSuffix()
 {
     QVERIFY(!RemuxPolicy::canCopyByExtension(QStringLiteral("C:/media/in"), QStringLiteral("mp4")));
     QVERIFY(!RemuxPolicy::canCopyByExtension(QStringLiteral("C:/media/in.mkv"), QString()));
+}
+
+void RemuxPolicyTest::subtitleCodecPerContainer()
+{
+    // mp4/mov need a conversion codec...
+    QCOMPARE(*RemuxPolicy::subtitleCodecForContainer(QStringLiteral("mp4")),
+             QStringLiteral("mov_text"));
+    QCOMPARE(*RemuxPolicy::subtitleCodecForContainer(QStringLiteral("MOV")),
+             QStringLiteral("mov_text"));
+
+    // ...mkv accepts the text streams as they are (present, empty codec)...
+    const auto mkv = RemuxPolicy::subtitleCodecForContainer(QStringLiteral("mkv"));
+    QVERIFY(mkv.has_value());
+    QCOMPARE(*mkv, QString());
+
+    // ...webm needs webvtt...
+    QCOMPARE(*RemuxPolicy::subtitleCodecForContainer(QStringLiteral("webm")),
+             QStringLiteral("webvtt"));
+
+    // ...and containers that cannot carry subtitles refuse outright.
+    QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QStringLiteral("avi")).has_value());
+    QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QStringLiteral("mp3")).has_value());
+    QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QString()).has_value());
 }
 
 QTEST_GUILESS_MAIN(RemuxPolicyTest)

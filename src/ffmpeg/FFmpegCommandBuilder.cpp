@@ -379,6 +379,32 @@ QStringList FFmpegCommandBuilder::buildVideoToImageSequence(
     return args;
 }
 
+QStringList FFmpegCommandBuilder::buildSubtitleMux(
+    const QString &inputPath,
+    const QString &subtitlePath,
+    const QString &outputPath,
+    const QString &subtitleCodec
+) const
+{
+    if (inputPath.isEmpty() || subtitlePath.isEmpty() || outputPath.isEmpty()) {
+        return {};
+    }
+
+    QStringList args;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
+    args << QStringLiteral("-i") << subtitlePath;
+    // Keep every stream of the source plus the new subtitle stream.
+    args << QStringLiteral("-map") << QStringLiteral("0");
+    args << QStringLiteral("-map") << QStringLiteral("1");
+    args << QStringLiteral("-c") << QStringLiteral("copy");
+    if (!subtitleCodec.isEmpty()) {
+        args << QStringLiteral("-c:s") << subtitleCodec;
+    }
+    args << outputPath;
+    return args;
+}
+
 QStringList FFmpegCommandBuilder::buildWatermark(
     const QString &inputPath,
     const QString &watermarkPath,

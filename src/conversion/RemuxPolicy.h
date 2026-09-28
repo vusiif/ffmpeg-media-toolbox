@@ -2,6 +2,8 @@
 
 #include <QString>
 
+#include <optional>
+
 struct MediaFile;
 
 namespace RemuxPolicy {
@@ -18,5 +20,10 @@ bool canCopyAllStreams(const MediaFile &input, const QString &outputFormat);
 // Fallback when the input codecs are unknown: only copy when the container
 // stays the same.
 bool canCopyByExtension(const QString &inputPath, const QString &outputFormat);
+
+// -c:s codec needed to carry subtitles in `format` (empty string = a plain
+// stream copy already works), or nullopt when the container cannot carry
+// subtitles at all.
+std::optional<QString> subtitleCodecForContainer(const QString &format);
 
 } // namespace RemuxPolicy

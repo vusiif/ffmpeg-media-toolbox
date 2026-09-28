@@ -41,6 +41,7 @@ private:
     void joinVideos();
     void sequence();
     void watermark();
+    void subtitleMux();
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
@@ -118,6 +119,13 @@ private:
     ElaText *m_wmOpacityCaption = nullptr;
     ElaSpinBox *m_wmOpacity = nullptr;
     ElaPushButton *m_wmButton = nullptr;
+
+    QGroupBox *m_subBox = nullptr;
+    ElaText *m_subCaption = nullptr;
+    ElaLineEdit *m_subPath = nullptr;
+    ElaPushButton *m_subPathButton = nullptr;
+    ElaPushButton *m_subButton = nullptr;
+    QString m_subtitleFile;
 
     QStringList m_joinFiles;
 };

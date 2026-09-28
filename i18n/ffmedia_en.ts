@@ -367,6 +367,22 @@
         <source>video.job.watermark</source>
         <translation>Watermark: %1</translation>
     </message>
+    <message id="video.subtitle">
+        <source>video.subtitle</source>
+        <translation>Subtitle Mux</translation>
+    </message>
+    <message id="video.sub.file">
+        <source>video.sub.file</source>
+        <translation>Subtitle file</translation>
+    </message>
+    <message id="video.job.subtitle">
+        <source>video.job.subtitle</source>
+        <translation>Mux subtitle: %1</translation>
+    </message>
+    <message id="video.subUnsupported">
+        <source>video.subUnsupported</source>
+        <translation>This container cannot carry subtitles</translation>
+    </message>
     <message id="common.format">
         <source>common.format</source>
         <translation>Format</translation>

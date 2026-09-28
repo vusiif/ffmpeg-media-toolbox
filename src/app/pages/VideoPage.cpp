@@ -8,6 +8,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QListWidget>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QScrollArea>
 #include <QUrl>
@@ -20,6 +21,7 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "conversion/RemuxPolicy.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/TrId.h"
@@ -274,6 +276,30 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_wmButton, &ElaPushButton::clicked, this, &VideoPage::watermark);
     body->addWidget(m_wmBox);
 
+    // Subtitle mux
+    m_subBox = new QGroupBox(scrollBody);
+    auto *subForm = makeRow(m_subBox);
+    auto *subPathRow = new QHBoxLayout();
+    m_subPath = new ElaLineEdit(m_subBox);
+    m_subPath->setReadOnly(true);
+    m_subPathButton = new ElaPushButton(m_subBox);
+    connect(m_subPathButton, &ElaPushButton::clicked, this, [=]() {
+        const QString path = browseFile(
+            trId("video.subtitle"),
+            QStringLiteral("Subtitle files (*.srt *.ass *.ssa *.vtt);;All files (*)"));
+        if (!path.isEmpty()) {
+            m_subtitleFile = path;
+            m_subPath->setText(path);
+        }
+    });
+    subPathRow->addWidget(m_subPath, 1);
+    subPathRow->addWidget(m_subPathButton);
+    m_subCaption = makeCaption(m_subBox);
+    subForm->addRow(m_subCaption, subPathRow);
+    m_subButton = makeQueueButton(m_subBox);
+    connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
+    body->addWidget(m_subBox);
+
     body->addStretch();
     scroll->setWidget(scrollBody);
     root->addWidget(scroll, 1);
@@ -417,6 +443,26 @@ void VideoPage::watermark()
                                       m_wmOpacity->value()));
 }
 
+void VideoPage::subtitleMux()
+{
+    if (m_inputFile.isEmpty() || m_subtitleFile.isEmpty()) return;
+
+    const QString suffix = QFileInfo(m_inputFile).suffix();
+    const auto codec = RemuxPolicy::subtitleCodecForContainer(suffix);
+    if (!codec) {
+        QMessageBox::warning(this, trId("video.subtitle"),
+                             trId("video.subUnsupported"));
+        return;
+    }
+
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_sub.{format}"),
+                                               suffix);
+    enqueue(trId("video.job.subtitle").arg(QFileInfo(m_subtitleFile).fileName()),
+            m_builder->buildSubtitleMux(m_inputFile, m_subtitleFile, output,
+                                        *codec));
+}
+
 void VideoPage::retranslateUi()
 {
     m_titleLabel->setText(trId("video.title"));
@@ -475,4 +521,9 @@ void VideoPage::retranslateUi()
     m_wmOpacityCaption->setText(trId("common.opacity") + QStringLiteral(":"));
     m_wmButton->setText(trId("convert.addToQueue"));
     m_wmBrowseButton->setText(trId("common.browse"));
+
+    m_subBox->setTitle(trId("video.subtitle"));
+    m_subCaption->setText(trId("video.sub.file") + QStringLiteral(":"));
+    m_subPathButton->setText(trId("common.browse"));
+    m_subButton->setText(trId("convert.addToQueue"));
 }

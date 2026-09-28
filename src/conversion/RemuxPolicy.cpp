@@ -112,4 +112,19 @@ bool canCopyByExtension(const QString &inputPath, const QString &outputFormat)
     return suffix == outputFormat.toLower();
 }
 
+std::optional<QString> subtitleCodecForContainer(const QString &format)
+{
+    const QString f = format.toLower();
+    if (f == QLatin1String("mp4") || f == QLatin1String("mov")) {
+        return QStringLiteral("mov_text");
+    }
+    if (f == QLatin1String("mkv")) {
+        return QString(); // Matroska accepts subrip/ass as-is.
+    }
+    if (f == QLatin1String("webm")) {
+        return QStringLiteral("webvtt");
+    }
+    return std::nullopt;
+}
+
 } // namespace RemuxPolicy

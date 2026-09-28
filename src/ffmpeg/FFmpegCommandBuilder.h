@@ -105,6 +105,16 @@ public:
         double fps
     ) const;
 
+    // Muxes an external subtitle file into a copy of the input: audio/video
+    // streams are copied, the new subtitle stream takes `subtitleCodec`
+    // (empty = plain copy for containers that accept it as-is).
+    QStringList buildSubtitleMux(
+        const QString &inputPath,
+        const QString &subtitlePath,
+        const QString &outputPath,
+        const QString &subtitleCodec
+    ) const;
+
     QStringList buildWatermark(
         const QString &inputPath,
         const QString &watermarkPath,

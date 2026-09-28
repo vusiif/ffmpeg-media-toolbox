@@ -13,6 +13,9 @@ private slots:
     void conversionCopyOverridesCodecs();
     void conversionStripsMetadataOnRequest();
     void conversionKeepsMetadataByDefault();
+    void subtitleMuxConvertsForMp4();
+    void subtitleMuxCopiesWhenCodecIsEmpty();
+    void subtitleMuxRejectsEmptyPaths();
     void trimPlacesSeekBeforeInput();
     void trimZeroTimesOmitSeek();
     void trimCopyWithFormat();
@@ -103,6 +106,50 @@ void FFmpegCommandBuilderTest::conversionKeepsMetadataByDefault()
                                                        QStringLiteral("out.mkv"),
                                                        QStringLiteral("libx264"));
     QVERIFY(!args.contains(QStringLiteral("-map_metadata")));
+}
+
+void FFmpegCommandBuilderTest::subtitleMuxConvertsForMp4()
+{
+    QCOMPARE(m_builder.buildSubtitleMux(QStringLiteral("in.mp4"),
+                                        QStringLiteral("subs.srt"),
+                                        QStringLiteral("out.mp4"),
+                                        QStringLiteral("mov_text")),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-i"), QStringLiteral("subs.srt"),
+                          QStringLiteral("-map"), QStringLiteral("0"),
+                          QStringLiteral("-map"), QStringLiteral("1"),
+                          QStringLiteral("-c"), QStringLiteral("copy"),
+                          QStringLiteral("-c:s"), QStringLiteral("mov_text"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleMuxCopiesWhenCodecIsEmpty()
+{
+    QCOMPARE(m_builder.buildSubtitleMux(QStringLiteral("in.mkv"),
+                                        QStringLiteral("subs.ass"),
+                                        QStringLiteral("out.mkv"),
+                                        QString()),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mkv"),
+                          QStringLiteral("-i"), QStringLiteral("subs.ass"),
+                          QStringLiteral("-map"), QStringLiteral("0"),
+                          QStringLiteral("-map"), QStringLiteral("1"),
+                          QStringLiteral("-c"), QStringLiteral("copy"),
+                          QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleMuxRejectsEmptyPaths()
+{
+    QVERIFY(m_builder.buildSubtitleMux(QString(), QStringLiteral("s.srt"),
+                                       QStringLiteral("o.mp4"),
+                                       QStringLiteral("mov_text")).isEmpty());
+    QVERIFY(m_builder.buildSubtitleMux(QStringLiteral("in.mp4"), QString(),
+                                       QStringLiteral("o.mp4"),
+                                       QStringLiteral("mov_text")).isEmpty());
+    QVERIFY(m_builder.buildSubtitleMux(QStringLiteral("in.mp4"),
+                                       QStringLiteral("s.srt"), QString(),
+                                       QStringLiteral("mov_text")).isEmpty());
 }
 
 void FFmpegCommandBuilderTest::trimPlacesSeekBeforeInput()

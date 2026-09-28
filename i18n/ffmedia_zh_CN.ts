@@ -367,6 +367,22 @@
         <source>video.job.watermark</source>
         <translation>水印: %1</translation>
     </message>
+    <message id="video.subtitle">
+        <source>video.subtitle</source>
+        <translation>字幕封装</translation>
+    </message>
+    <message id="video.sub.file">
+        <source>video.sub.file</source>
+        <translation>字幕文件</translation>
+    </message>
+    <message id="video.job.subtitle">
+        <source>video.job.subtitle</source>
+        <translation>封装字幕: %1</translation>
+    </message>
+    <message id="video.subUnsupported">
+        <source>video.subUnsupported</source>
+        <translation>该容器不支持字幕</translation>
+    </message>
     <message id="common.format">
         <source>common.format</source>
         <translation>格式</translation>
