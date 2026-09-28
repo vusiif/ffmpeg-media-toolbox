@@ -1,17 +1,17 @@
 #include "RecentFiles.h"
 
+#include "AppSettings.h"
+
 #include <QSettings>
 
 namespace {
-const QString kOrg = QStringLiteral("FFMedia");
-const QString kApp = QStringLiteral("FFmpeg Media Toolbox");
 const QString kKeyFiles = QStringLiteral("recent/files");
 } // namespace
 
 RecentFiles::RecentFiles(QObject *parent)
     : QObject(parent)
 {
-    QSettings settings(kOrg, kApp);
+    QSettings settings(AppSettings::organization(), AppSettings::application());
     m_files = settings.value(kKeyFiles).toStringList();
 }
 
@@ -59,6 +59,6 @@ QStringList RecentFiles::pushFront(const QStringList &current, const QString &pa
 
 void RecentFiles::save()
 {
-    QSettings settings(kOrg, kApp);
+    QSettings settings(AppSettings::organization(), AppSettings::application());
     settings.setValue(kKeyFiles, m_files);
 }

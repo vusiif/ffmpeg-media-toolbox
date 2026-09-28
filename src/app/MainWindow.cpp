@@ -2,7 +2,11 @@
 
 #include "i18n/TrId.h"
 
+#include <QCloseEvent>
+#include <QSettings>
+
 #include "ElaIcon.h"
+#include "app/AppSettings.h"
 #include "pages/BatchPage.h"
 #include "pages/ConvertPage.h"
 #include "pages/HomePage.h"
@@ -23,14 +27,21 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     : ElaWindow(parent)
     , m_languageManager(languageManager)
 {
+    QSettings settings(AppSettings::organization(), AppSettings::application());
+
     m_ffmpegLocator = new FFmpegLocator(this);
     m_ffmpegCaps = new FFmpegCapabilities(m_ffmpegLocator, this);
     m_commandBuilder = new FFmpegCommandBuilder(this);
     m_mediaProbe = new MediaProbeService(m_ffmpegLocator, this);
     m_recentFiles = new RecentFiles(this);
     m_jobQueue = new JobQueue(m_ffmpegLocator, m_mediaProbe, this);
+    m_jobQueue->setMaxConcurrent(
+        settings.value(QStringLiteral("jobs/maxConcurrent"), 1).toInt());
 
-    resize(1200, 740);
+    const QByteArray geometry = settings.value(QStringLiteral("window/geometry")).toByteArray();
+    if (geometry.isEmpty() || !restoreGeometry(geometry)) {
+        resize(1200, 740);
+    }
     setStackSwitchMode(ElaWindowType::StackSwitchMode::None);
     setUserInfoCardTitle(trId("app.title"));
     setUserInfoCardSubTitle(m_ffmpegLocator->ffmpegVersion());
@@ -47,6 +58,13 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
 
 MainWindow::~MainWindow() = default;
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings(AppSettings::organization(), AppSettings::application());
+    settings.setValue(QStringLiteral("window/geometry"), saveGeometry());
+    ElaWindow::closeEvent(event);
+}
+
 void MainWindow::initPages()
 {
     m_homePage = new HomePage(m_ffmpegLocator, m_ffmpegCaps, this);
@@ -58,7 +76,7 @@ void MainWindow::initPages()
                                 this);
     m_queuePage = new QueuePage(m_jobQueue, this);
     m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_recentFiles,
-                                      m_languageManager, this);
+                                      m_jobQueue, m_languageManager, this);
     m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
 
     addPageNode(trId("nav.home"), m_homePage, ElaIconType::House);

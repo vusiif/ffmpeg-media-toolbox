@@ -8,6 +8,7 @@ class FFmpegCommandBuilder;
 class MediaProbeService;
 class RecentFiles;
 class JobQueue;
+class QCloseEvent;
 class LanguageManager;
 class HomePage;
 class ConvertPage;
@@ -29,6 +30,9 @@ public:
 private:
     void initPages();
     void retranslateUi();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
     FFmpegLocator *m_ffmpegLocator = nullptr;
     FFmpegCapabilities *m_ffmpegCaps = nullptr;

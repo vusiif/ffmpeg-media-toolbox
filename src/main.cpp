@@ -2,14 +2,15 @@
 
 #include "ElaApplication.h"
 #include "ElaTheme.h"
+#include "app/AppSettings.h"
 #include "app/MainWindow.h"
 #include "i18n/LanguageManager.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setOrganizationName(QStringLiteral("FFMedia"));
-    app.setApplicationName(QStringLiteral("FFmpeg Media Toolbox"));
+    app.setOrganizationName(AppSettings::organization());
+    app.setApplicationName(AppSettings::application());
 
     LanguageManager languageManager;
 

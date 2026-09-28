@@ -20,6 +20,7 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "app/AppSettings.h"
 #include "app/RecentFiles.h"
 #include "conversion/RemuxPolicy.h"
 #include "ffmpeg/FFmpegCapabilities.h"
@@ -43,13 +44,13 @@ QStringList buildArgs(FFmpegCommandBuilder *builder, const QString &input, const
 
 QString defaultNamingTemplate()
 {
-    QSettings s(QStringLiteral("FFMedia"), QStringLiteral("FFmpeg Media Toolbox"));
+    QSettings s(AppSettings::organization(), AppSettings::application());
     return s.value(QStringLiteral("output/template"), QStringLiteral("{name}.{format}")).toString();
 }
 
 QString defaultOutputDirectory()
 {
-    QSettings s(QStringLiteral("FFMedia"), QStringLiteral("FFmpeg Media Toolbox"));
+    QSettings s(AppSettings::organization(), AppSettings::application());
     return s.value(QStringLiteral("output/directory")).toString();
 }
 } // namespace

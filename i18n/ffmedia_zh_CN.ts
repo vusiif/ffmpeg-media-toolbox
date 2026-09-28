@@ -199,6 +199,10 @@
         <source>settings.language</source>
         <translation>语言</translation>
     </message>
+    <message id="settings.concurrency">
+        <source>settings.concurrency</source>
+        <translation>并发任务数</translation>
+    </message>
     <message id="metadata.title">
         <source>metadata.title</source>
         <translation>元数据</translation>

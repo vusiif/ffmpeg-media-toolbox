@@ -1,11 +1,13 @@
 #include "PresetManager.h"
 
+#include "app/AppSettings.h"
+
 #include <QSettings>
 
 namespace {
 QSettings &settings()
 {
-    static QSettings s(QStringLiteral("FFMedia"), QStringLiteral("FFmpeg Media Toolbox"));
+    static QSettings s(AppSettings::organization(), AppSettings::application());
     return s;
 }
 } // namespace

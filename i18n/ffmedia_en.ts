@@ -199,6 +199,10 @@
         <source>settings.language</source>
         <translation>Language</translation>
     </message>
+    <message id="settings.concurrency">
+        <source>settings.concurrency</source>
+        <translation>Concurrent jobs</translation>
+    </message>
     <message id="metadata.title">
         <source>metadata.title</source>
         <translation>Metadata</translation>
