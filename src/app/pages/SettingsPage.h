@@ -4,6 +4,7 @@
 
 class FFmpegLocator;
 class FFmpegCapabilities;
+class RecentFiles;
 class LanguageManager;
 class ElaText;
 class ElaPushButton;
@@ -15,7 +16,8 @@ class SettingsPage : public QWidget
 
 public:
     explicit SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
-                          LanguageManager *languageManager, QWidget *parent = nullptr);
+                          RecentFiles *recentFiles, LanguageManager *languageManager,
+                          QWidget *parent = nullptr);
 
     void retranslateUi();
 
@@ -24,6 +26,7 @@ private:
 
     FFmpegLocator *m_locator;
     FFmpegCapabilities *m_caps;
+    RecentFiles *m_recentFiles;
     LanguageManager *m_languageManager;
 
     ElaText *m_titleLabel = nullptr;
@@ -36,6 +39,7 @@ private:
     ElaText *m_versionCaption = nullptr;
     ElaText *m_versionValue = nullptr;
     ElaPushButton *m_rescanButton = nullptr;
+    ElaPushButton *m_clearHistoryButton = nullptr;
     ElaText *m_capsCaption = nullptr;
     ElaText *m_capsValue = nullptr;
     ElaText *m_languageCaption = nullptr;

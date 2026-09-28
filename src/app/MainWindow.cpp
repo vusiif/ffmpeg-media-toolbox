@@ -14,6 +14,7 @@
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
+#include "app/RecentFiles.h"
 #include "i18n/LanguageManager.h"
 #include "jobs/JobQueue.h"
 #include "media/MediaProbeService.h"
@@ -26,6 +27,7 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     m_ffmpegCaps = new FFmpegCapabilities(m_ffmpegLocator, this);
     m_commandBuilder = new FFmpegCommandBuilder(this);
     m_mediaProbe = new MediaProbeService(m_ffmpegLocator, this);
+    m_recentFiles = new RecentFiles(this);
     m_jobQueue = new JobQueue(m_ffmpegLocator, m_mediaProbe, this);
 
     resize(1200, 740);
@@ -49,13 +51,14 @@ void MainWindow::initPages()
 {
     m_homePage = new HomePage(m_ffmpegLocator, m_ffmpegCaps, this);
     m_convertPage = new ConvertPage(m_ffmpegLocator, m_commandBuilder, m_mediaProbe,
-                                    m_ffmpegCaps, m_jobQueue, this);
+                                    m_ffmpegCaps, m_recentFiles, m_jobQueue, this);
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_joinPage = new JoinPage(m_ffmpegLocator, m_jobQueue, this);
     m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
                                 this);
     m_queuePage = new QueuePage(m_jobQueue, this);
-    m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_languageManager, this);
+    m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_recentFiles,
+                                      m_languageManager, this);
     m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
 
     addPageNode(trId("nav.home"), m_homePage, ElaIconType::House);

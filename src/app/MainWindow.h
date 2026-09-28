@@ -6,6 +6,7 @@ class FFmpegLocator;
 class FFmpegCapabilities;
 class FFmpegCommandBuilder;
 class MediaProbeService;
+class RecentFiles;
 class JobQueue;
 class LanguageManager;
 class HomePage;
@@ -33,6 +34,7 @@ private:
     FFmpegCapabilities *m_ffmpegCaps = nullptr;
     FFmpegCommandBuilder *m_commandBuilder = nullptr;
     MediaProbeService *m_mediaProbe = nullptr;
+    RecentFiles *m_recentFiles = nullptr;
     JobQueue *m_jobQueue = nullptr;
     LanguageManager *m_languageManager = nullptr;
 

@@ -9,15 +9,18 @@
 #include "ElaComboBox.h"
 #include "ElaPushButton.h"
 #include "ElaText.h"
+#include "app/RecentFiles.h"
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/LanguageManager.h"
 
 SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
-                           LanguageManager *languageManager, QWidget *parent)
+                           RecentFiles *recentFiles, LanguageManager *languageManager,
+                           QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_caps(caps)
+    , m_recentFiles(recentFiles)
     , m_languageManager(languageManager)
 {
     auto *root = new QVBoxLayout(this);
@@ -68,7 +71,16 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
     form->addRow(m_languageCaption, m_languageCombo);
     root->addLayout(form);
 
+    m_clearHistoryButton = new ElaPushButton(this);
+    connect(m_clearHistoryButton, &ElaPushButton::clicked, m_recentFiles, &RecentFiles::clear);
+    const auto syncHistoryButton = [this]() {
+        m_clearHistoryButton->setVisible(!m_recentFiles->files().isEmpty());
+    };
+    connect(m_recentFiles, &RecentFiles::changed, this, syncHistoryButton);
+    syncHistoryButton();
+
     root->addWidget(m_rescanButton, 0, Qt::AlignRight);
+    root->addWidget(m_clearHistoryButton, 0, Qt::AlignRight);
     root->addStretch();
 
     refresh();
@@ -99,6 +111,7 @@ void SettingsPage::retranslateUi()
     m_versionCaption->setText(trId("ffmpeg.version") + QStringLiteral(":"));
     m_capsCaption->setText(trId("media.title") + QStringLiteral(":"));
     m_languageCaption->setText(trId("settings.language") + QStringLiteral(":"));
-    m_rescanButton->setText(trId("ffmpeg.rescan"));
-    refresh();
+      m_rescanButton->setText(trId("ffmpeg.rescan"));
+      m_clearHistoryButton->setText(trId("settings.clearHistory"));
+      refresh();
 }

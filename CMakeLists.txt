@@ -37,6 +37,8 @@ find_package(Qt6 REQUIRED COMPONENTS
 add_subdirectory(ElaWidgetTools)
 
 set(FFMEDIA_CORE_SOURCES
+    src/app/RecentFiles.h
+    src/app/RecentFiles.cpp
     src/conversion/RemuxPolicy.h
     src/conversion/RemuxPolicy.cpp
     src/output/OutputEstimate.h
@@ -136,7 +138,7 @@ add_custom_command(TARGET ffmedia-toolbox POST_BUILD
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess OutputEstimate OutputNaming Parsers RemuxPolicy Job)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

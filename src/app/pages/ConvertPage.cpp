@@ -20,6 +20,7 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "app/RecentFiles.h"
 #include "conversion/RemuxPolicy.h"
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
@@ -55,13 +56,14 @@ QString defaultOutputDirectory()
 
 ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                          MediaProbeService *probe, FFmpegCapabilities *caps,
-                         JobQueue *queue,
+                         RecentFiles *recentFiles, JobQueue *queue,
                          QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_builder(builder)
     , m_probe(probe)
     , m_caps(caps)
+    , m_recentFiles(recentFiles)
     , m_queue(queue)
 {
     m_presets = new PresetManager(this);
@@ -85,6 +87,15 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     inputRow->addWidget(m_inputEdit, 1);
     inputRow->addWidget(m_browseButton);
     root->addLayout(inputRow);
+
+    auto *recentRow = new QHBoxLayout();
+    m_recentCaption = new ElaText(QString(), 13, this);
+    m_recentCombo = new ElaComboBox(this);
+    m_recentCaption->setVisible(false);
+    m_recentCombo->setVisible(false);
+    recentRow->addWidget(m_recentCaption);
+    recentRow->addWidget(m_recentCombo, 1);
+    root->addLayout(recentRow);
 
     m_infoLabel = new ElaText(QString(), 13, this);
     m_infoLabel->setTextPixelSize(12);
@@ -175,8 +186,21 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
             this, &ConvertPage::rebuildCodecLists);
+    connect(m_recentFiles, &RecentFiles::changed, this, &ConvertPage::refreshRecentList);
+    connect(m_recentCombo, &ElaComboBox::currentIndexChanged, this, [this](int index) {
+        if (index < 0) {
+            return;
+        }
+        const QString path = m_recentCombo->itemText(index);
+        if (path.isEmpty() || path == m_inputFile) {
+            return;
+        }
+        loadRecentFile(path);
+        m_recentFiles->add(path);
+    });
 
     rebuildCodecLists();
+    refreshRecentList();
     refreshPresetList();
     retranslateUi();
 }
@@ -196,6 +220,7 @@ void ConvertPage::dropEvent(QDropEvent *event)
     m_inputFile = urls.first().toLocalFile();
     m_inputEdit->setText(m_inputFile);
     m_infoLabel->clear();
+    m_recentFiles->add(m_inputFile);
     startProbe(false);
     event->acceptProposedAction();
 }
@@ -210,6 +235,7 @@ void ConvertPage::browseInput()
     m_inputFile = path;
     m_inputEdit->setText(path);
     m_infoLabel->clear();
+    m_recentFiles->add(path);
     startProbe(false);
 }
 
@@ -326,6 +352,28 @@ void ConvertPage::updateCommandPreview()
     }
 }
 
+void ConvertPage::refreshRecentList()
+{
+    const QStringList files = m_recentFiles->files();
+
+    m_recentCombo->blockSignals(true);
+    m_recentCombo->clear();
+    m_recentCombo->addItems(files);
+    m_recentCombo->blockSignals(false);
+
+    const bool visible = !files.isEmpty();
+    m_recentCaption->setVisible(visible);
+    m_recentCombo->setVisible(visible);
+}
+
+void ConvertPage::loadRecentFile(const QString &path)
+{
+    m_inputFile = path;
+    m_inputEdit->setText(path);
+    m_infoLabel->clear();
+    startProbe(false);
+}
+
 void ConvertPage::showMetadata(const QVariantMap &tags)
 {
     QStringList parts;
@@ -431,6 +479,7 @@ void ConvertPage::retranslateUi()
 {
     m_titleLabel->setText(trId("convert.title"));
     m_inputCaption->setText(trId("convert.input") + QStringLiteral(":"));
+    m_recentCaption->setText(trId("common.recent") + QStringLiteral(":"));
     m_browseButton->setText(trId("common.browse"));
     m_presetCaption->setText(trId("convert.preset") + QStringLiteral(":"));
     m_presetSaveButton->setText(trId("common.save"));
