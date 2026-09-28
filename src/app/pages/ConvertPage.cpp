@@ -21,6 +21,7 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "conversion/RemuxPolicy.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/TrId.h"
@@ -204,6 +205,7 @@ void ConvertPage::startProbe(bool enqueueAfter)
     if (m_inputFile.isEmpty()) return;
 
     m_enqueueAfterProbe = enqueueAfter;
+    m_probeInfo = MediaFile();
     MediaProbeService *probe = m_probe;
     const QString path = m_inputFile;
     m_probeWatcher->setFuture(QtConcurrent::run([probe, path]() {
@@ -214,6 +216,7 @@ void ConvertPage::startProbe(bool enqueueAfter)
 void ConvertPage::onProbeFinished()
 {
     const MediaFile info = m_probeWatcher->result();
+    m_probeInfo = info;
     if (m_enqueueAfterProbe) {
         enqueueJob(info);
         return;
@@ -247,10 +250,12 @@ void ConvertPage::enqueueJob(const MediaFile &info)
     const QString outputPath = OutputNaming::build(m_inputFile, defaultNamingTemplate(),
                                                    format, defaultOutputDirectory());
 
+    const bool copy = m_smartCopyCheck->isChecked() &&
+                      RemuxPolicy::canCopyAllStreams(info, format);
     const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
                                        format, m_codecCombo->currentText(),
                                        m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), m_smartCopyCheck->isChecked());
+                                       m_qualitySpin->value(), copy);
 
     auto *job = new Job();
     job->setName(QFileInfo(m_inputFile).fileName());
@@ -275,10 +280,12 @@ void ConvertPage::updateCommandPreview()
     const QString format = m_formatCombo->currentText();
     const QString outputPath = OutputNaming::build(m_inputFile, defaultNamingTemplate(),
                                                    format, defaultOutputDirectory());
+    const bool copy = m_smartCopyCheck->isChecked() &&
+                      RemuxPolicy::canCopyAllStreams(m_probeInfo, format);
     const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
                                        format, m_codecCombo->currentText(),
                                        m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), m_smartCopyCheck->isChecked());
+                                       m_qualitySpin->value(), copy);
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
 }
 

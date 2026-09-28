@@ -15,6 +15,7 @@
 #include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
+#include "conversion/RemuxPolicy.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
@@ -147,13 +148,16 @@ void BatchPage::addAllToQueue()
                                QStringLiteral(".") + m_formatCombo->currentText());
         }
 
+        const QString format = m_formatCombo->currentText();
+        const bool copy = m_smartCopyCheck->isChecked() &&
+                          RemuxPolicy::canCopyByExtension(inputFile, format);
         const QStringList args = m_builder->buildConversion(
             inputFile, outputPath,
-            m_formatCombo->currentText(),
+            format,
             m_codecCombo->currentText(),
             QString(),
             m_qualitySpin->value(),
-            m_smartCopyCheck->isChecked());
+            copy);
 
         auto *job = new Job();
         job->setName(info.fileName());

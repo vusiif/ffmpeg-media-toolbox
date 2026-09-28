@@ -53,6 +53,7 @@ private:
     QString m_inputFile;
     bool m_enqueueAfterProbe = false;
     QFutureWatcher<MediaFile> *m_probeWatcher = nullptr;
+    MediaFile m_probeInfo;
 
     ElaText *m_titleLabel = nullptr;
     ElaText *m_inputCaption = nullptr;
