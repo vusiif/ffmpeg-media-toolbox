@@ -28,6 +28,8 @@ endif()
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS
     Concurrent
+    Multimedia
+    MultimediaWidgets
     Test
     Widgets
     WidgetsPrivate
@@ -55,6 +57,12 @@ set(FFMEDIA_CORE_SOURCES
     src/media/MediaFile.h
     src/media/MediaProbeService.h
     src/media/MediaProbeService.cpp
+    src/media/CorruptedVideoScanner.h
+    src/media/CorruptedVideoScanner.cpp
+    src/repair/UntruncLocator.h
+    src/repair/UntruncLocator.cpp
+    src/repair/UntruncProcess.h
+    src/repair/UntruncProcess.cpp
     src/jobs/Job.h
     src/jobs/Job.cpp
     src/jobs/JobListModel.h
@@ -74,6 +82,10 @@ set(APP_SOURCES
     src/main.cpp
     src/app/MainWindow.h
     src/app/MainWindow.cpp
+    src/app/widgets/DamageTimelineSlider.h
+    src/app/widgets/DamageTimelineSlider.cpp
+    src/app/widgets/VideoPlayerWidget.h
+    src/app/widgets/VideoPlayerWidget.cpp
     src/app/pages/HomePage.h
     src/app/pages/HomePage.cpp
     src/app/pages/ConvertPage.h
@@ -86,6 +98,8 @@ set(APP_SOURCES
     src/app/pages/BatchPage.cpp
     src/app/pages/QueuePage.h
     src/app/pages/QueuePage.cpp
+    src/app/pages/RepairPage.h
+    src/app/pages/RepairPage.cpp
     src/app/pages/SettingsPage.h
     src/app/pages/SettingsPage.cpp
     src/app/pages/VideoPage.h
@@ -105,6 +119,8 @@ target_include_directories(ffmedia-core PUBLIC
 
 target_link_libraries(ffmedia-core PUBLIC
     Qt6::Concurrent
+    Qt6::Multimedia
+    Qt6::MultimediaWidgets
     Qt6::Widgets
 )
 
@@ -133,12 +149,15 @@ add_custom_command(TARGET ffmedia-toolbox POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:ElaWidgetTools>"
         "$<TARGET_FILE_DIR:ffmedia-toolbox>"
-    COMMENT "Deploying Qt runtime and ElaWidgetTools..."
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/Others/untrunc/untrunc_x64"
+        "$<TARGET_FILE_DIR:ffmedia-toolbox>/untrunc_x64"
+    COMMENT "Deploying Qt runtime, ElaWidgetTools, and untrunc..."
 )
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job UntruncProcess CorruptedVideoScanner)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

@@ -18,6 +18,8 @@ class BatchPage;
 class QueuePage;
 class SettingsPage;
 class VideoPage;
+class RepairPage;
+class UntruncLocator;
 
 class MainWindow : public ElaWindow
 {
@@ -41,6 +43,7 @@ protected:
     RecentFiles *m_recentFiles = nullptr;
     JobQueue *m_jobQueue = nullptr;
     LanguageManager *m_languageManager = nullptr;
+    UntruncLocator *m_untruncLocator = nullptr;
 
     HomePage *m_homePage = nullptr;
     ConvertPage *m_convertPage = nullptr;
@@ -50,6 +53,7 @@ protected:
     QueuePage *m_queuePage = nullptr;
     SettingsPage *m_settingsPage = nullptr;
     VideoPage *m_videoPage = nullptr;
+    RepairPage *m_repairPage = nullptr;
 
     QString m_settingsKey;
 };

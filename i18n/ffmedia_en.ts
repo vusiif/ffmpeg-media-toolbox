@@ -607,5 +607,129 @@
         <source>batch.count</source>
         <translation>%1 file(s) selected</translation>
     </message>
+    <message id="nav.repair">
+        <source>nav.repair</source>
+        <translation>Repair</translation>
+    </message>
+    <message id="player.play">
+        <source>player.play</source>
+        <translation>Play</translation>
+    </message>
+    <message id="player.pause">
+        <source>player.pause</source>
+        <translation>Pause</translation>
+    </message>
+    <message id="player.stop">
+        <source>player.stop</source>
+        <translation>Stop</translation>
+    </message>
+    <message id="player.autoSkip">
+        <source>player.autoSkip</source>
+        <translation>Auto-skip damaged parts</translation>
+    </message>
+    <message id="repair.tab.scan">
+        <source>repair.tab.scan</source>
+        <translation>Damage Scan &amp; Preview</translation>
+    </message>
+    <message id="repair.tab.untrunc">
+        <source>repair.tab.untrunc</source>
+        <translation>Untrunc Deep Repair</translation>
+    </message>
+    <message id="repair.scan.title">
+        <source>repair.scan.title</source>
+        <translation>Corrupted Frame Scan &amp; Preview</translation>
+    </message>
+    <message id="repair.scan.desc">
+        <source>repair.scan.desc</source>
+        <translation>Runs null decode to detect corrupted frames, marks damaged segments on the timeline, and auto-skips during playback.</translation>
+    </message>
+    <message id="repair.scan.input">
+        <source>repair.scan.input</source>
+        <translation>Video File</translation>
+    </message>
+    <message id="repair.scan.start">
+        <source>repair.scan.start</source>
+        <translation>Start Scan</translation>
+    </message>
+    <message id="repair.scanning">
+        <source>repair.scanning</source>
+        <translation>Scanning for corrupted frames...</translation>
+    </message>
+    <message id="repair.scanCancelled">
+        <source>repair.scanCancelled</source>
+        <translation>Scan cancelled</translation>
+    </message>
+    <message id="repair.scanNoDamage">
+        <source>repair.scanNoDamage</source>
+        <translation>Scan complete: No corrupted frames detected.</translation>
+    </message>
+    <message id="repair.scanFoundDamage">
+        <source>repair.scanFoundDamage</source>
+        <translation>Scan complete: Found %1 damaged segment(s).</translation>
+    </message>
+    <message id="repair.scanFailed">
+        <source>repair.scanFailed</source>
+        <translation>Scan failed</translation>
+    </message>
+    <message id="repair.untrunc.title">
+        <source>repair.untrunc.title</source>
+        <translation>Deep Rebuild Repair (Untrunc)</translation>
+    </message>
+    <message id="repair.untrunc.desc">
+        <source>repair.untrunc.desc</source>
+        <translation>Repairs severely corrupted MP4/MOV videos (e.g. missing moov atom) using a healthy reference video from the same camera/device.</translation>
+    </message>
+    <message id="repair.corruptedVideo">
+        <source>repair.corruptedVideo</source>
+        <translation>Corrupted Video</translation>
+    </message>
+    <message id="repair.referenceVideo">
+        <source>repair.referenceVideo</source>
+        <translation>Reference Video</translation>
+    </message>
+    <message id="repair.untrunc.start">
+        <source>repair.untrunc.start</source>
+        <translation>Start Rebuild Repair</translation>
+    </message>
+    <message id="repair.untruncNotFound">
+        <source>repair.untruncNotFound</source>
+        <translation>Untrunc executable not found!</translation>
+    </message>
+    <message id="repair.errorSelectBoth">
+        <source>repair.errorSelectBoth</source>
+        <translation>Please select both corrupted and reference videos.</translation>
+    </message>
+    <message id="repair.repairing">
+        <source>repair.repairing</source>
+        <translation>Rebuilding video structure...</translation>
+    </message>
+    <message id="repair.repairCancelled">
+        <source>repair.repairCancelled</source>
+        <translation>Repair cancelled</translation>
+    </message>
+    <message id="repair.success">
+        <source>repair.success</source>
+        <translation>Repair succeeded! File saved:</translation>
+    </message>
+    <message id="repair.failed">
+        <source>repair.failed</source>
+        <translation>Repair failed. Check log below.</translation>
+    </message>
+    <message id="repair.openFolder">
+        <source>repair.openFolder</source>
+        <translation>Open Folder</translation>
+    </message>
+    <message id="repair.previewFixed">
+        <source>repair.previewFixed</source>
+        <translation>Preview in Player</translation>
+    </message>
+    <message id="repair.console">
+        <source>repair.console</source>
+        <translation>Console Output</translation>
+    </message>
+    <message id="repair.browse">
+        <source>repair.browse</source>
+        <translation>Select Video</translation>
+    </message>
 </context>
 </TS>

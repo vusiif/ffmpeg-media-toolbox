@@ -13,8 +13,10 @@
 #include "pages/ImagePage.h"
 #include "pages/JoinPage.h"
 #include "pages/QueuePage.h"
+#include "pages/RepairPage.h"
 #include "pages/SettingsPage.h"
 #include "pages/VideoPage.h"
+#include "repair/UntruncLocator.h"
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
@@ -37,6 +39,7 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     m_jobQueue = new JobQueue(m_ffmpegLocator, m_mediaProbe, this);
     m_jobQueue->setMaxConcurrent(
         settings.value(QStringLiteral("jobs/maxConcurrent"), 1).toInt());
+    m_untruncLocator = new UntruncLocator(this);
 
     const QByteArray geometry = settings.value(QStringLiteral("window/geometry")).toByteArray();
     if (geometry.isEmpty() || !restoreGeometry(geometry)) {
@@ -72,18 +75,20 @@ void MainWindow::initPages()
                                     m_ffmpegCaps, m_recentFiles, m_jobQueue, this);
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_joinPage = new JoinPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
+    m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
+    m_repairPage = new RepairPage(m_ffmpegLocator, m_mediaProbe, m_untruncLocator, this);
     m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
                                 this);
     m_queuePage = new QueuePage(m_jobQueue, this);
     m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_recentFiles,
                                       m_jobQueue, m_languageManager, this);
-    m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
 
     addPageNode(trId("nav.home"), m_homePage, ElaIconType::House);
     addPageNode(trId("nav.convert"), m_convertPage, ElaIconType::ArrowsRotate);
     addPageNode(trId("nav.image"), m_imagePage, ElaIconType::Image);
     addPageNode(trId("image.join"), m_joinPage, ElaIconType::Link);
     addPageNode(trId("nav.video"), m_videoPage, ElaIconType::Video);
+    addPageNode(trId("nav.repair"), m_repairPage, ElaIconType::Wrench);
     addPageNode(trId("nav.batch"), m_batchPage, ElaIconType::Box);
     addPageNode(trId("nav.queue"), m_queuePage, ElaIconType::List);
     addFooterNode(trId("nav.settings"), m_settingsPage, m_settingsKey, 0, ElaIconType::GearComplex);
@@ -99,6 +104,7 @@ void MainWindow::retranslateUi()
     setNavigationNodeTitle(m_imagePage->property("ElaPageKey").toString(), trId("nav.image"));
     setNavigationNodeTitle(m_joinPage->property("ElaPageKey").toString(), trId("image.join"));
     setNavigationNodeTitle(m_videoPage->property("ElaPageKey").toString(), trId("nav.video"));
+    setNavigationNodeTitle(m_repairPage->property("ElaPageKey").toString(), trId("nav.repair"));
     setNavigationNodeTitle(m_batchPage->property("ElaPageKey").toString(), trId("nav.batch"));
     setNavigationNodeTitle(m_queuePage->property("ElaPageKey").toString(), trId("nav.queue"));
     setNavigationNodeTitle(m_settingsKey, trId("nav.settings"));
@@ -108,6 +114,7 @@ void MainWindow::retranslateUi()
     m_imagePage->retranslateUi();
     m_joinPage->retranslateUi();
     m_videoPage->retranslateUi();
+    m_repairPage->retranslateUi();
     m_batchPage->retranslateUi();
     m_queuePage->retranslateUi();
     m_settingsPage->retranslateUi();

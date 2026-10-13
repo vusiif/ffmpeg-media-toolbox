@@ -607,5 +607,129 @@
         <source>batch.count</source>
         <translation>已选择 %1 个文件</translation>
     </message>
+    <message id="nav.repair">
+        <source>nav.repair</source>
+        <translation>视频修复</translation>
+    </message>
+    <message id="player.play">
+        <source>player.play</source>
+        <translation>播放</translation>
+    </message>
+    <message id="player.pause">
+        <source>player.pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message id="player.stop">
+        <source>player.stop</source>
+        <translation>停止</translation>
+    </message>
+    <message id="player.autoSkip">
+        <source>player.autoSkip</source>
+        <translation>自动跳过损坏片段</translation>
+    </message>
+    <message id="repair.tab.scan">
+        <source>repair.tab.scan</source>
+        <translation>损坏扫描与预览</translation>
+    </message>
+    <message id="repair.tab.untrunc">
+        <source>repair.tab.untrunc</source>
+        <translation>Untrunc 深度修复</translation>
+    </message>
+    <message id="repair.scan.title">
+        <source>repair.scan.title</source>
+        <translation>损坏片段扫描与跳过播放</translation>
+    </message>
+    <message id="repair.scan.desc">
+        <source>repair.scan.desc</source>
+        <translation>利用 FFmpeg 空解码预扫描检测损坏帧，在时间轴上用红色标记损坏区间，并在播放时自动跳过。</translation>
+    </message>
+    <message id="repair.scan.input">
+        <source>repair.scan.input</source>
+        <translation>待检视频</translation>
+    </message>
+    <message id="repair.scan.start">
+        <source>repair.scan.start</source>
+        <translation>开始扫描</translation>
+    </message>
+    <message id="repair.scanning">
+        <source>repair.scanning</source>
+        <translation>正在扫描损坏片段...</translation>
+    </message>
+    <message id="repair.scanCancelled">
+        <source>repair.scanCancelled</source>
+        <translation>扫描已取消</translation>
+    </message>
+    <message id="repair.scanNoDamage">
+        <source>repair.scanNoDamage</source>
+        <translation>扫描完成：未检测到损坏帧。</translation>
+    </message>
+    <message id="repair.scanFoundDamage">
+        <source>repair.scanFoundDamage</source>
+        <translation>扫描完成：共发现 %1 个损坏区间。</translation>
+    </message>
+    <message id="repair.scanFailed">
+        <source>repair.scanFailed</source>
+        <translation>扫描失败</translation>
+    </message>
+    <message id="repair.untrunc.title">
+        <source>repair.untrunc.title</source>
+        <translation>Untrunc 深度缝合重建</translation>
+    </message>
+    <message id="repair.untrunc.desc">
+        <source>repair.untrunc.desc</source>
+        <translation>借助同设备拍摄的健康参考视频，重构严重损坏（如丢失 moov atom 无法打开）的 MP4/MOV 视频数据结构。</translation>
+    </message>
+    <message id="repair.corruptedVideo">
+        <source>repair.corruptedVideo</source>
+        <translation>损坏视频</translation>
+    </message>
+    <message id="repair.referenceVideo">
+        <source>repair.referenceVideo</source>
+        <translation>参考视频（同设备健康视频）</translation>
+    </message>
+    <message id="repair.untrunc.start">
+        <source>repair.untrunc.start</source>
+        <translation>开始缝合重建</translation>
+    </message>
+    <message id="repair.untruncNotFound">
+        <source>repair.untruncNotFound</source>
+        <translation>未找到 Untrunc 可执行文件！</translation>
+    </message>
+    <message id="repair.errorSelectBoth">
+        <source>repair.errorSelectBoth</source>
+        <translation>请同时选择损坏视频和参考视频。</translation>
+    </message>
+    <message id="repair.repairing">
+        <source>repair.repairing</source>
+        <translation>正在重建视频结构...</translation>
+    </message>
+    <message id="repair.repairCancelled">
+        <source>repair.repairCancelled</source>
+        <translation>修复已取消</translation>
+    </message>
+    <message id="repair.success">
+        <source>repair.success</source>
+        <translation>修复成功！已保存文件：</translation>
+    </message>
+    <message id="repair.failed">
+        <source>repair.failed</source>
+        <translation>修复失败，请查看下方日志。</translation>
+    </message>
+    <message id="repair.openFolder">
+        <source>repair.openFolder</source>
+        <translation>打开所在文件夹</translation>
+    </message>
+    <message id="repair.previewFixed">
+        <source>repair.previewFixed</source>
+        <translation>在播放器中预览</translation>
+    </message>
+    <message id="repair.console">
+        <source>repair.console</source>
+        <translation>执行日志控制台</translation>
+    </message>
+    <message id="repair.browse">
+        <source>repair.browse</source>
+        <translation>选择视频</translation>
+    </message>
 </context>
 </TS>
