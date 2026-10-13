@@ -587,5 +587,25 @@
         <source>convert.adv.hdrTonemap</source>
         <translation>HDR to SDR tonemap</translation>
     </message>
+    <message id="nav.batch">
+        <source>nav.batch</source>
+        <translation>Batch</translation>
+    </message>
+    <message id="batch.title">
+        <source>batch.title</source>
+        <translation>Batch Processing</translation>
+    </message>
+    <message id="batch.addFiles">
+        <source>batch.addFiles</source>
+        <translation>Add Files</translation>
+    </message>
+    <message id="batch.removeSelected">
+        <source>batch.removeSelected</source>
+        <translation>Remove Selected</translation>
+    </message>
+    <message id="batch.count">
+        <source>batch.count</source>
+        <translation>%1 file(s) selected</translation>
+    </message>
 </context>
 </TS>

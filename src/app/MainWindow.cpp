@@ -84,8 +84,8 @@ void MainWindow::initPages()
     addPageNode(trId("nav.image"), m_imagePage, ElaIconType::Image);
     addPageNode(trId("image.join"), m_joinPage, ElaIconType::Link);
     addPageNode(trId("nav.video"), m_videoPage, ElaIconType::Video);
-    addPageNode(trId("nav.queue"), m_batchPage, ElaIconType::Box);
-    addPageNode(trId("queue.title"), m_queuePage, ElaIconType::List);
+    addPageNode(trId("nav.batch"), m_batchPage, ElaIconType::Box);
+    addPageNode(trId("nav.queue"), m_queuePage, ElaIconType::List);
     addFooterNode(trId("nav.settings"), m_settingsPage, m_settingsKey, 0, ElaIconType::GearComplex);
 }
 
@@ -99,8 +99,8 @@ void MainWindow::retranslateUi()
     setNavigationNodeTitle(m_imagePage->property("ElaPageKey").toString(), trId("nav.image"));
     setNavigationNodeTitle(m_joinPage->property("ElaPageKey").toString(), trId("image.join"));
     setNavigationNodeTitle(m_videoPage->property("ElaPageKey").toString(), trId("nav.video"));
-    setNavigationNodeTitle(m_batchPage->property("ElaPageKey").toString(), trId("nav.queue"));
-    setNavigationNodeTitle(m_queuePage->property("ElaPageKey").toString(), trId("queue.title"));
+    setNavigationNodeTitle(m_batchPage->property("ElaPageKey").toString(), trId("nav.batch"));
+    setNavigationNodeTitle(m_queuePage->property("ElaPageKey").toString(), trId("nav.queue"));
     setNavigationNodeTitle(m_settingsKey, trId("nav.settings"));
 
     m_homePage->retranslateUi();

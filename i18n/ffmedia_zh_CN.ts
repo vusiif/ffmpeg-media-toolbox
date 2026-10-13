@@ -587,5 +587,25 @@
         <source>convert.adv.hdrTonemap</source>
         <translation>HDR转SDR色调映射</translation>
     </message>
+    <message id="nav.batch">
+        <source>nav.batch</source>
+        <translation>批量处理</translation>
+    </message>
+    <message id="batch.title">
+        <source>batch.title</source>
+        <translation>批量处理</translation>
+    </message>
+    <message id="batch.addFiles">
+        <source>batch.addFiles</source>
+        <translation>添加文件</translation>
+    </message>
+    <message id="batch.removeSelected">
+        <source>batch.removeSelected</source>
+        <translation>移除选中</translation>
+    </message>
+    <message id="batch.count">
+        <source>batch.count</source>
+        <translation>已选择 %1 个文件</translation>
+    </message>
 </context>
 </TS>
