@@ -316,6 +316,48 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
     body->addWidget(m_subBox);
 
+    // Adjust (crop / resize / rotate) - mirrors the image page layout.
+    m_adjBox = new QGroupBox(scrollBody);
+    auto *adjForm = makeRow(m_adjBox);
+
+    m_adjCropCaption = makeCaption(m_adjBox);
+    auto *cropRow = new QHBoxLayout();
+    m_adjCropX = new ElaSpinBox(m_adjBox);
+    m_adjCropY = new ElaSpinBox(m_adjBox);
+    m_adjCropW = new ElaSpinBox(m_adjBox);
+    m_adjCropH = new ElaSpinBox(m_adjBox);
+    for (ElaSpinBox *spin : {m_adjCropX, m_adjCropY, m_adjCropW, m_adjCropH}) {
+        spin->setRange(0, 10000);
+        cropRow->addWidget(spin);
+    }
+    adjForm->addRow(m_adjCropCaption, cropRow);
+
+    m_adjResizeCaption = makeCaption(m_adjBox);
+    auto *resizeRow = new QHBoxLayout();
+    m_adjResizeW = new ElaSpinBox(m_adjBox);
+    m_adjResizeH = new ElaSpinBox(m_adjBox);
+    for (ElaSpinBox *spin : {m_adjResizeW, m_adjResizeH}) {
+        spin->setRange(0, 10000);
+        resizeRow->addWidget(spin);
+    }
+    adjForm->addRow(m_adjResizeCaption, resizeRow);
+
+    m_adjRotateCaption = makeCaption(m_adjBox);
+    m_adjRotateCombo = new ElaComboBox(m_adjBox);
+    m_adjRotateCombo->addItems({QStringLiteral("0"), QStringLiteral("90"),
+                                QStringLiteral("180"), QStringLiteral("270")});
+    adjForm->addRow(m_adjRotateCaption, m_adjRotateCombo);
+
+    m_adjQualityCaption = makeCaption(m_adjBox);
+    m_adjQualitySpin = new ElaSpinBox(m_adjBox);
+    m_adjQualitySpin->setRange(0, 51);
+    m_adjQualitySpin->setValue(23);
+    adjForm->addRow(m_adjQualityCaption, m_adjQualitySpin);
+
+    m_adjButton = makeQueueButton(m_adjBox);
+    connect(m_adjButton, &ElaPushButton::clicked, this, &VideoPage::adjust);
+    body->addWidget(m_adjBox);
+
     body->addStretch();
     scroll->setWidget(scrollBody);
     root->addWidget(scroll, 1);
@@ -487,6 +529,24 @@ void VideoPage::subtitleMux()
                                         *codec));
 }
 
+void VideoPage::adjust()
+{
+    if (m_inputFile.isEmpty()) return;
+
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_adj.{format}"),
+                                               QFileInfo(m_inputFile).suffix());
+    // Empty args (nothing selected) are dropped by enqueue.
+    enqueue(trId("video.job.adjust").arg(QFileInfo(m_inputFile).fileName()),
+            m_builder->buildVideoAdjust(
+                m_inputFile, output,
+                m_adjCropX->value(), m_adjCropY->value(),
+                m_adjCropW->value(), m_adjCropH->value(),
+                m_adjResizeW->value(), m_adjResizeH->value(),
+                m_adjRotateCombo->currentText().toInt(),
+                m_adjQualitySpin->value()));
+}
+
 void VideoPage::retranslateUi()
 {
     m_titleLabel->setText(trId("video.title"));
@@ -552,4 +612,11 @@ void VideoPage::retranslateUi()
     m_subBurnCheck->setText(trId("video.sub.burn"));
     m_subQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_subButton->setText(trId("convert.addToQueue"));
+
+    m_adjBox->setTitle(trId("video.adjust"));
+    m_adjCropCaption->setText(trId("image.crop") + QStringLiteral(":"));
+    m_adjResizeCaption->setText(trId("image.resize") + QStringLiteral(":"));
+    m_adjRotateCaption->setText(trId("image.rotate") + QStringLiteral(":"));
+    m_adjQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_adjButton->setText(trId("convert.addToQueue"));
 }

@@ -34,6 +34,24 @@ public:
         int quality = -1
     ) const;
 
+    // Crop/scale/rotate/flip chain shared by image and video adjustments;
+    // empty when nothing was requested.
+    static QStringList adjustmentFilters(int cropX, int cropY, int cropW, int cropH,
+                                         int resizeW, int resizeH, int rotate,
+                                         bool flipH = false, bool flipV = false);
+
+    // Re-encoded video adjustment (filters force a re-encode): runs the
+    // shared adjustment chain with -crf. Returns empty when there is no
+    // actual operation to perform.
+    QStringList buildVideoAdjust(
+        const QString &inputPath,
+        const QString &outputPath,
+        int cropX, int cropY, int cropW, int cropH,
+        int resizeW, int resizeH,
+        int rotate,
+        int crf
+    ) const;
+
     QStringList buildTrim(
         const QString &inputPath,
         const QString &outputPath,

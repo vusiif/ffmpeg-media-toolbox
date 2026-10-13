@@ -67,6 +67,31 @@ QStringList FFmpegCommandBuilder::buildImageOperation(
     args << QStringLiteral("-y");
     args << QStringLiteral("-i") << inputPath;
 
+    const QStringList filters =
+        adjustmentFilters(cropX, cropY, cropW, cropH, resizeW, resizeH, rotate,
+                          flipH, flipV);
+
+    if (!filters.isEmpty()) {
+        args << QStringLiteral("-vf") << filters.join(QLatin1Char(','));
+    }
+
+    if (!outputFormat.isEmpty()) {
+        args << QStringLiteral("-f") << outputFormat;
+    }
+
+    if (quality >= 0) {
+        args << QStringLiteral("-q:v") << QString::number(quality);
+    }
+
+    args << outputPath;
+
+    return args;
+}
+
+QStringList FFmpegCommandBuilder::adjustmentFilters(int cropX, int cropY, int cropW,
+                                                    int cropH, int resizeW, int resizeH,
+                                                    int rotate, bool flipH, bool flipV)
+{
     QStringList filters;
 
     if (cropW > 0 && cropH > 0) {
@@ -98,20 +123,37 @@ QStringList FFmpegCommandBuilder::buildImageOperation(
         filters << QStringLiteral("vflip");
     }
 
-    if (!filters.isEmpty()) {
-        args << QStringLiteral("-vf") << filters.join(QLatin1Char(','));
+    return filters;
+}
+
+QStringList FFmpegCommandBuilder::buildVideoAdjust(
+    const QString &inputPath,
+    const QString &outputPath,
+    int cropX, int cropY, int cropW, int cropH,
+    int resizeW, int resizeH,
+    int rotate,
+    int crf
+) const
+{
+    if (inputPath.isEmpty() || outputPath.isEmpty()) {
+        return {};
     }
 
-    if (!outputFormat.isEmpty()) {
-        args << QStringLiteral("-f") << outputFormat;
+    const QStringList filters = adjustmentFilters(cropX, cropY, cropW, cropH,
+                                                  resizeW, resizeH, rotate);
+    if (filters.isEmpty()) {
+        // No operation selected: nothing worth queueing.
+        return {};
     }
 
-    if (quality >= 0) {
-        args << QStringLiteral("-q:v") << QString::number(quality);
+    QStringList args;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
+    args << QStringLiteral("-vf") << filters.join(QLatin1Char(','));
+    if (crf >= 0) {
+        args << QStringLiteral("-crf") << QString::number(crf);
     }
-
     args << outputPath;
-
     return args;
 }
 

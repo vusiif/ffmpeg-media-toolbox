@@ -391,6 +391,14 @@
         <source>video.job.subtitleBurn</source>
         <translation>Burn subtitle: %1</translation>
     </message>
+    <message id="video.adjust">
+        <source>video.adjust</source>
+        <translation>Adjust</translation>
+    </message>
+    <message id="video.job.adjust">
+        <source>video.job.adjust</source>
+        <translation>Adjust: %1</translation>
+    </message>
     <message id="common.format">
         <source>common.format</source>
         <translation>Format</translation>

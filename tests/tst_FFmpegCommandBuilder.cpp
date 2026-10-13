@@ -19,6 +19,15 @@ private slots:
     void escapeFilterPathQuotesForFfmpeg();
     void subtitleBurninBuildsFilterAndMaps();
     void subtitleBurninOmitsCrfAndRejectsEmpty();
+    void imageOperationCropsOnly();
+    void imageOperationResizesOnly();
+    void imageOperationRotates();
+    void imageOperationChainsFiltersInOrder();
+    void imageOperationAddsFormatAndQuality();
+    void imageOperationRejectsEmptyPaths();
+    void videoAdjustBuildsVfAndCrf();
+    void videoAdjustWithoutOperationReturnsEmpty();
+    void videoAdjustRejectsEmptyPaths();
     void trimPlacesSeekBeforeInput();
     void trimZeroTimesOmitSeek();
     void trimCopyWithFormat();
@@ -202,6 +211,116 @@ void FFmpegCommandBuilderTest::subtitleBurninOmitsCrfAndRejectsEmpty()
     QVERIFY(m_builder.buildSubtitleBurnin(QStringLiteral("in.mp4"),
                                           QStringLiteral("s.srt"), QString(),
                                           23).isEmpty());
+}
+
+void FFmpegCommandBuilderTest::imageOperationCropsOnly()
+{
+    // crop takes W:H:X:Y.
+    QCOMPARE(m_builder.buildImageOperation(QStringLiteral("in.png"),
+                                           QStringLiteral("out.png"),
+                                           10, 20, 30, 40),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"),
+                          QStringLiteral("in.png"),
+                          QStringLiteral("-vf"), QStringLiteral("crop=30:40:10:20"),
+                          QStringLiteral("out.png")}));
+}
+
+void FFmpegCommandBuilderTest::imageOperationResizesOnly()
+{
+    QCOMPARE(m_builder.buildImageOperation(QStringLiteral("in.png"),
+                                           QStringLiteral("out.png"),
+                                           0, 0, 0, 0, 640, 480),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"),
+                          QStringLiteral("in.png"),
+                          QStringLiteral("-vf"), QStringLiteral("scale=640:480"),
+                          QStringLiteral("out.png")}));
+}
+
+void FFmpegCommandBuilderTest::imageOperationRotates()
+{
+    const auto rotateArgs = [this](int rotate) {
+        return m_builder.buildImageOperation(QStringLiteral("in.png"),
+                                             QStringLiteral("out.png"),
+                                             0, 0, 0, 0, 0, 0, rotate);
+    };
+
+    QCOMPARE(rotateArgs(90).at(4), QStringLiteral("transpose=1"));
+    QCOMPARE(rotateArgs(180).at(4), QStringLiteral("transpose=1,transpose=1"));
+    QCOMPARE(rotateArgs(270).at(4), QStringLiteral("transpose=2"));
+    QCOMPARE(rotateArgs(0).at(3), QStringLiteral("out.png")); // no -vf at all
+}
+
+void FFmpegCommandBuilderTest::imageOperationChainsFiltersInOrder()
+{
+    QCOMPARE(m_builder.buildImageOperation(QStringLiteral("in.png"),
+                                           QStringLiteral("out.png"),
+                                           10, 20, 30, 40, 640, 480, 90,
+                                           true, true),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"),
+                          QStringLiteral("in.png"),
+                          QStringLiteral("-vf"),
+                          QStringLiteral("crop=30:40:10:20,scale=640:480,"
+                                         "transpose=1,hflip,vflip"),
+                          QStringLiteral("out.png")}));
+}
+
+void FFmpegCommandBuilderTest::imageOperationAddsFormatAndQuality()
+{
+    QCOMPARE(m_builder.buildImageOperation(QStringLiteral("in.png"),
+                                           QStringLiteral("out.webp"),
+                                           0, 0, 0, 0, 640, 480,
+                                           0, false, false,
+                                           QStringLiteral("webp"), 7),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"),
+                          QStringLiteral("in.png"),
+                          QStringLiteral("-vf"), QStringLiteral("scale=640:480"),
+                          QStringLiteral("-f"), QStringLiteral("webp"),
+                          QStringLiteral("-q:v"), QStringLiteral("7"),
+                          QStringLiteral("out.webp")}));
+}
+
+void FFmpegCommandBuilderTest::imageOperationRejectsEmptyPaths()
+{
+    QVERIFY(m_builder.buildImageOperation(QString(), QStringLiteral("out.png"),
+                                          10, 20, 30, 40).isEmpty());
+    QVERIFY(m_builder.buildImageOperation(QStringLiteral("in.png"), QString(),
+                                          10, 20, 30, 40).isEmpty());
+}
+
+void FFmpegCommandBuilderTest::videoAdjustBuildsVfAndCrf()
+{
+    QCOMPARE(m_builder.buildVideoAdjust(QStringLiteral("in.mkv"),
+                                        QStringLiteral("out.mkv"),
+                                        0, 0, 0, 0, 1280, 720, 90, 20),
+             QStringList({QStringLiteral("-y"), QStringLiteral("-i"),
+                          QStringLiteral("in.mkv"),
+                          QStringLiteral("-vf"),
+                          QStringLiteral("scale=1280:720,transpose=1"),
+                          QStringLiteral("-crf"), QStringLiteral("20"),
+                          QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::videoAdjustWithoutOperationReturnsEmpty()
+{
+    // Nothing selected: no point queueing a job.
+    QVERIFY(m_builder.buildVideoAdjust(QStringLiteral("in.mkv"),
+                                       QStringLiteral("out.mkv"),
+                                       0, 0, 0, 0, 0, 0, 0, 23).isEmpty());
+
+    // Negative crf keeps the encoder default but still builds the filter.
+    const QStringList args = m_builder.buildVideoAdjust(QStringLiteral("in.mkv"),
+                                                        QStringLiteral("out.mkv"),
+                                                        0, 0, 0, 0, 0, 0, 270, -1);
+    QCOMPARE(args.at(4), QStringLiteral("transpose=2"));
+    QVERIFY(!args.contains(QStringLiteral("-crf")));
+}
+
+void FFmpegCommandBuilderTest::videoAdjustRejectsEmptyPaths()
+{
+    QVERIFY(m_builder.buildVideoAdjust(QString(), QStringLiteral("out.mkv"),
+                                       10, 10, 100, 100, 0, 0, 0, 23).isEmpty());
+    QVERIFY(m_builder.buildVideoAdjust(QStringLiteral("in.mkv"), QString(),
+                                       10, 10, 100, 100, 0, 0, 0, 23).isEmpty());
 }
 
 void FFmpegCommandBuilderTest::trimPlacesSeekBeforeInput()
