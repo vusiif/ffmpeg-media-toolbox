@@ -34,8 +34,26 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         if (!options.pixelFormat.isEmpty()) {
             args << QStringLiteral("-pix_fmt") << options.pixelFormat;
         }
+
+        QStringList vFilters;
+        if (!options.hdrTonemap.trimmed().isEmpty()) {
+            vFilters << QStringLiteral("tonemap=%1").arg(options.hdrTonemap.trimmed());
+        }
         if (!options.videoFilter.trimmed().isEmpty()) {
-            args << QStringLiteral("-vf") << options.videoFilter.trimmed();
+            vFilters << options.videoFilter.trimmed();
+        }
+        if (!vFilters.isEmpty()) {
+            args << QStringLiteral("-vf") << vFilters.join(QLatin1Char(','));
+        }
+
+        if (!options.colorSpace.isEmpty()) {
+            args << QStringLiteral("-colorspace") << options.colorSpace;
+        }
+        if (!options.colorPrimaries.isEmpty()) {
+            args << QStringLiteral("-color_primaries") << options.colorPrimaries;
+        }
+        if (!options.colorTrc.isEmpty()) {
+            args << QStringLiteral("-color_trc") << options.colorTrc;
         }
 
         // Advanced audio options

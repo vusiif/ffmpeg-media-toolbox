@@ -106,6 +106,10 @@ private:
     ElaComboBox *m_speedPresetCombo = nullptr;
     ElaText *m_pixFmtCaption = nullptr;
     ElaComboBox *m_pixFmtCombo = nullptr;
+    ElaText *m_colorSpaceCaption = nullptr;
+    ElaComboBox *m_colorSpaceCombo = nullptr;
+    ElaText *m_hdrTonemapCaption = nullptr;
+    ElaComboBox *m_hdrTonemapCombo = nullptr;
     ElaText *m_vfCaption = nullptr;
     ElaLineEdit *m_vfEdit = nullptr;
     ElaText *m_afCaption = nullptr;

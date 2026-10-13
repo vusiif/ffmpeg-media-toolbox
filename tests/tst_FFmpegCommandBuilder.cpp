@@ -16,6 +16,9 @@ private slots:
     void conversionAdvancedAudioSettings();
     void conversionAdvancedCodecAndFilters();
     void conversionAdvancedIgnoredWhenCopyStreams();
+    void conversionColorSpaceTags();
+    void conversionHdrTonemapChainsWithVideoFilter();
+    void conversionHdrTonemapAlone();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
     void subtitleMuxRejectsEmptyPaths();
@@ -189,6 +192,59 @@ void FFmpegCommandBuilderTest::conversionAdvancedIgnoredWhenCopyStreams()
              QStringList({QStringLiteral("-y"),
                           QStringLiteral("-i"), QStringLiteral("in.mp4"),
                           QStringLiteral("-c"), QStringLiteral("copy"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionColorSpaceTags()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.colorSpace = QStringLiteral("bt709");
+    opts.colorPrimaries = QStringLiteral("bt709");
+    opts.colorTrc = QStringLiteral("bt709");
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("libx264"),
+                          QStringLiteral("-colorspace"), QStringLiteral("bt709"),
+                          QStringLiteral("-color_primaries"), QStringLiteral("bt709"),
+                          QStringLiteral("-color_trc"), QStringLiteral("bt709"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionHdrTonemapChainsWithVideoFilter()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.hdrTonemap = QStringLiteral("hable");
+    opts.videoFilter = QStringLiteral("scale=1920:1080");
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("libx264"),
+                          QStringLiteral("-vf"), QStringLiteral("tonemap=hable,scale=1920:1080"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionHdrTonemapAlone()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.hdrTonemap = QStringLiteral("mobius");
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("libx264"),
+                          QStringLiteral("-vf"), QStringLiteral("tonemap=mobius"),
                           QStringLiteral("out.mp4")}));
 }
 

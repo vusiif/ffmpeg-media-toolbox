@@ -575,5 +575,17 @@
         <source>convert.adv.af</source>
         <translation>自定义音频滤镜 (-af)</translation>
     </message>
+    <message id="common.disabled">
+        <source>common.disabled</source>
+        <translation>禁用</translation>
+    </message>
+    <message id="convert.adv.colorSpace">
+        <source>convert.adv.colorSpace</source>
+        <translation>色彩空间配置</translation>
+    </message>
+    <message id="convert.adv.hdrTonemap">
+        <source>convert.adv.hdrTonemap</source>
+        <translation>HDR转SDR色调映射</translation>
+    </message>
 </context>
 </TS>

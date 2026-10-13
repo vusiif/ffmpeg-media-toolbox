@@ -575,5 +575,17 @@
         <source>convert.adv.af</source>
         <translation>Custom audio filter (-af)</translation>
     </message>
+    <message id="common.disabled">
+        <source>common.disabled</source>
+        <translation>Disabled</translation>
+    </message>
+    <message id="convert.adv.colorSpace">
+        <source>convert.adv.colorSpace</source>
+        <translation>Color space profile</translation>
+    </message>
+    <message id="convert.adv.hdrTonemap">
+        <source>convert.adv.hdrTonemap</source>
+        <translation>HDR to SDR tonemap</translation>
+    </message>
 </context>
 </TS>

@@ -34,6 +34,12 @@ public:
         QString pixelFormat;         // -pix_fmt <format>
         QString videoFilter;         // -vf <filters>
         QString audioFilter;         // -af <filters>
+
+        // Color Space & HDR
+        QString colorSpace;          // -colorspace <cs>
+        QString colorPrimaries;      // -color_primaries <cp>
+        QString colorTrc;            // -color_trc <trc>
+        QString hdrTonemap;          // e.g. "hable", "mobius", "reinhard" -> tonemap filter
     };
 
     QStringList buildConversion(const ConversionOptions &options) const;

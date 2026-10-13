@@ -216,6 +216,25 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     }
     advForm->addRow(m_pixFmtCaption, m_pixFmtCombo);
 
+    // Color space profile
+    m_colorSpaceCaption = new ElaText(QString(), 13, m_advContainer);
+    m_colorSpaceCombo = new ElaComboBox(m_advContainer);
+    m_colorSpaceCombo->addItem(QString(), QString());
+    m_colorSpaceCombo->addItem(QStringLiteral("BT.709 (HD/SDR)"), QStringLiteral("bt709"));
+    m_colorSpaceCombo->addItem(QStringLiteral("BT.2020 PQ (HDR10)"), QStringLiteral("bt2020"));
+    m_colorSpaceCombo->addItem(QStringLiteral("BT.2020 HLG"), QStringLiteral("hlg"));
+    m_colorSpaceCombo->addItem(QStringLiteral("BT.601 (SD)"), QStringLiteral("bt601"));
+    advForm->addRow(m_colorSpaceCaption, m_colorSpaceCombo);
+
+    // HDR to SDR Tonemapping
+    m_hdrTonemapCaption = new ElaText(QString(), 13, m_advContainer);
+    m_hdrTonemapCombo = new ElaComboBox(m_advContainer);
+    m_hdrTonemapCombo->addItem(QString(), QString());
+    m_hdrTonemapCombo->addItem(QStringLiteral("Hable (Filmic)"), QStringLiteral("hable"));
+    m_hdrTonemapCombo->addItem(QStringLiteral("Mobius"), QStringLiteral("mobius"));
+    m_hdrTonemapCombo->addItem(QStringLiteral("Reinhard"), QStringLiteral("reinhard"));
+    advForm->addRow(m_hdrTonemapCaption, m_hdrTonemapCombo);
+
     // Custom Filters
     m_vfCaption = new ElaText(QString(), 13, m_advContainer);
     m_vfEdit = new ElaLineEdit(m_advContainer);
@@ -264,6 +283,8 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_audioNormalizeCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_speedPresetCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_pixFmtCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_colorSpaceCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_hdrTonemapCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_vfEdit, &ElaLineEdit::textChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_afEdit, &ElaLineEdit::textChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
@@ -399,6 +420,28 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
     if (!pfStr.isEmpty()) {
         opts.pixelFormat = pfStr;
     }
+
+    const QString cs = m_colorSpaceCombo->currentData().toString();
+    if (cs == QLatin1String("bt709")) {
+        opts.colorSpace = QStringLiteral("bt709");
+        opts.colorPrimaries = QStringLiteral("bt709");
+        opts.colorTrc = QStringLiteral("bt709");
+    } else if (cs == QLatin1String("bt2020")) {
+        opts.colorSpace = QStringLiteral("bt2020nc");
+        opts.colorPrimaries = QStringLiteral("bt2020");
+        opts.colorTrc = QStringLiteral("smpte2084");
+    } else if (cs == QLatin1String("hlg")) {
+        opts.colorSpace = QStringLiteral("bt2020nc");
+        opts.colorPrimaries = QStringLiteral("bt2020");
+        opts.colorTrc = QStringLiteral("arib-std-b67");
+    } else if (cs == QLatin1String("bt601")) {
+        opts.colorSpace = QStringLiteral("smpte170m");
+        opts.colorPrimaries = QStringLiteral("smpte170m");
+        opts.colorTrc = QStringLiteral("smpte170m");
+    }
+
+    opts.hdrTonemap = m_hdrTonemapCombo->currentData().toString();
+
     opts.videoFilter = m_vfEdit->text().trimmed();
     opts.audioFilter = m_afEdit->text().trimmed();
 
@@ -551,6 +594,8 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("audioNormalize"), m_audioNormalizeCheck->isChecked());
     values.insert(QStringLiteral("speedPreset"), m_speedPresetCombo->currentData().toString());
     values.insert(QStringLiteral("pixFmt"), m_pixFmtCombo->currentData().toString());
+    values.insert(QStringLiteral("colorProfile"), m_colorSpaceCombo->currentData().toString());
+    values.insert(QStringLiteral("hdrTonemap"), m_hdrTonemapCombo->currentData().toString());
     values.insert(QStringLiteral("videoFilter"), m_vfEdit->text());
     values.insert(QStringLiteral("audioFilter"), m_afEdit->text());
     m_presets->save(name, values);
@@ -584,6 +629,8 @@ void ConvertPage::loadPreset(const QString &name)
     m_audioNormalizeCheck->setChecked(values.value(QStringLiteral("audioNormalize"), false).toBool());
     setComboData(m_speedPresetCombo, values.value(QStringLiteral("speedPreset")).toString());
     setComboData(m_pixFmtCombo, values.value(QStringLiteral("pixFmt")).toString());
+    setComboData(m_colorSpaceCombo, values.value(QStringLiteral("colorProfile")).toString());
+    setComboData(m_hdrTonemapCombo, values.value(QStringLiteral("hdrTonemap")).toString());
     m_vfEdit->setText(values.value(QStringLiteral("videoFilter")).toString());
     m_afEdit->setText(values.value(QStringLiteral("audioFilter")).toString());
 }
@@ -642,6 +689,10 @@ void ConvertPage::retranslateUi()
     m_speedPresetCombo->setItemText(0, trId("common.auto"));
     m_pixFmtCaption->setText(trId("convert.adv.pixFmt") + QStringLiteral(":"));
     m_pixFmtCombo->setItemText(0, trId("common.auto"));
+    m_colorSpaceCaption->setText(trId("convert.adv.colorSpace") + QStringLiteral(":"));
+    m_colorSpaceCombo->setItemText(0, trId("common.auto"));
+    m_hdrTonemapCaption->setText(trId("convert.adv.hdrTonemap") + QStringLiteral(":"));
+    m_hdrTonemapCombo->setItemText(0, trId("common.disabled"));
     m_vfCaption->setText(trId("convert.adv.vf") + QStringLiteral(":"));
     m_afCaption->setText(trId("convert.adv.af") + QStringLiteral(":"));
 
