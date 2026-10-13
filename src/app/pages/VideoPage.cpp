@@ -358,6 +358,65 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_adjButton, &ElaPushButton::clicked, this, &VideoPage::adjust);
     body->addWidget(m_adjBox);
 
+    // Picture-in-Picture
+    m_pipBox = new QGroupBox(scrollBody);
+    auto *pipForm = makeRow(m_pipBox);
+
+    auto *pipPathRow = new QHBoxLayout();
+    m_pipPath = new ElaLineEdit(m_pipBox);
+    m_pipPath->setReadOnly(true);
+    m_pipBrowseButton = new ElaPushButton(m_pipBox);
+    connect(m_pipBrowseButton, &ElaPushButton::clicked, this, [=]() {
+        const QString path = browseFile(
+            trId("video.pip"),
+            QStringLiteral("Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv);;All files (*)"));
+        if (!path.isEmpty()) {
+            m_pipFile = path;
+            m_pipPath->setText(path);
+        }
+    });
+    pipPathRow->addWidget(m_pipPath, 1);
+    pipPathRow->addWidget(m_pipBrowseButton);
+    m_pipVideoCaption = makeCaption(m_pipBox);
+    pipForm->addRow(m_pipVideoCaption, pipPathRow);
+
+    m_pipSizeCaption = makeCaption(m_pipBox);
+    auto *pipSizeRow = new QHBoxLayout();
+    m_pipWidth = new ElaSpinBox(m_pipBox);
+    m_pipWidth->setRange(0, 10000);
+    m_pipWidth->setValue(320);
+    m_pipHeight = new ElaSpinBox(m_pipBox);
+    m_pipHeight->setRange(0, 10000);
+    m_pipHeight->setValue(0);
+    pipSizeRow->addWidget(m_pipWidth);
+    pipSizeRow->addWidget(m_pipHeight);
+    pipForm->addRow(m_pipSizeCaption, pipSizeRow);
+
+    m_pipPositionCaption = makeCaption(m_pipBox);
+    m_pipPosition = new ElaComboBox(m_pipBox);
+    m_pipPosition->addItem(QString(), QStringLiteral("bottom-right"));
+    m_pipPosition->addItem(QString(), QStringLiteral("bottom-left"));
+    m_pipPosition->addItem(QString(), QStringLiteral("top-right"));
+    m_pipPosition->addItem(QString(), QStringLiteral("top-left"));
+    m_pipPosition->addItem(QString(), QStringLiteral("center"));
+    pipForm->addRow(m_pipPositionCaption, m_pipPosition);
+
+    m_pipMarginCaption = makeCaption(m_pipBox);
+    m_pipMargin = new ElaSpinBox(m_pipBox);
+    m_pipMargin->setRange(0, 500);
+    m_pipMargin->setValue(10);
+    pipForm->addRow(m_pipMarginCaption, m_pipMargin);
+
+    m_pipQualityCaption = makeCaption(m_pipBox);
+    m_pipQualitySpin = new ElaSpinBox(m_pipBox);
+    m_pipQualitySpin->setRange(0, 51);
+    m_pipQualitySpin->setValue(23);
+    pipForm->addRow(m_pipQualityCaption, m_pipQualitySpin);
+
+    m_pipButton = makeQueueButton(m_pipBox);
+    connect(m_pipButton, &ElaPushButton::clicked, this, &VideoPage::pip);
+    body->addWidget(m_pipBox);
+
     body->addStretch();
     scroll->setWidget(scrollBody);
     root->addWidget(scroll, 1);
@@ -547,6 +606,22 @@ void VideoPage::adjust()
                 m_adjQualitySpin->value()));
 }
 
+void VideoPage::pip()
+{
+    if (m_inputFile.isEmpty() || m_pipFile.isEmpty()) return;
+
+    const QString output = OutputNaming::build(m_inputFile,
+                                               QStringLiteral("{name}_pip.{format}"),
+                                               QFileInfo(m_inputFile).suffix());
+    enqueue(trId("video.job.pip").arg(QFileInfo(m_inputFile).fileName()),
+            m_builder->buildPip(
+                m_inputFile, m_pipFile, output,
+                m_pipWidth->value(), m_pipHeight->value(),
+                m_pipPosition->currentData().toString(),
+                m_pipMargin->value(),
+                m_pipQualitySpin->value()));
+}
+
 void VideoPage::retranslateUi()
 {
     m_titleLabel->setText(trId("video.title"));
@@ -619,4 +694,18 @@ void VideoPage::retranslateUi()
     m_adjRotateCaption->setText(trId("image.rotate") + QStringLiteral(":"));
     m_adjQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_adjButton->setText(trId("convert.addToQueue"));
+
+    m_pipBox->setTitle(trId("video.pip"));
+    m_pipVideoCaption->setText(trId("video.pip.video") + QStringLiteral(":"));
+    m_pipBrowseButton->setText(trId("common.browse"));
+    m_pipSizeCaption->setText(trId("common.size") + QStringLiteral(" (W x H):"));
+    m_pipPositionCaption->setText(trId("common.position") + QStringLiteral(":"));
+    m_pipPosition->setItemText(0, trId("video.wm.bottomRight"));
+    m_pipPosition->setItemText(1, trId("video.wm.bottomLeft"));
+    m_pipPosition->setItemText(2, trId("video.wm.topRight"));
+    m_pipPosition->setItemText(3, trId("video.wm.topLeft"));
+    m_pipPosition->setItemText(4, trId("video.wm.center"));
+    m_pipMarginCaption->setText(trId("video.pip.margin") + QStringLiteral(":"));
+    m_pipQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_pipButton->setText(trId("convert.addToQueue"));
 }

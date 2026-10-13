@@ -43,6 +43,7 @@ private:
     void watermark();
     void subtitleMux();
     void adjust();
+    void pip();
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
@@ -145,6 +146,22 @@ private:
     ElaText *m_adjQualityCaption = nullptr;
     ElaSpinBox *m_adjQualitySpin = nullptr;
     ElaPushButton *m_adjButton = nullptr;
+
+    QGroupBox *m_pipBox = nullptr;
+    ElaText *m_pipVideoCaption = nullptr;
+    ElaLineEdit *m_pipPath = nullptr;
+    ElaPushButton *m_pipBrowseButton = nullptr;
+    ElaText *m_pipSizeCaption = nullptr;
+    ElaSpinBox *m_pipWidth = nullptr;
+    ElaSpinBox *m_pipHeight = nullptr;
+    ElaText *m_pipPositionCaption = nullptr;
+    ElaComboBox *m_pipPosition = nullptr;
+    ElaText *m_pipMarginCaption = nullptr;
+    ElaSpinBox *m_pipMargin = nullptr;
+    ElaText *m_pipQualityCaption = nullptr;
+    ElaSpinBox *m_pipQualitySpin = nullptr;
+    ElaPushButton *m_pipButton = nullptr;
+    QString m_pipFile;
 
     QStringList m_joinFiles;
 };

@@ -187,6 +187,10 @@
         <source>common.open</source>
         <translation>打开</translation>
     </message>
+    <message id="common.size">
+        <source>common.size</source>
+        <translation>尺寸</translation>
+    </message>
     <message id="media.title">
         <source>media.title</source>
         <translation>媒体信息</translation>
@@ -502,6 +506,22 @@
     <message id="image.join.grid">
         <source>image.join.grid</source>
         <translation>网格</translation>
+    </message>
+    <message id="video.pip">
+        <source>video.pip</source>
+        <translation>画中画</translation>
+    </message>
+    <message id="video.pip.video">
+        <source>video.pip.video</source>
+        <translation>画中画视频</translation>
+    </message>
+    <message id="video.pip.margin">
+        <source>video.pip.margin</source>
+        <translation>边距</translation>
+    </message>
+    <message id="video.job.pip">
+        <source>video.job.pip</source>
+        <translation>画中画: %1</translation>
     </message>
 </context>
 </TS>

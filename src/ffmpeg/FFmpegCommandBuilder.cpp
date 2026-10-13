@@ -519,6 +519,62 @@ QStringList FFmpegCommandBuilder::buildWatermark(
     return args;
 }
 
+QStringList FFmpegCommandBuilder::buildPip(
+    const QString &mainPath,
+    const QString &pipPath,
+    const QString &outputPath,
+    int pipWidth,
+    int pipHeight,
+    const QString &position,
+    int margin,
+    int crf
+) const
+{
+    if (mainPath.isEmpty() || pipPath.isEmpty() || outputPath.isEmpty()) {
+        return {};
+    }
+
+    QString scaleStr;
+    if (pipWidth > 0 && pipHeight > 0) {
+        scaleStr = QStringLiteral("%1:%2").arg(pipWidth).arg(pipHeight);
+    } else if (pipWidth > 0) {
+        scaleStr = QStringLiteral("%1:-1").arg(pipWidth);
+    } else if (pipHeight > 0) {
+        scaleStr = QStringLiteral("-1:%1").arg(pipHeight);
+    } else {
+        scaleStr = QStringLiteral("iw/3:-1");
+    }
+
+    const int m = qMax(0, margin);
+    QString overlay;
+    if (position == QLatin1String("top-left")) {
+        overlay = QStringLiteral("%1:%1").arg(m);
+    } else if (position == QLatin1String("top-right")) {
+        overlay = QStringLiteral("main_w-overlay_w-%1:%1").arg(m);
+    } else if (position == QLatin1String("bottom-left")) {
+        overlay = QStringLiteral("%1:main_h-overlay_h-%1").arg(m);
+    } else if (position == QLatin1String("center")) {
+        overlay = QStringLiteral("(main_w-overlay_w)/2:(main_h-overlay_h)/2");
+    } else {
+        overlay = QStringLiteral("main_w-overlay_w-%1:main_h-overlay_h-%1").arg(m);
+    }
+
+    const QString filter = QStringLiteral("[1:v]scale=%1[pip];[0:v][pip]overlay=%2")
+                               .arg(scaleStr, overlay);
+
+    QStringList args;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << mainPath;
+    args << QStringLiteral("-i") << pipPath;
+    args << QStringLiteral("-filter_complex") << filter;
+    args << QStringLiteral("-map") << QStringLiteral("0:a?");
+    if (crf >= 0) {
+        args << QStringLiteral("-crf") << QString::number(crf);
+    }
+    args << outputPath;
+    return args;
+}
+
 QString FFmpegCommandBuilder::escapeFilterPath(const QString &path)
 {
     QString result = path;

@@ -52,6 +52,11 @@ private slots:
     void watermarkEachPosition();
     void watermarkClampsOpacity();
     void watermarkAppendsOutputFormat();
+    void pipDefaultScalingAndPosition();
+    void pipCustomScaleAndMargin();
+    void pipEachPosition();
+    void pipRejectsEmptyPaths();
+    void pipWithCrf();
     void formatTimePadsComponents();
     void escapeFilterValueEscapesMetaChars();
 
@@ -631,6 +636,81 @@ void FFmpegCommandBuilderTest::watermarkAppendsOutputFormat()
                           QStringLiteral("-map"), QStringLiteral("0:a?"),
                           QStringLiteral("-f"), QStringLiteral("mkv"),
                           QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::pipDefaultScalingAndPosition()
+{
+    // Defaults: pipWidth=0, pipHeight=0 -> iw/3:-1; position=bottom-right, margin=10; crf=-1 (omitted)
+    QCOMPARE(m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                QStringLiteral("out.mp4")),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("main.mp4"),
+                          QStringLiteral("-i"), QStringLiteral("pip.mp4"),
+                          QStringLiteral("-filter_complex"),
+                          QStringLiteral("[1:v]scale=iw/3:-1[pip];[0:v][pip]overlay=main_w-overlay_w-10:main_h-overlay_h-10"),
+                          QStringLiteral("-map"), QStringLiteral("0:a?"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::pipCustomScaleAndMargin()
+{
+    // Explicit width and height, custom margin 20
+    QCOMPARE(m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                QStringLiteral("out.mp4"),
+                                320, 180, QStringLiteral("top-left"), 20),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("main.mp4"),
+                          QStringLiteral("-i"), QStringLiteral("pip.mp4"),
+                          QStringLiteral("-filter_complex"),
+                          QStringLiteral("[1:v]scale=320:180[pip];[0:v][pip]overlay=20:20"),
+                          QStringLiteral("-map"), QStringLiteral("0:a?"),
+                          QStringLiteral("out.mp4")}));
+
+    // Width only (height -1)
+    const QStringList wOnly = m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                                 QStringLiteral("out.mp4"),
+                                                 480, 0, QStringLiteral("top-left"), 10);
+    QCOMPARE(wOnly.at(6), QStringLiteral("[1:v]scale=480:-1[pip];[0:v][pip]overlay=10:10"));
+
+    // Height only (width -1)
+    const QStringList hOnly = m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                                 QStringLiteral("out.mp4"),
+                                                 0, 240, QStringLiteral("top-left"), 10);
+    QCOMPARE(hOnly.at(6), QStringLiteral("[1:v]scale=-1:240[pip];[0:v][pip]overlay=10:10"));
+}
+
+void FFmpegCommandBuilderTest::pipEachPosition()
+{
+    const auto extractOverlay = [this](const QString &pos) {
+        const QStringList args = m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                                    QStringLiteral("out.mp4"),
+                                                    320, 180, pos, 15);
+        // args[6] is the -filter_complex string
+        return args.at(6).section(QStringLiteral(";[0:v][pip]overlay="), 1);
+    };
+
+    QCOMPARE(extractOverlay(QStringLiteral("top-left")), QStringLiteral("15:15"));
+    QCOMPARE(extractOverlay(QStringLiteral("top-right")), QStringLiteral("main_w-overlay_w-15:15"));
+    QCOMPARE(extractOverlay(QStringLiteral("bottom-left")), QStringLiteral("15:main_h-overlay_h-15"));
+    QCOMPARE(extractOverlay(QStringLiteral("bottom-right")), QStringLiteral("main_w-overlay_w-15:main_h-overlay_h-15"));
+    QCOMPARE(extractOverlay(QStringLiteral("center")), QStringLiteral("(main_w-overlay_w)/2:(main_h-overlay_h)/2"));
+}
+
+void FFmpegCommandBuilderTest::pipRejectsEmptyPaths()
+{
+    QVERIFY(m_builder.buildPip(QString(), QStringLiteral("pip.mp4"), QStringLiteral("out.mp4")).isEmpty());
+    QVERIFY(m_builder.buildPip(QStringLiteral("main.mp4"), QString(), QStringLiteral("out.mp4")).isEmpty());
+    QVERIFY(m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"), QString()).isEmpty());
+}
+
+void FFmpegCommandBuilderTest::pipWithCrf()
+{
+    const QStringList args = m_builder.buildPip(QStringLiteral("main.mp4"), QStringLiteral("pip.mp4"),
+                                                QStringLiteral("out.mp4"),
+                                                320, 240, QStringLiteral("center"), 0, 21);
+    QVERIFY(args.contains(QStringLiteral("-crf")));
+    const int idx = args.indexOf(QStringLiteral("-crf"));
+    QCOMPARE(args.at(idx + 1), QStringLiteral("21"));
 }
 
 void FFmpegCommandBuilderTest::formatTimePadsComponents()

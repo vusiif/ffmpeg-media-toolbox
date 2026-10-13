@@ -187,6 +187,10 @@
         <source>common.open</source>
         <translation>Open</translation>
     </message>
+    <message id="common.size">
+        <source>common.size</source>
+        <translation>Size</translation>
+    </message>
     <message id="media.title">
         <source>media.title</source>
         <translation>Media Info</translation>
@@ -502,6 +506,22 @@
     <message id="image.join.grid">
         <source>image.join.grid</source>
         <translation>Grid</translation>
+    </message>
+    <message id="video.pip">
+        <source>video.pip</source>
+        <translation>Picture-in-Picture</translation>
+    </message>
+    <message id="video.pip.video">
+        <source>video.pip.video</source>
+        <translation>Inset video</translation>
+    </message>
+    <message id="video.pip.margin">
+        <source>video.pip.margin</source>
+        <translation>Margin</translation>
+    </message>
+    <message id="video.job.pip">
+        <source>video.job.pip</source>
+        <translation>PiP: %1</translation>
     </message>
 </context>
 </TS>

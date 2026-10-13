@@ -152,6 +152,21 @@ public:
         const QString &outputFormat = {}
     ) const;
 
+    // Overlays an inset video on top of the main video (picture-in-picture):
+    // inset is scaled to pipWidth x pipHeight (<= 0 keeps aspect ratio, both
+    // <= 0 defaults to iw/3:-1), placed at `position` with `margin` px padding.
+    // Audio from the main video is preserved (-map 0:a?).
+    QStringList buildPip(
+        const QString &mainPath,
+        const QString &pipPath,
+        const QString &outputPath,
+        int pipWidth = 0,
+        int pipHeight = 0,
+        const QString &position = QStringLiteral("bottom-right"),
+        int margin = 10,
+        int crf = -1
+    ) const;
+
     static QString escapeFilterValue(const QString &value);
     // Quotes a filesystem path for use as a filter option value: forward
     // slashes, escaped colon, single-quoted (the form the subtitles filter
