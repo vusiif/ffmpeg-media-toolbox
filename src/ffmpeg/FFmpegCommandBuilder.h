@@ -13,6 +13,31 @@ class FFmpegCommandBuilder : public QObject
 public:
     explicit FFmpegCommandBuilder(QObject *parent = nullptr);
 
+    struct ConversionOptions
+    {
+        QString inputPath;
+        QString outputPath;
+        QString videoCodec;
+        QString audioCodec;
+        int crf = -1;
+        bool copyStreams = false;
+        bool stripMetadata = false;
+
+        // Advanced Audio Settings
+        int audioBitrateKbps = -1;   // e.g. 192 -> -b:a 192k
+        int audioSampleRate = -1;    // e.g. 48000 -> -ar 48000
+        int audioChannels = -1;      // e.g. 2 -> -ac 2
+        bool audioNormalize = false; // -> -af loudnorm
+
+        // Advanced Video & Codec Settings
+        QString preset;              // -preset <preset>
+        QString pixelFormat;         // -pix_fmt <format>
+        QString videoFilter;         // -vf <filters>
+        QString audioFilter;         // -af <filters>
+    };
+
+    QStringList buildConversion(const ConversionOptions &options) const;
+
     Q_INVOKABLE QStringList buildConversion(
         const QString &inputPath,
         const QString &outputPath,

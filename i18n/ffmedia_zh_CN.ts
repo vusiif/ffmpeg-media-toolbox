@@ -523,5 +523,57 @@
         <source>video.job.pip</source>
         <translation>画中画: %1</translation>
     </message>
+    <message id="common.auto">
+        <source>common.auto</source>
+        <translation>自动</translation>
+    </message>
+    <message id="convert.adv.toggle">
+        <source>convert.adv.toggle</source>
+        <translation>高级参数设置</translation>
+    </message>
+    <message id="convert.adv.audioBitrate">
+        <source>convert.adv.audioBitrate</source>
+        <translation>音频码率</translation>
+    </message>
+    <message id="convert.adv.samplerate">
+        <source>convert.adv.samplerate</source>
+        <translation>音频采样率</translation>
+    </message>
+    <message id="convert.adv.channels">
+        <source>convert.adv.channels</source>
+        <translation>声道配置</translation>
+    </message>
+    <message id="convert.adv.mono">
+        <source>convert.adv.mono</source>
+        <translation>单声道 (1 ch)</translation>
+    </message>
+    <message id="convert.adv.stereo">
+        <source>convert.adv.stereo</source>
+        <translation>立体声 (2 ch)</translation>
+    </message>
+    <message id="convert.adv.surround51">
+        <source>convert.adv.surround51</source>
+        <translation>5.1 环绕声 (6 ch)</translation>
+    </message>
+    <message id="convert.adv.loudnorm">
+        <source>convert.adv.loudnorm</source>
+        <translation>响度标准化 (EBU R128 滤镜)</translation>
+    </message>
+    <message id="convert.adv.preset">
+        <source>convert.adv.preset</source>
+        <translation>编码预设 (Speed Preset)</translation>
+    </message>
+    <message id="convert.adv.pixFmt">
+        <source>convert.adv.pixFmt</source>
+        <translation>像素格式 (Pixel Format)</translation>
+    </message>
+    <message id="convert.adv.vf">
+        <source>convert.adv.vf</source>
+        <translation>自定义视频滤镜 (-vf)</translation>
+    </message>
+    <message id="convert.adv.af">
+        <source>convert.adv.af</source>
+        <translation>自定义音频滤镜 (-af)</translation>
+    </message>
 </context>
 </TS>

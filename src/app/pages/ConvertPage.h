@@ -3,6 +3,7 @@
 #include <QFutureWatcher>
 #include <QWidget>
 
+#include "ffmpeg/FFmpegCommandBuilder.h"
 #include "media/MediaFile.h"
 
 class FFmpegLocator;
@@ -50,6 +51,7 @@ private:
     void loadPreset(const QString &name);
     void deletePreset();
     void refreshPresetList();
+    FFmpegCommandBuilder::ConversionOptions currentOptions(const QString &outputPath, bool copy) const;
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
@@ -88,6 +90,27 @@ private:
     ElaSpinBox *m_qualitySpin = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
+
+    ElaCheckBox *m_advToggle = nullptr;
+    QWidget *m_advContainer = nullptr;
+
+    ElaText *m_audioBitrateCaption = nullptr;
+    ElaComboBox *m_audioBitrateCombo = nullptr;
+    ElaText *m_audioSamplerateCaption = nullptr;
+    ElaComboBox *m_audioSamplerateCombo = nullptr;
+    ElaText *m_audioChannelsCaption = nullptr;
+    ElaComboBox *m_audioChannelsCombo = nullptr;
+    ElaCheckBox *m_audioNormalizeCheck = nullptr;
+
+    ElaText *m_speedPresetCaption = nullptr;
+    ElaComboBox *m_speedPresetCombo = nullptr;
+    ElaText *m_pixFmtCaption = nullptr;
+    ElaComboBox *m_pixFmtCombo = nullptr;
+    ElaText *m_vfCaption = nullptr;
+    ElaLineEdit *m_vfEdit = nullptr;
+    ElaText *m_afCaption = nullptr;
+    ElaLineEdit *m_afEdit = nullptr;
+
     ElaText *m_previewCaption = nullptr;
     ElaLineEdit *m_previewEdit = nullptr;
     ElaPushButton *m_addButton = nullptr;

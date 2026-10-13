@@ -5,6 +5,71 @@ FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
 {
 }
 
+QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &options) const
+{
+    QStringList args;
+
+    if (options.inputPath.isEmpty() || options.outputPath.isEmpty()) {
+        return args;
+    }
+
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << options.inputPath;
+
+    if (options.copyStreams) {
+        args << QStringLiteral("-c") << QStringLiteral("copy");
+    } else {
+        if (!options.videoCodec.isEmpty()) {
+            args << QStringLiteral("-c:v") << options.videoCodec;
+        }
+        if (!options.audioCodec.isEmpty()) {
+            args << QStringLiteral("-c:a") << options.audioCodec;
+        }
+        if (options.crf >= 0) {
+            args << QStringLiteral("-crf") << QString::number(options.crf);
+        }
+        if (!options.preset.isEmpty()) {
+            args << QStringLiteral("-preset") << options.preset;
+        }
+        if (!options.pixelFormat.isEmpty()) {
+            args << QStringLiteral("-pix_fmt") << options.pixelFormat;
+        }
+        if (!options.videoFilter.trimmed().isEmpty()) {
+            args << QStringLiteral("-vf") << options.videoFilter.trimmed();
+        }
+
+        // Advanced audio options
+        if (options.audioBitrateKbps > 0) {
+            args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(options.audioBitrateKbps);
+        }
+        if (options.audioSampleRate > 0) {
+            args << QStringLiteral("-ar") << QString::number(options.audioSampleRate);
+        }
+        if (options.audioChannels > 0) {
+            args << QStringLiteral("-ac") << QString::number(options.audioChannels);
+        }
+
+        QStringList aFilters;
+        if (options.audioNormalize) {
+            aFilters << QStringLiteral("loudnorm");
+        }
+        if (!options.audioFilter.trimmed().isEmpty()) {
+            aFilters << options.audioFilter.trimmed();
+        }
+        if (!aFilters.isEmpty()) {
+            args << QStringLiteral("-af") << aFilters.join(QLatin1Char(','));
+        }
+    }
+
+    if (options.stripMetadata) {
+        args << QStringLiteral("-map_metadata") << QStringLiteral("-1");
+    }
+
+    args << options.outputPath;
+
+    return args;
+}
+
 QStringList FFmpegCommandBuilder::buildConversion(
     const QString &inputPath,
     const QString &outputPath,
@@ -15,36 +80,15 @@ QStringList FFmpegCommandBuilder::buildConversion(
     bool stripMetadata
 ) const
 {
-    QStringList args;
-
-    if (inputPath.isEmpty() || outputPath.isEmpty()) {
-        return args;
-    }
-
-    args << QStringLiteral("-y");
-    args << QStringLiteral("-i") << inputPath;
-
-    if (copyStreams) {
-        args << QStringLiteral("-c") << QStringLiteral("copy");
-    } else {
-        if (!videoCodec.isEmpty()) {
-            args << QStringLiteral("-c:v") << videoCodec;
-        }
-        if (!audioCodec.isEmpty()) {
-            args << QStringLiteral("-c:a") << audioCodec;
-        }
-        if (crf >= 0) {
-            args << QStringLiteral("-crf") << QString::number(crf);
-        }
-    }
-
-    if (stripMetadata) {
-        args << QStringLiteral("-map_metadata") << QStringLiteral("-1");
-    }
-
-    args << outputPath;
-
-    return args;
+    ConversionOptions opts;
+    opts.inputPath = inputPath;
+    opts.outputPath = outputPath;
+    opts.videoCodec = videoCodec;
+    opts.audioCodec = audioCodec;
+    opts.crf = crf;
+    opts.copyStreams = copyStreams;
+    opts.stripMetadata = stripMetadata;
+    return buildConversion(opts);
 }
 
 QStringList FFmpegCommandBuilder::buildImageOperation(

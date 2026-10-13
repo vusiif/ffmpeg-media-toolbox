@@ -13,6 +13,9 @@ private slots:
     void conversionCopyOverridesCodecs();
     void conversionStripsMetadataOnRequest();
     void conversionKeepsMetadataByDefault();
+    void conversionAdvancedAudioSettings();
+    void conversionAdvancedCodecAndFilters();
+    void conversionAdvancedIgnoredWhenCopyStreams();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
     void subtitleMuxRejectsEmptyPaths();
@@ -123,6 +126,70 @@ void FFmpegCommandBuilderTest::conversionKeepsMetadataByDefault()
                                                        QStringLiteral("out.mkv"),
                                                        QStringLiteral("libx264"));
     QVERIFY(!args.contains(QStringLiteral("-map_metadata")));
+}
+
+void FFmpegCommandBuilderTest::conversionAdvancedAudioSettings()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.audioCodec = QStringLiteral("aac");
+    opts.audioBitrateKbps = 192;
+    opts.audioSampleRate = 48000;
+    opts.audioChannels = 2;
+    opts.audioNormalize = true;
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:a"), QStringLiteral("aac"),
+                          QStringLiteral("-b:a"), QStringLiteral("192k"),
+                          QStringLiteral("-ar"), QStringLiteral("48000"),
+                          QStringLiteral("-ac"), QStringLiteral("2"),
+                          QStringLiteral("-af"), QStringLiteral("loudnorm"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionAdvancedCodecAndFilters()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mkv");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.crf = 20;
+    opts.preset = QStringLiteral("fast");
+    opts.pixelFormat = QStringLiteral("yuv420p");
+    opts.videoFilter = QStringLiteral("unsharp");
+    opts.audioFilter = QStringLiteral("volume=1.5");
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("libx264"),
+                          QStringLiteral("-crf"), QStringLiteral("20"),
+                          QStringLiteral("-preset"), QStringLiteral("fast"),
+                          QStringLiteral("-pix_fmt"), QStringLiteral("yuv420p"),
+                          QStringLiteral("-vf"), QStringLiteral("unsharp"),
+                          QStringLiteral("-af"), QStringLiteral("volume=1.5"),
+                          QStringLiteral("out.mkv")}));
+}
+
+void FFmpegCommandBuilderTest::conversionAdvancedIgnoredWhenCopyStreams()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.copyStreams = true;
+    opts.preset = QStringLiteral("slow");
+    opts.audioBitrateKbps = 320;
+    opts.videoFilter = QStringLiteral("scale=1280:720");
+
+    // Copy stream overrides encoders, presets, filters, bitrates.
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c"), QStringLiteral("copy"),
+                          QStringLiteral("out.mp4")}));
 }
 
 void FFmpegCommandBuilderTest::subtitleMuxConvertsForMp4()

@@ -523,5 +523,57 @@
         <source>video.job.pip</source>
         <translation>PiP: %1</translation>
     </message>
+    <message id="common.auto">
+        <source>common.auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message id="convert.adv.toggle">
+        <source>convert.adv.toggle</source>
+        <translation>Advanced options</translation>
+    </message>
+    <message id="convert.adv.audioBitrate">
+        <source>convert.adv.audioBitrate</source>
+        <translation>Audio bitrate</translation>
+    </message>
+    <message id="convert.adv.samplerate">
+        <source>convert.adv.samplerate</source>
+        <translation>Sample rate</translation>
+    </message>
+    <message id="convert.adv.channels">
+        <source>convert.adv.channels</source>
+        <translation>Channels</translation>
+    </message>
+    <message id="convert.adv.mono">
+        <source>convert.adv.mono</source>
+        <translation>Mono (1 ch)</translation>
+    </message>
+    <message id="convert.adv.stereo">
+        <source>convert.adv.stereo</source>
+        <translation>Stereo (2 ch)</translation>
+    </message>
+    <message id="convert.adv.surround51">
+        <source>convert.adv.surround51</source>
+        <translation>5.1 Surround (6 ch)</translation>
+    </message>
+    <message id="convert.adv.loudnorm">
+        <source>convert.adv.loudnorm</source>
+        <translation>Normalize loudness (EBU R128)</translation>
+    </message>
+    <message id="convert.adv.preset">
+        <source>convert.adv.preset</source>
+        <translation>Encoder speed preset</translation>
+    </message>
+    <message id="convert.adv.pixFmt">
+        <source>convert.adv.pixFmt</source>
+        <translation>Pixel format</translation>
+    </message>
+    <message id="convert.adv.vf">
+        <source>convert.adv.vf</source>
+        <translation>Custom video filter (-vf)</translation>
+    </message>
+    <message id="convert.adv.af">
+        <source>convert.adv.af</source>
+        <translation>Custom audio filter (-af)</translation>
+    </message>
 </context>
 </TS>

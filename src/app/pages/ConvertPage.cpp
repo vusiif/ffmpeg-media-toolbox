@@ -35,13 +35,6 @@
 #include "presets/PresetManager.h"
 
 namespace {
-QStringList buildArgs(FFmpegCommandBuilder *builder, const QString &input, const QString &output,
-                      const QString &vCodec, const QString &aCodec,
-                      int crf, bool copy, bool stripMetadata)
-{
-    return builder->buildConversion(input, output, vCodec, aCodec, crf, copy, stripMetadata);
-}
-
 QString defaultNamingTemplate()
 {
     QSettings s(AppSettings::organization(), AppSettings::application());
@@ -155,7 +148,86 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_qualityCaption, m_qualitySpin);
     form->addRow(new ElaText(QString(), 13, this), m_smartCopyCheck);
     form->addRow(new ElaText(QString(), 13, this), m_stripMetaCheck);
+
+    m_advToggle = new ElaCheckBox(this);
+    form->addRow(new ElaText(QString(), 13, this), m_advToggle);
     root->addLayout(form);
+
+    m_advContainer = new QWidget(this);
+    auto *advForm = new QFormLayout(m_advContainer);
+    advForm->setContentsMargins(0, 0, 0, 0);
+    advForm->setSpacing(8);
+
+    // Audio Bitrate
+    m_audioBitrateCaption = new ElaText(QString(), 13, m_advContainer);
+    m_audioBitrateCombo = new ElaComboBox(m_advContainer);
+    m_audioBitrateCombo->addItem(QString(), QString());
+    for (const QString &b : {QStringLiteral("64"), QStringLiteral("96"), QStringLiteral("128"),
+                             QStringLiteral("192"), QStringLiteral("256"), QStringLiteral("320")}) {
+        m_audioBitrateCombo->addItem(b + QStringLiteral(" kbps"), b);
+    }
+    advForm->addRow(m_audioBitrateCaption, m_audioBitrateCombo);
+
+    // Audio Sample Rate
+    m_audioSamplerateCaption = new ElaText(QString(), 13, m_advContainer);
+    m_audioSamplerateCombo = new ElaComboBox(m_advContainer);
+    m_audioSamplerateCombo->addItem(QString(), QString());
+    for (const QString &sr : {QStringLiteral("22050"), QStringLiteral("32000"),
+                              QStringLiteral("44100"), QStringLiteral("48000"),
+                              QStringLiteral("96000")}) {
+        m_audioSamplerateCombo->addItem(sr + QStringLiteral(" Hz"), sr);
+    }
+    advForm->addRow(m_audioSamplerateCaption, m_audioSamplerateCombo);
+
+    // Audio Channels
+    m_audioChannelsCaption = new ElaText(QString(), 13, m_advContainer);
+    m_audioChannelsCombo = new ElaComboBox(m_advContainer);
+    m_audioChannelsCombo->addItem(QString(), QString());
+    m_audioChannelsCombo->addItem(QString(), QStringLiteral("1"));
+    m_audioChannelsCombo->addItem(QString(), QStringLiteral("2"));
+    m_audioChannelsCombo->addItem(QString(), QStringLiteral("6"));
+    advForm->addRow(m_audioChannelsCaption, m_audioChannelsCombo);
+
+    // Audio Loudness Normalization
+    m_audioNormalizeCheck = new ElaCheckBox(m_advContainer);
+    advForm->addRow(new ElaText(QString(), 13, m_advContainer), m_audioNormalizeCheck);
+
+    // Encoder Speed Preset
+    m_speedPresetCaption = new ElaText(QString(), 13, m_advContainer);
+    m_speedPresetCombo = new ElaComboBox(m_advContainer);
+    m_speedPresetCombo->addItem(QString(), QString());
+    for (const QString &p : {QStringLiteral("ultrafast"), QStringLiteral("superfast"),
+                             QStringLiteral("veryfast"), QStringLiteral("faster"),
+                             QStringLiteral("fast"), QStringLiteral("medium"),
+                             QStringLiteral("slow"), QStringLiteral("slower"),
+                             QStringLiteral("veryslow")}) {
+        m_speedPresetCombo->addItem(p, p);
+    }
+    advForm->addRow(m_speedPresetCaption, m_speedPresetCombo);
+
+    // Pixel Format
+    m_pixFmtCaption = new ElaText(QString(), 13, m_advContainer);
+    m_pixFmtCombo = new ElaComboBox(m_advContainer);
+    m_pixFmtCombo->addItem(QString(), QString());
+    for (const QString &pf : {QStringLiteral("yuv420p"), QStringLiteral("yuv422p"),
+                              QStringLiteral("yuv444p"), QStringLiteral("yuv420p10le"),
+                              QStringLiteral("nv12")}) {
+        m_pixFmtCombo->addItem(pf, pf);
+    }
+    advForm->addRow(m_pixFmtCaption, m_pixFmtCombo);
+
+    // Custom Filters
+    m_vfCaption = new ElaText(QString(), 13, m_advContainer);
+    m_vfEdit = new ElaLineEdit(m_advContainer);
+    advForm->addRow(m_vfCaption, m_vfEdit);
+
+    m_afCaption = new ElaText(QString(), 13, m_advContainer);
+    m_afEdit = new ElaLineEdit(m_advContainer);
+    advForm->addRow(m_afCaption, m_afEdit);
+
+    m_advContainer->setVisible(false);
+    connect(m_advToggle, &ElaCheckBox::toggled, m_advContainer, &QWidget::setVisible);
+    root->addWidget(m_advContainer);
 
     m_estLabel = new ElaText(QString(), 13, this);
     m_estLabel->setVisible(false);
@@ -185,6 +257,15 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_audioCodecCombo, &ElaComboBox::currentTextChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_stripMetaCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_audioBitrateCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_audioSamplerateCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_audioChannelsCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_audioNormalizeCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_speedPresetCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_pixFmtCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_vfEdit, &ElaLineEdit::textChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_afEdit, &ElaLineEdit::textChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
             this, &ConvertPage::rebuildCodecLists);
     connect(m_recentFiles, &RecentFiles::changed, this, &ConvertPage::refreshRecentList);
@@ -285,6 +366,45 @@ void ConvertPage::onProbeFinished()
     updateCommandPreview();
 }
 
+FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QString &outputPath, bool copy) const
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = m_inputFile;
+    opts.outputPath = outputPath;
+    opts.videoCodec = m_codecCombo->currentText();
+    opts.audioCodec = m_audioCodecCombo->currentText();
+    opts.crf = m_qualitySpin->value();
+    opts.copyStreams = copy;
+    opts.stripMetadata = m_stripMetaCheck->isChecked();
+
+    const QString abStr = m_audioBitrateCombo->currentData().toString();
+    if (!abStr.isEmpty()) {
+        opts.audioBitrateKbps = abStr.toInt();
+    }
+    const QString arStr = m_audioSamplerateCombo->currentData().toString();
+    if (!arStr.isEmpty()) {
+        opts.audioSampleRate = arStr.toInt();
+    }
+    const QString acStr = m_audioChannelsCombo->currentData().toString();
+    if (!acStr.isEmpty()) {
+        opts.audioChannels = acStr.toInt();
+    }
+    opts.audioNormalize = m_audioNormalizeCheck->isChecked();
+
+    const QString spStr = m_speedPresetCombo->currentData().toString();
+    if (!spStr.isEmpty()) {
+        opts.preset = spStr;
+    }
+    const QString pfStr = m_pixFmtCombo->currentData().toString();
+    if (!pfStr.isEmpty()) {
+        opts.pixelFormat = pfStr;
+    }
+    opts.videoFilter = m_vfEdit->text().trimmed();
+    opts.audioFilter = m_afEdit->text().trimmed();
+
+    return opts;
+}
+
 void ConvertPage::enqueueJob(const MediaFile &info)
 {
     if (!info.isValid()) return;
@@ -295,11 +415,7 @@ void ConvertPage::enqueueJob(const MediaFile &info)
 
     const bool copy = m_smartCopyCheck->isChecked() &&
                       RemuxPolicy::canCopyAllStreams(info, format);
-    const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
-                                       m_codecCombo->currentText(),
-                                       m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), copy,
-                                       m_stripMetaCheck->isChecked());
+    const QStringList args = m_builder->buildConversion(currentOptions(outputPath, copy));
 
     auto *job = new Job();
     job->setName(QFileInfo(m_inputFile).fileName());
@@ -333,11 +449,7 @@ void ConvertPage::updateCommandPreview()
                                                    format, defaultOutputDirectory());
     const bool copy = m_smartCopyCheck->isChecked() &&
                       RemuxPolicy::canCopyAllStreams(m_probeInfo, format);
-    const QStringList args = buildArgs(m_builder, m_inputFile, outputPath,
-                                       m_codecCombo->currentText(),
-                                       m_audioCodecCombo->currentText(),
-                                       m_qualitySpin->value(), copy,
-                                       m_stripMetaCheck->isChecked());
+    const QStringList args = m_builder->buildConversion(currentOptions(outputPath, copy));
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
 
     const qint64 estimate = OutputEstimate::estimateBytes(
@@ -433,6 +545,14 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
     values.insert(QStringLiteral("smartCopy"), m_smartCopyCheck->isChecked());
     values.insert(QStringLiteral("stripMetadata"), m_stripMetaCheck->isChecked());
+    values.insert(QStringLiteral("audioBitrate"), m_audioBitrateCombo->currentData().toString());
+    values.insert(QStringLiteral("audioSamplerate"), m_audioSamplerateCombo->currentData().toString());
+    values.insert(QStringLiteral("audioChannels"), m_audioChannelsCombo->currentData().toString());
+    values.insert(QStringLiteral("audioNormalize"), m_audioNormalizeCheck->isChecked());
+    values.insert(QStringLiteral("speedPreset"), m_speedPresetCombo->currentData().toString());
+    values.insert(QStringLiteral("pixFmt"), m_pixFmtCombo->currentData().toString());
+    values.insert(QStringLiteral("videoFilter"), m_vfEdit->text());
+    values.insert(QStringLiteral("audioFilter"), m_afEdit->text());
     m_presets->save(name, values);
     refreshPresetList();
     m_presetCombo->setCurrentText(name.trimmed());
@@ -448,12 +568,24 @@ void ConvertPage::loadPreset(const QString &name)
         const int index = combo->findText(value);
         if (index >= 0) combo->setCurrentIndex(index);
     };
+    const auto setComboData = [](ElaComboBox *combo, const QString &data) {
+        const int index = combo->findData(data);
+        if (index >= 0) combo->setCurrentIndex(index);
+    };
     setCombo(m_formatCombo, values.value(QStringLiteral("format")).toString());
     setCombo(m_codecCombo, values.value(QStringLiteral("videoCodec")).toString());
     setCombo(m_audioCodecCombo, values.value(QStringLiteral("audioCodec")).toString());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
     m_stripMetaCheck->setChecked(values.value(QStringLiteral("stripMetadata"), false).toBool());
+    setComboData(m_audioBitrateCombo, values.value(QStringLiteral("audioBitrate")).toString());
+    setComboData(m_audioSamplerateCombo, values.value(QStringLiteral("audioSamplerate")).toString());
+    setComboData(m_audioChannelsCombo, values.value(QStringLiteral("audioChannels")).toString());
+    m_audioNormalizeCheck->setChecked(values.value(QStringLiteral("audioNormalize"), false).toBool());
+    setComboData(m_speedPresetCombo, values.value(QStringLiteral("speedPreset")).toString());
+    setComboData(m_pixFmtCombo, values.value(QStringLiteral("pixFmt")).toString());
+    m_vfEdit->setText(values.value(QStringLiteral("videoFilter")).toString());
+    m_afEdit->setText(values.value(QStringLiteral("audioFilter")).toString());
 }
 
 void ConvertPage::deletePreset()
@@ -493,6 +625,26 @@ void ConvertPage::retranslateUi()
     m_stripMetaCheck->setText(trId("metadata.remove"));
     m_metaCaption->setText(trId("metadata.title"));
     m_metaCaption->setVisible(!m_metaValue->text().isEmpty());
+
+    m_advToggle->setText(trId("convert.adv.toggle"));
+    m_audioBitrateCaption->setText(trId("convert.adv.audioBitrate") + QStringLiteral(":"));
+    m_audioBitrateCombo->setItemText(0, trId("common.auto"));
+    m_audioSamplerateCaption->setText(trId("convert.adv.samplerate") + QStringLiteral(":"));
+    m_audioSamplerateCombo->setItemText(0, trId("common.auto"));
+    m_audioChannelsCaption->setText(trId("convert.adv.channels") + QStringLiteral(":"));
+    m_audioChannelsCombo->setItemText(0, trId("common.auto"));
+    m_audioChannelsCombo->setItemText(1, trId("convert.adv.mono"));
+    m_audioChannelsCombo->setItemText(2, trId("convert.adv.stereo"));
+    m_audioChannelsCombo->setItemText(3, trId("convert.adv.surround51"));
+    m_audioNormalizeCheck->setText(trId("convert.adv.loudnorm"));
+
+    m_speedPresetCaption->setText(trId("convert.adv.preset") + QStringLiteral(":"));
+    m_speedPresetCombo->setItemText(0, trId("common.auto"));
+    m_pixFmtCaption->setText(trId("convert.adv.pixFmt") + QStringLiteral(":"));
+    m_pixFmtCombo->setItemText(0, trId("common.auto"));
+    m_vfCaption->setText(trId("convert.adv.vf") + QStringLiteral(":"));
+    m_afCaption->setText(trId("convert.adv.af") + QStringLiteral(":"));
+
     m_previewCaption->setText(trId("convert.preview") + QStringLiteral(":"));
     m_addButton->setText(trId("convert.addToQueue"));
     updateCommandPreview();
