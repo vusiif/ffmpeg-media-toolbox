@@ -80,6 +80,8 @@ private:
     ElaSpinBox *m_qualitySpin = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
+    ElaCheckBox *m_hwAccelCheck = nullptr;
+    ElaText *m_hwDeviceLabel = nullptr;
 
     // Advanced options
     ElaCheckBox *m_advToggle = nullptr;

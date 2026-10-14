@@ -19,6 +19,7 @@ private slots:
     void conversionColorSpaceTags();
     void conversionHdrTonemapChainsWithVideoFilter();
     void conversionHdrTonemapAlone();
+    void conversionHwAccelPrependedBeforeInput();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
     void subtitleMuxRejectsEmptyPaths();
@@ -245,6 +246,24 @@ void FFmpegCommandBuilderTest::conversionHdrTonemapAlone()
                           QStringLiteral("-i"), QStringLiteral("in.mp4"),
                           QStringLiteral("-c:v"), QStringLiteral("libx264"),
                           QStringLiteral("-vf"), QStringLiteral("tonemap=mobius"),
+                          QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionHwAccelPrependedBeforeInput()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("h264_nvenc");
+    opts.hwAccel = QStringLiteral("cuda");
+    opts.crf = 23;
+
+    QCOMPARE(m_builder.buildConversion(opts),
+             QStringList({QStringLiteral("-y"),
+                          QStringLiteral("-hwaccel"), QStringLiteral("cuda"),
+                          QStringLiteral("-i"), QStringLiteral("in.mp4"),
+                          QStringLiteral("-c:v"), QStringLiteral("h264_nvenc"),
+                          QStringLiteral("-crf"), QStringLiteral("23"),
                           QStringLiteral("out.mp4")}));
 }
 

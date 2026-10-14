@@ -25,5 +25,7 @@ private:
     ElaText *m_statusTitle = nullptr;
     ElaText *m_versionCaption = nullptr;
     ElaText *m_versionValue = nullptr;
+    ElaText *m_hwCaption = nullptr;
+    ElaText *m_hwValue = nullptr;
     ElaPushButton *m_rescanButton = nullptr;
 };

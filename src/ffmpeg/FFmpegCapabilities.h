@@ -44,6 +44,33 @@ public:
     int filterCount() const;
     int hwAccelCount() const;
 
+    enum class HwVendor {
+        None,
+        Nvidia,
+        Intel,
+        Amd,
+        Apple,
+        Vaapi
+    };
+    Q_ENUM(HwVendor)
+
+    struct HwDevice {
+        HwVendor vendor = HwVendor::None;
+        QString name;
+        QString hwAccelMethod;
+        QStringList supportedEncoders;
+    };
+
+    QVector<HwDevice> detectedHwDevices() const;
+    bool hasHwAcceleration() const;
+    QString primaryHwDeviceName() const;
+
+    // Returns best operational hardware encoder for a given video codec (e.g. "h264" -> "h264_nvenc")
+    QString bestHwEncoder(const QString &baseCodec) const;
+
+    // Returns recommended decode -hwaccel method for an encoder (e.g. "h264_nvenc" -> "cuda")
+    QString recommendedHwAccelForEncoder(const QString &encoder) const;
+
     // Parses `ffmpeg -formats/-encoders/-decoders/-filters` listing output
     // (or the plain `ffmpeg -hwaccels` list) into a name set.
     static QSet<QString> parseListOutput(const QString &output);
@@ -69,5 +96,7 @@ private:
     QSet<QString> m_decoders;
     QSet<QString> m_filters;
     QSet<QString> m_hwAccels;
+    QSet<QString> m_verifiedHwEncoders;
+    QVector<HwDevice> m_hwDevices;
     bool m_loaded = false;
 };

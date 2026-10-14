@@ -145,8 +145,42 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     // Smart Copy & Strip Metadata
     m_smartCopyCheck = new ElaCheckBox(scrollBody);
     m_stripMetaCheck = new ElaCheckBox(scrollBody);
+
+    m_hwAccelCheck = new ElaCheckBox(scrollBody);
+    m_hwDeviceLabel = new ElaText(QString(), 12, scrollBody);
+    m_hwDeviceLabel->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
+    auto *hwRow = new QHBoxLayout();
+    hwRow->addWidget(m_hwAccelCheck);
+    hwRow->addWidget(m_hwDeviceLabel);
+    hwRow->addStretch();
+
+    connect(m_hwAccelCheck, &ElaCheckBox::toggled, this, [this](bool checked) {
+        if (checked) {
+            const QString hwEnc = m_caps->bestHwEncoder(m_codecCombo->currentText());
+            if (!hwEnc.isEmpty()) {
+                const int idx = m_codecCombo->findText(hwEnc);
+                if (idx >= 0) m_codecCombo->setCurrentIndex(idx);
+            }
+        } else {
+            const QString cur = m_codecCombo->currentText();
+            if (cur.contains(QLatin1String("nvenc")) || cur.contains(QLatin1String("qsv")) ||
+                cur.contains(QLatin1String("amf")) || cur.contains(QLatin1String("vaapi")) ||
+                cur.contains(QLatin1String("videotoolbox"))) {
+                QString swEnc = QStringLiteral("libx264");
+                if (cur.contains(QLatin1String("hevc")) || cur.contains(QLatin1String("265"))) {
+                    swEnc = QStringLiteral("libx265");
+                } else if (cur.contains(QLatin1String("av1"))) {
+                    swEnc = QStringLiteral("libsvtav1");
+                }
+                const int idx = m_codecCombo->findText(swEnc);
+                if (idx >= 0) m_codecCombo->setCurrentIndex(idx);
+            }
+        }
+    });
+
     form->addRow(new ElaText(QString(), 13, scrollBody), m_smartCopyCheck);
     form->addRow(new ElaText(QString(), 13, scrollBody), m_stripMetaCheck);
+    form->addRow(new ElaText(QString(), 13, scrollBody), hwRow);
 
     // Advanced Options Toggle
     m_advToggle = new ElaCheckBox(scrollBody);
@@ -336,6 +370,9 @@ FFmpegCommandBuilder::ConversionOptions BatchPage::currentOptions(
     opts.crf = m_qualitySpin->value();
     opts.copyStreams = copy;
     opts.stripMetadata = m_stripMetaCheck->isChecked();
+    if (m_hwAccelCheck->isChecked()) {
+        opts.hwAccel = m_caps->recommendedHwAccelForEncoder(opts.videoCodec);
+    }
 
     const QString abStr = m_audioBitrateCombo->currentData().toString();
     if (!abStr.isEmpty()) {
@@ -436,6 +473,15 @@ void BatchPage::rebuildCodecLists()
         m_audioCodecCombo->setCurrentIndex(audioIndex);
     }
     m_audioCodecCombo->blockSignals(false);
+
+    if (m_caps->hasHwAcceleration()) {
+        m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(m_caps->primaryHwDeviceName()));
+        m_hwAccelCheck->setEnabled(true);
+    } else {
+        m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(trId("convert.hwAccel.none")));
+        m_hwAccelCheck->setEnabled(false);
+        m_hwAccelCheck->setChecked(false);
+    }
 }
 
 void BatchPage::refreshPresetList()
@@ -472,6 +518,9 @@ void BatchPage::loadPreset(const QString &name)
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
     m_stripMetaCheck->setChecked(values.value(QStringLiteral("stripMetadata"), false).toBool());
+    if (m_hwAccelCheck->isEnabled()) {
+        m_hwAccelCheck->setChecked(values.value(QStringLiteral("hwAccel"), false).toBool());
+    }
     setComboData(m_audioBitrateCombo, values.value(QStringLiteral("audioBitrate")).toString());
     setComboData(m_audioSamplerateCombo, values.value(QStringLiteral("audioSamplerate")).toString());
     setComboData(m_audioChannelsCombo, values.value(QStringLiteral("audioChannels")).toString());
@@ -508,6 +557,12 @@ void BatchPage::retranslateUi()
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
     m_stripMetaCheck->setText(trId("metadata.remove"));
+    m_hwAccelCheck->setText(trId("convert.hwAccel"));
+    if (m_caps->hasHwAcceleration()) {
+        m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(m_caps->primaryHwDeviceName()));
+    } else {
+        m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(trId("convert.hwAccel.none")));
+    }
 
     m_advToggle->setText(trId("convert.adv.toggle"));
     m_audioBitrateCaption->setText(trId("convert.adv.audioBitrate") + QStringLiteral(":"));

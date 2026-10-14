@@ -43,15 +43,29 @@ HomePage::HomePage(FFmpegLocator *locator, FFmpegCapabilities *caps, QWidget *pa
     versionRow->addWidget(m_versionValue);
     versionRow->addStretch();
 
+    auto *hwRow = new QHBoxLayout();
+    m_hwCaption = new ElaText(QString(), 13, statusCard);
+    m_hwValue = new ElaText(QString(), 13, statusCard);
+    m_hwValue->setStyleSheet(QStringLiteral("font-weight: bold; color: #0078d4;"));
+    hwRow->addWidget(m_hwCaption);
+    hwRow->addWidget(m_hwValue);
+    hwRow->addStretch();
+
     m_rescanButton = new ElaPushButton(statusCard);
     connect(m_rescanButton, &ElaPushButton::clicked, this, [=]() {
         m_locator->autoDetect();
         m_caps->scan();
         m_versionValue->setText(m_locator->ffmpegVersion());
+        if (m_caps->hasHwAcceleration()) {
+            m_hwValue->setText(m_caps->primaryHwDeviceName());
+        } else {
+            m_hwValue->setText(trId("convert.hwAccel.none"));
+        }
     });
 
     statusLayout->addWidget(m_statusTitle);
     statusLayout->addLayout(versionRow);
+    statusLayout->addLayout(hwRow);
     statusLayout->addWidget(m_rescanButton, 0, Qt::AlignRight);
     root->addWidget(statusCard);
 
@@ -67,5 +81,11 @@ void HomePage::retranslateUi()
     m_statusTitle->setText(trId("ffmpeg.status"));
     m_versionCaption->setText(trId("ffmpeg.version") + QStringLiteral(":"));
     m_versionValue->setText(m_locator->ffmpegVersion());
+    m_hwCaption->setText(trId("home.hwAccel") + QStringLiteral(":"));
+    if (m_caps->hasHwAcceleration()) {
+        m_hwValue->setText(m_caps->primaryHwDeviceName());
+    } else {
+        m_hwValue->setText(trId("convert.hwAccel.none"));
+    }
     m_rescanButton->setText(trId("ffmpeg.rescan"));
 }

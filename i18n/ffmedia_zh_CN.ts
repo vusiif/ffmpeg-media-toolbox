@@ -15,6 +15,10 @@
         <source>home.dropHint</source>
         <translation>拖拽文件到此处开始处理</translation>
     </message>
+    <message id="home.hwAccel">
+        <source>home.hwAccel</source>
+        <translation>硬件加速</translation>
+    </message>
     <message id="ffmpeg.status">
         <source>ffmpeg.status</source>
         <translation>FFmpeg 状态</translation>
@@ -478,6 +482,14 @@
     <message id="convert.invalidFile">
         <source>convert.invalidFile</source>
         <translation>无效文件</translation>
+    </message>
+    <message id="convert.hwAccel">
+        <source>convert.hwAccel</source>
+        <translation>硬件加速 (GPU)</translation>
+    </message>
+    <message id="convert.hwAccel.none">
+        <source>convert.hwAccel.none</source>
+        <translation>无可用硬件加速显卡</translation>
     </message>
     <message id="image.flipH">
         <source>image.flipH</source>

@@ -15,6 +15,10 @@
         <source>home.dropHint</source>
         <translation>Drop files here to start processing</translation>
     </message>
+    <message id="home.hwAccel">
+        <source>home.hwAccel</source>
+        <translation>Hardware Acceleration</translation>
+    </message>
     <message id="ffmpeg.status">
         <source>ffmpeg.status</source>
         <translation>FFmpeg Status</translation>
@@ -478,6 +482,14 @@
     <message id="convert.invalidFile">
         <source>convert.invalidFile</source>
         <translation>Invalid file</translation>
+    </message>
+    <message id="convert.hwAccel">
+        <source>convert.hwAccel</source>
+        <translation>Hardware acceleration (GPU)</translation>
+    </message>
+    <message id="convert.hwAccel.none">
+        <source>convert.hwAccel.none</source>
+        <translation>No supported GPU found</translation>
     </message>
     <message id="image.flipH">
         <source>image.flipH</source>

@@ -40,6 +40,9 @@ public:
         QString colorPrimaries;      // -color_primaries <cp>
         QString colorTrc;            // -color_trc <trc>
         QString hdrTonemap;          // e.g. "hable", "mobius", "reinhard" -> tonemap filter
+
+        // Hardware Acceleration
+        QString hwAccel;             // -hwaccel <auto|cuda|qsv|d3d11va|vaapi>
     };
 
     QStringList buildConversion(const ConversionOptions &options) const;

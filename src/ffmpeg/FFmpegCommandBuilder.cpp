@@ -14,6 +14,9 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
     }
 
     args << QStringLiteral("-y");
+    if (!options.hwAccel.trimmed().isEmpty()) {
+        args << QStringLiteral("-hwaccel") << options.hwAccel.trimmed();
+    }
     args << QStringLiteral("-i") << options.inputPath;
 
     if (options.copyStreams) {
