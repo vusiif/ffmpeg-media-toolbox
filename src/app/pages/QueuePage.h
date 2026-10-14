@@ -8,7 +8,7 @@ class JobQueue;
 class Job;
 class QLabel;
 class QFrame;
-class QPlainTextEdit;
+class ElaPlainTextEdit;
 class QVBoxLayout;
 class ElaProgressBar;
 class ElaPushButton;
@@ -33,8 +33,9 @@ private:
         QWidget *container = nullptr;
         ElaPushButton *copyButton = nullptr;
         QLabel *commandCaption = nullptr;
+        QLabel *commandLabel = nullptr;
         QLabel *logsCaption = nullptr;
-        QPlainTextEdit *logView = nullptr;
+        ElaPlainTextEdit *logView = nullptr;
         bool open = false;
     };
 

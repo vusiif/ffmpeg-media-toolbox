@@ -10,7 +10,6 @@
 #include <QListWidget>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QScrollArea>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -19,6 +18,8 @@
 #include "ElaDoubleSpinBox.h"
 #include "ElaLineEdit.h"
 #include "ElaPushButton.h"
+#include "ElaScrollArea.h"
+#include "ElaScrollBar.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "conversion/RemuxPolicy.h"
@@ -64,12 +65,30 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     inputRow->addWidget(m_browseButton);
     root->addLayout(inputRow);
 
-    auto *scroll = new QScrollArea(this);
+    auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
-    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     auto *scrollBody = new QWidget(scroll);
+    scrollBody->setStyleSheet(QStringLiteral(
+        "background-color: transparent;"
+        "QGroupBox {"
+        "  font-weight: bold;"
+        "  border: 1px solid rgba(255, 255, 255, 0.08);"
+        "  border-radius: 6px;"
+        "  margin-top: 12px;"
+        "  padding-top: 14px;"
+        "  background-color: rgba(255, 255, 255, 0.03);"
+        "}"
+        "QGroupBox::title {"
+        "  subcontrol-origin: margin;"
+        "  subcontrol-position: top left;"
+        "  left: 10px;"
+        "  padding: 0 4px;"
+        "  color: #0078d4;"
+        "}"
+    ));
     auto *body = new QVBoxLayout(scrollBody);
-    body->setContentsMargins(0, 0, 0, 0);
+    body->setContentsMargins(0, 0, 10, 0);
     body->setSpacing(12);
 
     auto makeRow = [](QGroupBox *box) {
@@ -191,6 +210,7 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     auto *joinLayout = new QVBoxLayout(m_joinBox);
     joinLayout->setSpacing(8);
     m_joinList = new QListWidget(m_joinBox);
+    m_joinList->setStyleSheet(QStringLiteral("QListWidget { background-color: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; }"));
     joinLayout->addWidget(m_joinList);
     auto *joinButtons = new QHBoxLayout();
     m_joinAddButton = new ElaPushButton(m_joinBox);

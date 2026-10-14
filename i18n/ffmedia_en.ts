@@ -607,6 +607,10 @@
         <source>batch.title</source>
         <translation>Batch Processing</translation>
     </message>
+    <message id="batch.fileList">
+        <source>batch.fileList</source>
+        <translation>Input Files</translation>
+    </message>
     <message id="batch.addFiles">
         <source>batch.addFiles</source>
         <translation>Add Files</translation>

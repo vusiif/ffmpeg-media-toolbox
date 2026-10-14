@@ -7,13 +7,14 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QPlainTextEdit>
-#include <QScrollArea>
 #include <QTextCursor>
 #include <QVBoxLayout>
 
+#include "ElaPlainTextEdit.h"
 #include "ElaProgressBar.h"
 #include "ElaPushButton.h"
+#include "ElaScrollArea.h"
+#include "ElaScrollBar.h"
 #include "ElaText.h"
 #include "jobs/Job.h"
 #include "jobs/JobListModel.h"
@@ -24,7 +25,7 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
     , m_queue(queue)
 {
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(30, 30, 30, 30);
+    root->setContentsMargins(30, 24, 30, 24);
     root->setSpacing(16);
 
     auto *titleRow = new QHBoxLayout();
@@ -39,11 +40,12 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
     titleRow->addWidget(m_clearButton);
     root->addLayout(titleRow);
 
-    auto *scroll = new QScrollArea(this);
+    auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
-    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     m_rowsContainer = new QWidget(scroll);
+    m_rowsContainer->setStyleSheet(QStringLiteral("background-color: transparent;"));
     m_rowsLayout = new QVBoxLayout(m_rowsContainer);
     m_rowsLayout->setContentsMargins(0, 0, 0, 0);
     m_rowsLayout->setSpacing(8);
@@ -108,13 +110,15 @@ QFrame* QueuePage::createRow(Job *job)
 {
     auto *row = new QFrame(m_rowsContainer);
     row->setFrameShape(QFrame::StyledPanel);
+    row->setStyleSheet(QStringLiteral("QFrame { background-color: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; }"));
 
     auto *layout = new QVBoxLayout(row);
-    layout->setContentsMargins(12, 12, 12, 12);
-    layout->setSpacing(6);
+    layout->setContentsMargins(14, 14, 14, 14);
+    layout->setSpacing(8);
 
     auto *nameRow = new QHBoxLayout();
     auto *nameLabel = new QLabel(job->name(), row);
+    nameLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
     nameLabel->setWordWrap(true);
     auto *statusLabel = new QLabel(row);
     nameRow->addWidget(nameLabel, 1);
@@ -150,7 +154,7 @@ QFrame* QueuePage::createRow(Job *job)
     detailsLayout->addWidget(copyButton, 0, Qt::AlignRight);
 
     auto *logsCaption = new QLabel(detailsContainer);
-    auto *logView = new QPlainTextEdit(detailsContainer);
+    auto *logView = new ElaPlainTextEdit(detailsContainer);
     logView->setReadOnly(true);
     logView->setMaximumHeight(140);
     logView->setPlaceholderText(trId("queue.noLogs"));

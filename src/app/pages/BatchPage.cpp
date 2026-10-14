@@ -8,17 +8,21 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QListWidget>
+#include <QItemSelectionModel>
 #include <QMimeData>
-#include <QScrollArea>
 #include <QSettings>
+#include <QStringListModel>
 #include <QUrl>
 #include <QVBoxLayout>
 
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
 #include "ElaLineEdit.h"
+#include "ElaListView.h"
 #include "ElaPushButton.h"
+#include "ElaScrollArea.h"
+#include "ElaScrollBar.h"
+#include "ElaScrollPageArea.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "app/AppSettings.h"
@@ -62,15 +66,35 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     auto *body = new QHBoxLayout();
     body->setSpacing(16);
 
-    // Left Column: File List + Controls
-    auto *left = new QVBoxLayout();
-    m_fileList = new QListWidget(this);
-    m_fileList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    // Left Column: File List Card
+    auto *leftCard = new ElaScrollPageArea(this);
+    leftCard->setMinimumHeight(0);
+    leftCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *leftLayout = new QVBoxLayout(leftCard);
+    leftLayout->setContentsMargins(16, 16, 16, 16);
+    leftLayout->setSpacing(10);
+
+    auto *listTopRow = new QHBoxLayout();
+    m_listHeader = new ElaText(QString(), 15, leftCard);
+    m_listHeader->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_countLabel = new ElaText(QString(), 12, leftCard);
+    listTopRow->addWidget(m_listHeader);
+    listTopRow->addStretch();
+    listTopRow->addWidget(m_countLabel);
+    leftLayout->addLayout(listTopRow);
+
+    m_fileView = new ElaListView(leftCard);
+    m_fileView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_fileView->setItemHeight(32);
+    m_fileView->setIsTransparent(true);
+    m_fileModel = new QStringListModel(this);
+    m_fileView->setModel(m_fileModel);
+    leftLayout->addWidget(m_fileView, 1);
 
     auto *fileButtons = new QHBoxLayout();
-    m_addButton = new ElaPushButton(this);
-    m_removeButton = new ElaPushButton(this);
-    m_clearButton = new ElaPushButton(this);
+    m_addButton = new ElaPushButton(leftCard);
+    m_removeButton = new ElaPushButton(leftCard);
+    m_clearButton = new ElaPushButton(leftCard);
     connect(m_addButton, &ElaPushButton::clicked, this, &BatchPage::addFiles);
     connect(m_removeButton, &ElaPushButton::clicked, this, &BatchPage::removeSelectedFiles);
     connect(m_clearButton, &ElaPushButton::clicked, this, &BatchPage::clearFiles);
@@ -79,75 +103,78 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     fileButtons->addWidget(m_removeButton);
     fileButtons->addWidget(m_clearButton);
     fileButtons->addStretch();
+    leftLayout->addLayout(fileButtons);
 
-    left->addWidget(m_fileList, 1);
-    left->addLayout(fileButtons);
-    body->addLayout(left, 1);
+    body->addWidget(leftCard, 1);
 
-    // Right Column: Settings inside ScrollArea
-    auto *scroll = new QScrollArea(this);
+    // Right Column: Settings inside ElaScrollArea
+    auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
-    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(scroll);
+    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
     auto *right = new QVBoxLayout(scrollBody);
-    right->setContentsMargins(0, 0, 0, 0);
-    right->setSpacing(10);
+    right->setContentsMargins(0, 0, 10, 0);
+    right->setSpacing(12);
 
-    m_countLabel = new ElaText(QString(), 13, scrollBody);
-    m_countLabel->setTextPixelSize(12);
-    right->addWidget(m_countLabel);
+    // Card 1: 目标与预设
+    auto *baseCard = new ElaScrollPageArea(scrollBody);
+    baseCard->setMinimumHeight(0);
+    baseCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *baseForm = new QFormLayout(baseCard);
+    baseForm->setContentsMargins(16, 16, 16, 16);
+    baseForm->setSpacing(10);
 
-    auto *form = new QFormLayout();
-    form->setSpacing(10);
-
-    // Output Directory
-    m_outputDirCaption = new ElaText(QString(), 13, scrollBody);
-    m_outputDirButton = new ElaPushButton(scrollBody);
+    m_outputDirCaption = new ElaText(QString(), 13, baseCard);
+    m_outputDirButton = new ElaPushButton(baseCard);
     if (!m_outputDirectory.isEmpty()) {
         m_outputDirButton->setText(m_outputDirectory);
     }
     connect(m_outputDirButton, &ElaPushButton::clicked, this, &BatchPage::browseOutputDir);
-    form->addRow(m_outputDirCaption, m_outputDirButton);
+    baseForm->addRow(m_outputDirCaption, m_outputDirButton);
 
-    // Preset selection
-    m_presetCaption = new ElaText(QString(), 13, scrollBody);
-    m_presetCombo = new ElaComboBox(scrollBody);
+    m_presetCaption = new ElaText(QString(), 13, baseCard);
+    m_presetCombo = new ElaComboBox(baseCard);
     connect(m_presets, &PresetManager::presetsChanged, this, &BatchPage::refreshPresetList);
     connect(m_presetCombo, &ElaComboBox::currentTextChanged, this, &BatchPage::loadPreset);
-    form->addRow(m_presetCaption, m_presetCombo);
+    baseForm->addRow(m_presetCaption, m_presetCombo);
 
-    // Output Format
-    m_formatCaption = new ElaText(QString(), 13, scrollBody);
-    m_formatCombo = new ElaComboBox(scrollBody);
+    m_formatCaption = new ElaText(QString(), 13, baseCard);
+    m_formatCombo = new ElaComboBox(baseCard);
     m_formatCombo->addItems({QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
                              QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("mp3"),
                              QStringLiteral("aac"), QStringLiteral("flac"), QStringLiteral("wav")});
-    form->addRow(m_formatCaption, m_formatCombo);
+    baseForm->addRow(m_formatCaption, m_formatCombo);
+    right->addWidget(baseCard);
 
-    // Video Codec
-    m_codecCaption = new ElaText(QString(), 13, scrollBody);
-    m_codecCombo = new ElaComboBox(scrollBody);
-    form->addRow(m_codecCaption, m_codecCombo);
+    // Card 2: 编解码器与画质
+    auto *codecCard = new ElaScrollPageArea(scrollBody);
+    codecCard->setMinimumHeight(0);
+    codecCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *codecForm = new QFormLayout(codecCard);
+    codecForm->setContentsMargins(16, 16, 16, 16);
+    codecForm->setSpacing(10);
 
-    // Audio Codec
-    m_audioCodecCaption = new ElaText(QString(), 13, scrollBody);
-    m_audioCodecCombo = new ElaComboBox(scrollBody);
-    form->addRow(m_audioCodecCaption, m_audioCodecCombo);
+    m_codecCaption = new ElaText(QString(), 13, codecCard);
+    m_codecCombo = new ElaComboBox(codecCard);
+    codecForm->addRow(m_codecCaption, m_codecCombo);
 
-    // Quality (CRF)
-    m_qualityCaption = new ElaText(QString(), 13, scrollBody);
-    m_qualitySpin = new ElaSpinBox(scrollBody);
+    m_audioCodecCaption = new ElaText(QString(), 13, codecCard);
+    m_audioCodecCombo = new ElaComboBox(codecCard);
+    codecForm->addRow(m_audioCodecCaption, m_audioCodecCombo);
+
+    m_qualityCaption = new ElaText(QString(), 13, codecCard);
+    m_qualitySpin = new ElaSpinBox(codecCard);
     m_qualitySpin->setRange(0, 51);
     m_qualitySpin->setValue(23);
-    form->addRow(m_qualityCaption, m_qualitySpin);
+    codecForm->addRow(m_qualityCaption, m_qualitySpin);
 
-    // Smart Copy & Strip Metadata
-    m_smartCopyCheck = new ElaCheckBox(scrollBody);
-    m_stripMetaCheck = new ElaCheckBox(scrollBody);
+    m_smartCopyCheck = new ElaCheckBox(codecCard);
+    m_stripMetaCheck = new ElaCheckBox(codecCard);
 
-    m_hwAccelCheck = new ElaCheckBox(scrollBody);
-    m_hwDeviceLabel = new ElaText(QString(), 12, scrollBody);
+    m_hwAccelCheck = new ElaCheckBox(codecCard);
+    m_hwDeviceLabel = new ElaText(QString(), 12, codecCard);
     m_hwDeviceLabel->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
     auto *hwRow = new QHBoxLayout();
     hwRow->addWidget(m_hwAccelCheck);
@@ -178,23 +205,28 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         }
     });
 
-    form->addRow(new ElaText(QString(), 13, scrollBody), m_smartCopyCheck);
-    form->addRow(new ElaText(QString(), 13, scrollBody), m_stripMetaCheck);
-    form->addRow(new ElaText(QString(), 13, scrollBody), hwRow);
+    codecForm->addRow(new ElaText(QString(), 13, codecCard), m_smartCopyCheck);
+    codecForm->addRow(new ElaText(QString(), 13, codecCard), m_stripMetaCheck);
+    codecForm->addRow(new ElaText(QString(), 13, codecCard), hwRow);
+    right->addWidget(codecCard);
 
-    // Advanced Options Toggle
-    m_advToggle = new ElaCheckBox(scrollBody);
+    // Card 3: 高级选项
+    auto *advCard = new ElaScrollPageArea(scrollBody);
+    advCard->setMinimumHeight(0);
+    advCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *advCardLayout = new QVBoxLayout(advCard);
+    advCardLayout->setContentsMargins(16, 16, 16, 16);
+    advCardLayout->setSpacing(8);
+
+    m_advToggle = new ElaCheckBox(advCard);
     connect(m_advToggle, &ElaCheckBox::toggled, this, [this](bool checked) {
         m_advContainer->setVisible(checked);
     });
-    form->addRow(new ElaText(QString(), 13, scrollBody), m_advToggle);
+    advCardLayout->addWidget(m_advToggle);
 
-    right->addLayout(form);
-
-    // Advanced Options Container
-    m_advContainer = new QWidget(scrollBody);
+    m_advContainer = new QWidget(advCard);
     auto *advForm = new QFormLayout(m_advContainer);
-    advForm->setContentsMargins(0, 0, 0, 0);
+    advForm->setContentsMargins(0, 8, 0, 0);
     advForm->setSpacing(8);
 
     m_audioBitrateCaption = new ElaText(QString(), 13, m_advContainer);
@@ -272,7 +304,8 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     advForm->addRow(m_afCaption, m_afEdit);
 
     m_advContainer->setVisible(false);
-    right->addWidget(m_advContainer);
+    advCardLayout->addWidget(m_advContainer);
+    right->addWidget(advCard);
 
     right->addStretch();
     scroll->setWidget(scrollBody);
@@ -284,6 +317,8 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
     m_queueButton = new ElaPushButton(this);
+    m_queueButton->setFixedHeight(38);
+    m_queueButton->setMinimumWidth(140);
     connect(m_queueButton, &ElaPushButton::clicked, this, &BatchPage::addAllToQueue);
     buttonRow->addWidget(m_queueButton);
     root->addLayout(buttonRow);
@@ -310,9 +345,19 @@ void BatchPage::dropEvent(QDropEvent *event)
         const QString path = url.toLocalFile();
         if (!path.isEmpty() && !m_inputFiles.contains(path)) {
             m_inputFiles.append(path);
-            m_fileList->addItem(QFileInfo(path).fileName());
         }
     }
+    syncFileListModel();
+}
+
+void BatchPage::syncFileListModel()
+{
+    QStringList displayNames;
+    displayNames.reserve(m_inputFiles.size());
+    for (const QString &path : m_inputFiles) {
+        displayNames << QFileInfo(path).fileName();
+    }
+    m_fileModel->setStringList(displayNames);
     updateCountLabel();
 }
 
@@ -323,32 +368,33 @@ void BatchPage::addFiles()
     for (const QString &path : paths) {
         if (!m_inputFiles.contains(path)) {
             m_inputFiles.append(path);
-            m_fileList->addItem(QFileInfo(path).fileName());
         }
     }
-    updateCountLabel();
+    syncFileListModel();
 }
 
 void BatchPage::removeSelectedFiles()
 {
-    const auto selected = m_fileList->selectedItems();
+    const auto selected = m_fileView->selectionModel()->selectedRows();
     if (selected.isEmpty()) return;
 
-    for (auto *item : selected) {
-        const int row = m_fileList->row(item);
+    QList<int> rows;
+    for (const auto &index : selected) {
+        rows.append(index.row());
+    }
+    std::sort(rows.begin(), rows.end(), std::greater<int>());
+    for (int row : rows) {
         if (row >= 0 && row < m_inputFiles.size()) {
             m_inputFiles.removeAt(row);
         }
-        delete m_fileList->takeItem(row);
     }
-    updateCountLabel();
+    syncFileListModel();
 }
 
 void BatchPage::clearFiles()
 {
     m_inputFiles.clear();
-    m_fileList->clear();
-    updateCountLabel();
+    syncFileListModel();
 }
 
 void BatchPage::browseOutputDir()
@@ -541,6 +587,7 @@ void BatchPage::updateCountLabel()
 void BatchPage::retranslateUi()
 {
     m_titleLabel->setText(trId("batch.title"));
+    m_listHeader->setText(trId("batch.fileList"));
     m_addButton->setText(trId("batch.addFiles"));
     m_removeButton->setText(trId("batch.removeSelected"));
     m_clearButton->setText(trId("common.clear"));

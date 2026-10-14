@@ -24,6 +24,23 @@
 #include "i18n/LanguageManager.h"
 #include "jobs/JobQueue.h"
 #include "media/MediaProbeService.h"
+#include <QRegularExpression>
+
+namespace {
+QString formatShortVersion(const QString &raw)
+{
+    static const QRegularExpression re(QStringLiteral(R"(ffmpeg\s+version\s+([^\s,]+))"),
+                                      QRegularExpression::CaseInsensitiveOption);
+    const auto match = re.match(raw);
+    if (match.hasMatch()) {
+        return QStringLiteral("FFmpeg %1").arg(match.captured(1));
+    }
+    if (!raw.isEmpty()) {
+        return raw.left(20);
+    }
+    return QStringLiteral("FFmpeg Media Suite");
+}
+} // namespace
 
 MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     : ElaWindow(parent)
@@ -47,7 +64,7 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     }
     setStackSwitchMode(ElaWindowType::StackSwitchMode::None);
     setUserInfoCardTitle(trId("app.title"));
-    setUserInfoCardSubTitle(m_ffmpegLocator->ffmpegVersion());
+    setUserInfoCardSubTitle(formatShortVersion(m_ffmpegLocator->ffmpegVersion()));
 
     initPages();
 
@@ -98,6 +115,7 @@ void MainWindow::retranslateUi()
 {
     setWindowTitle(trId("app.title"));
     setUserInfoCardTitle(trId("app.title"));
+    setUserInfoCardSubTitle(formatShortVersion(m_ffmpegLocator->ffmpegVersion()));
 
     setNavigationNodeTitle(m_homePage->property("ElaPageKey").toString(), trId("nav.home"));
     setNavigationNodeTitle(m_convertPage->property("ElaPageKey").toString(), trId("nav.convert"));

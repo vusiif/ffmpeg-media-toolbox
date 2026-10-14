@@ -607,6 +607,10 @@
         <source>batch.title</source>
         <translation>批量处理</translation>
     </message>
+    <message id="batch.fileList">
+        <source>batch.fileList</source>
+        <translation>待处理文件列表</translation>
+    </message>
     <message id="batch.addFiles">
         <source>batch.addFiles</source>
         <translation>添加文件</translation>

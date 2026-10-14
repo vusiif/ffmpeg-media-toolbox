@@ -8,13 +8,16 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QListWidget>
+#include <QItemSelectionModel>
 #include <QMimeData>
+#include <QStringListModel>
 #include <QUrl>
 #include <QVBoxLayout>
 
 #include "ElaComboBox.h"
+#include "ElaListView.h"
 #include "ElaPushButton.h"
+#include "ElaScrollPageArea.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
@@ -31,7 +34,7 @@ JoinPage::JoinPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     , m_queue(queue)
 {
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(30, 30, 30, 30);
+    root->setContentsMargins(30, 24, 30, 24);
     root->setSpacing(16);
 
     m_titleLabel = new ElaText(QString(), 13, this);
@@ -41,45 +44,67 @@ JoinPage::JoinPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     auto *body = new QHBoxLayout();
     body->setSpacing(16);
 
-    auto *left = new QVBoxLayout();
-    m_fileList = new QListWidget(this);
-    m_fileList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    // Left Column: File List Card
+    auto *leftCard = new ElaScrollPageArea(this);
+    leftCard->setMinimumHeight(0);
+    leftCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *leftLayout = new QVBoxLayout(leftCard);
+    leftLayout->setContentsMargins(16, 16, 16, 16);
+    leftLayout->setSpacing(10);
+
+    m_listHeader = new ElaText(QString(), 15, leftCard);
+    m_listHeader->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    leftLayout->addWidget(m_listHeader);
+
+    m_fileView = new ElaListView(leftCard);
+    m_fileView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_fileView->setItemHeight(32);
+    m_fileView->setIsTransparent(true);
+    m_fileModel = new QStringListModel(this);
+    m_fileView->setModel(m_fileModel);
+    leftLayout->addWidget(m_fileView, 1);
+
     auto *fileButtons = new QHBoxLayout();
-    m_addButton = new ElaPushButton(this);
-    m_removeButton = new ElaPushButton(this);
+    m_addButton = new ElaPushButton(leftCard);
+    m_removeButton = new ElaPushButton(leftCard);
     connect(m_addButton, &ElaPushButton::clicked, this, &JoinPage::addFiles);
     connect(m_removeButton, &ElaPushButton::clicked, this, &JoinPage::removeSelected);
     fileButtons->addWidget(m_addButton);
     fileButtons->addWidget(m_removeButton);
     fileButtons->addStretch();
-    left->addWidget(m_fileList, 1);
-    left->addLayout(fileButtons);
-    body->addLayout(left, 1);
+    leftLayout->addLayout(fileButtons);
 
-    auto *form = new QFormLayout();
-    form->setSpacing(10);
+    body->addWidget(leftCard, 1);
 
-    m_modeCaption = new ElaText(QString(), 13, this);
-    m_modeCombo = new ElaComboBox(this);
+    // Right Column: Settings Card
+    auto *settingsCard = new ElaScrollPageArea(this);
+    settingsCard->setMinimumHeight(0);
+    settingsCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *form = new QFormLayout(settingsCard);
+    form->setContentsMargins(16, 16, 16, 16);
+    form->setSpacing(12);
+
+    m_modeCaption = new ElaText(QString(), 13, settingsCard);
+    m_modeCombo = new ElaComboBox(settingsCard);
     m_modeCombo->addItems({QString(), QString(), QString()});
     connect(m_modeCombo, &ElaComboBox::currentTextChanged,
             this, &JoinPage::updateModeVisibility);
 
-    m_colsCaption = new ElaText(QString(), 13, this);
-    m_colsSpin = new ElaSpinBox(this);
+    m_colsCaption = new ElaText(QString(), 13, settingsCard);
+    m_colsSpin = new ElaSpinBox(settingsCard);
     m_colsSpin->setRange(1, 16);
     m_colsSpin->setValue(2);
 
-    m_spacingCaption = new ElaText(QString(), 13, this);
-    m_spacingSpin = new ElaSpinBox(this);
+    m_spacingCaption = new ElaText(QString(), 13, settingsCard);
+    m_spacingSpin = new ElaSpinBox(settingsCard);
     m_spacingSpin->setRange(0, 100);
 
-    m_paddingCaption = new ElaText(QString(), 13, this);
-    m_paddingSpin = new ElaSpinBox(this);
+    m_paddingCaption = new ElaText(QString(), 13, settingsCard);
+    m_paddingSpin = new ElaSpinBox(settingsCard);
     m_paddingSpin->setRange(0, 100);
 
-    m_backgroundCaption = new ElaText(QString(), 13, this);
-    m_backgroundCombo = new ElaComboBox(this);
+    m_backgroundCaption = new ElaText(QString(), 13, settingsCard);
+    m_backgroundCombo = new ElaComboBox(settingsCard);
     m_backgroundCombo->addItems({QStringLiteral("black"), QStringLiteral("white"),
                                  QStringLiteral("transparent")});
 
@@ -88,13 +113,21 @@ JoinPage::JoinPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_spacingCaption, m_spacingSpin);
     form->addRow(m_paddingCaption, m_paddingSpin);
     form->addRow(m_backgroundCaption, m_backgroundCombo);
-    body->addLayout(form, 1);
+
+    auto *rightLayout = new QVBoxLayout();
+    rightLayout->setContentsMargins(0, 0, 0, 0);
+    rightLayout->setSpacing(10);
+    rightLayout->addWidget(settingsCard);
+    rightLayout->addStretch();
+    body->addLayout(rightLayout, 1);
 
     root->addLayout(body, 1);
 
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
     m_queueButton = new ElaPushButton(this);
+    m_queueButton->setFixedHeight(38);
+    m_queueButton->setMinimumWidth(140);
     connect(m_queueButton, &ElaPushButton::clicked, this, &JoinPage::addToQueue);
     buttonRow->addWidget(m_queueButton);
     root->addLayout(buttonRow);
@@ -118,15 +151,25 @@ void JoinPage::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+void JoinPage::syncFileListModel()
+{
+    QStringList names;
+    names.reserve(m_inputFiles.size());
+    for (const QString &path : m_inputFiles) {
+        names << QFileInfo(path).fileName();
+    }
+    m_fileModel->setStringList(names);
+}
+
 void JoinPage::dropEvent(QDropEvent *event)
 {
     const QList<QUrl> urls = event->mimeData()->urls();
     for (const QUrl &url : urls) {
         const QString path = url.toLocalFile();
-        if (path.isEmpty()) continue;
+        if (path.isEmpty() || m_inputFiles.contains(path)) continue;
         m_inputFiles.append(path);
-        m_fileList->addItem(QFileInfo(path).fileName());
     }
+    syncFileListModel();
     event->acceptProposedAction();
 }
 
@@ -136,19 +179,29 @@ void JoinPage::addFiles()
         this, trId("image.join"), QString(),
         QStringLiteral("Image files (*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.gif);;All files (*)"));
     for (const QString &path : paths) {
-        m_inputFiles.append(path);
-        m_fileList->addItem(QFileInfo(path).fileName());
+        if (!m_inputFiles.contains(path)) {
+            m_inputFiles.append(path);
+        }
     }
+    syncFileListModel();
 }
 
 void JoinPage::removeSelected()
 {
-    const QList<QListWidgetItem *> selected = m_fileList->selectedItems();
-    for (QListWidgetItem *item : selected) {
-        const int row = m_fileList->row(item);
-        m_inputFiles.removeAt(row);
-        delete m_fileList->takeItem(row);
+    const auto selected = m_fileView->selectionModel()->selectedRows();
+    if (selected.isEmpty()) return;
+
+    QList<int> rows;
+    for (const auto &index : selected) {
+        rows.append(index.row());
     }
+    std::sort(rows.begin(), rows.end(), std::greater<int>());
+    for (int row : rows) {
+        if (row >= 0 && row < m_inputFiles.size()) {
+            m_inputFiles.removeAt(row);
+        }
+    }
+    syncFileListModel();
 }
 
 void JoinPage::addToQueue()
@@ -197,6 +250,7 @@ void JoinPage::addToQueue()
 void JoinPage::retranslateUi()
 {
     m_titleLabel->setText(trId("image.join"));
+    m_listHeader->setText(trId("batch.fileList"));
     m_addButton->setText(trId("common.open"));
     m_removeButton->setText(trId("common.delete"));
     m_modeCaption->setText(trId("common.mode") + QStringLiteral(":"));

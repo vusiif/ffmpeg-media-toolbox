@@ -6,7 +6,8 @@
 class FFmpegLocator;
 class FFmpegCommandBuilder;
 class JobQueue;
-class QListWidget;
+class ElaListView;
+class QStringListModel;
 class ElaText;
 class ElaPushButton;
 class ElaComboBox;
@@ -29,6 +30,7 @@ protected:
 private:
     void addFiles();
     void removeSelected();
+    void syncFileListModel();
     void addToQueue();
     void updateModeVisibility();
 
@@ -39,7 +41,9 @@ private:
     QStringList m_inputFiles;
 
     ElaText *m_titleLabel = nullptr;
-    QListWidget *m_fileList = nullptr;
+    ElaText *m_listHeader = nullptr;
+    ElaListView *m_fileView = nullptr;
+    QStringListModel *m_fileModel = nullptr;
     ElaPushButton *m_addButton = nullptr;
     ElaPushButton *m_removeButton = nullptr;
     ElaText *m_modeCaption = nullptr;
