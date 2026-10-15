@@ -1,4 +1,5 @@
 #include <QTest>
+#include <QSignalSpy>
 #include "repair/UntruncLocator.h"
 #include "repair/UntruncProcess.h"
 
@@ -10,7 +11,28 @@ private slots:
     void testLocator();
     void testLocatorNonBlockingStartup();
     void testPredictFixedPath();
+    void testProgressSignalEmission();
 };
+
+void tst_UntruncProcess::testProgressSignalEmission()
+{
+    UntruncProcess proc;
+    QSignalSpy progressSpy(&proc, &UntruncProcess::progressChanged);
+    QSignalSpy logSpy(&proc, &UntruncProcess::logMessage);
+
+    // Simulate untrunc output with carriage return progress lines
+    QString buffer = QStringLiteral("reading atoms...\r 12.5%  \r 45%  \r 98.2%  \nsaving fixed file\n");
+    proc.processOutputBuffer(buffer);
+
+    QCOMPARE(progressSpy.count(), 3);
+    QCOMPARE(progressSpy.at(0).at(0).toDouble(), 0.125);
+    QCOMPARE(progressSpy.at(1).at(0).toDouble(), 0.45);
+    QCOMPARE(progressSpy.at(2).at(0).toDouble(), 0.982);
+
+    QVERIFY(logSpy.count() >= 4);
+    QVERIFY(logSpy.at(0).at(0).toString().contains(QStringLiteral("reading atoms...")));
+    QVERIFY(logSpy.last().at(0).toString().contains(QStringLiteral("saving fixed file")));
+}
 
 void tst_UntruncProcess::testLocatorNonBlockingStartup()
 {

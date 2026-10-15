@@ -276,6 +276,35 @@ QStringList FFmpegCapabilities::filterEncoders(const QStringList &candidates) co
     return available;
 }
 
+bool FFmpegCapabilities::isHwEncoder(const QString &encoder)
+{
+    return isHwEncoderToken(encoder.toLower());
+}
+
+QString FFmpegCapabilities::fallbackSoftwareEncoder(const QString &hwEncoder)
+{
+    const QString lower = hwEncoder.toLower();
+    if (!isHwEncoderToken(lower)) {
+        return QString();
+    }
+    if (lower.contains(QLatin1String("265")) || lower.contains(QLatin1String("hevc"))) {
+        return QStringLiteral("libx265");
+    }
+    if (lower.contains(QLatin1String("av1"))) {
+        return QStringLiteral("libsvtav1");
+    }
+    if (lower.contains(QLatin1String("vp9"))) {
+        return QStringLiteral("libvpx-vp9");
+    }
+    if (lower.contains(QLatin1String("vp8"))) {
+        return QStringLiteral("libvpx");
+    }
+    if (lower.contains(QLatin1String("264")) || lower.contains(QLatin1String("avc"))) {
+        return QStringLiteral("libx264");
+    }
+    return QStringLiteral("libx264");
+}
+
 namespace {
 // Listing rows start with one or two flag columns (e.g. "DE", "V....D",
 // or "D d" where the lone "d" marks a capture device) before the name.

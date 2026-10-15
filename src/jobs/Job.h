@@ -74,6 +74,11 @@ public:
     void setOutputFile(const QString &file);
     void addLog(const QString &message);
 
+    bool autoSoftwareFallback() const;
+    void setAutoSoftwareFallback(bool enable);
+    bool fallbackAttempted() const;
+    void setFallbackAttempted(bool attempted);
+
 signals:
     void nameChanged();
     void statusChanged();
@@ -93,6 +98,8 @@ private:
     QString m_commandProgram;
     QStringList m_commandArguments;
     double m_totalDuration = 0;
+    bool m_autoSoftwareFallback = true;
+    bool m_fallbackAttempted = false;
     QList<JobLog> m_logs;
     QDateTime m_startTime;
     QDateTime m_endTime;

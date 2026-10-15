@@ -34,6 +34,7 @@ public:
 signals:
     void stateChanged(UntruncProcess::State state);
     void logMessage(const QString &line);
+    void progressChanged(double fraction);
     void finished(bool success, const QString &fixedFilePath);
 
 private slots:
@@ -54,4 +55,6 @@ private:
     QString m_stdoutBuffer;
     QString m_stderrBuffer;
     QString m_lastError;
+
+    friend class tst_UntruncProcess;
 };

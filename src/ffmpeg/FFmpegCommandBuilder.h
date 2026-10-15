@@ -47,6 +47,10 @@ public:
 
     QStringList buildConversion(const ConversionOptions &options) const;
 
+    // Detects whether hardware acceleration/encoders are present in command arguments,
+    // and produces a sanitized software-encoding fallback argument list if requested.
+    static bool canFallbackToSoftware(const QStringList &arguments, QStringList *fallbackArgs = nullptr);
+
     Q_INVOKABLE QStringList buildConversion(
         const QString &inputPath,
         const QString &outputPath,

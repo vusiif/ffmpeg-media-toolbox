@@ -91,6 +91,12 @@ public:
     // something to offer.
     QStringList filterEncoders(const QStringList &candidates) const;
 
+    // Checks whether an encoder is a hardware-accelerated encoder
+    static bool isHwEncoder(const QString &encoder);
+
+    // Maps a hardware encoder name to its software fallback equivalent (e.g. "h264_nvenc" -> "libx264")
+    static QString fallbackSoftwareEncoder(const QString &hwEncoder);
+
 signals:
     void capabilitiesChanged();
 

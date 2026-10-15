@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QRegularExpression>
 
 UntruncProcess::UntruncProcess(QObject *parent)
     : QObject(parent)
@@ -126,11 +127,29 @@ void UntruncProcess::setState(State state)
 
 void UntruncProcess::processOutputBuffer(QString &buffer)
 {
-    int newlineIdx;
-    while ((newlineIdx = buffer.indexOf(QLatin1Char('\n'))) >= 0) {
-        QString line = buffer.left(newlineIdx).trimmed();
-        buffer = buffer.mid(newlineIdx + 1);
+    static const QRegularExpression delimiterRegex(QStringLiteral("[\r\n]"));
+    static const QRegularExpression pctRegex(QStringLiteral(R"((\d+(?:\.\d+)?)\s*%)"));
+
+    int idx;
+    while ((idx = buffer.indexOf(delimiterRegex)) >= 0) {
+        QString line = buffer.left(idx).trimmed();
+        int skip = 1;
+        if (idx + 1 < buffer.size()) {
+            const QChar c1 = buffer.at(idx);
+            const QChar c2 = buffer.at(idx + 1);
+            if ((c1 == QLatin1Char('\r') && c2 == QLatin1Char('\n')) ||
+                (c1 == QLatin1Char('\n') && c2 == QLatin1Char('\r'))) {
+                skip = 2;
+            }
+        }
+        buffer = buffer.mid(idx + skip);
+
         if (!line.isEmpty()) {
+            const auto match = pctRegex.match(line);
+            if (match.hasMatch()) {
+                const double pct = match.captured(1).toDouble();
+                emit progressChanged(qBound(0.0, pct / 100.0, 1.0));
+            }
             emit logMessage(line);
         }
     }
@@ -175,6 +194,7 @@ void UntruncProcess::onFinished(int exitCode, QProcess::ExitStatus exitStatus)
                          (exitCode == 0 || (fixedExists && QFileInfo(fixed).size() > 0));
 
     if (success && fixedExists) {
+        emit progressChanged(1.0);
         m_fixedFilePath = fixed;
         setState(State::Finished);
         emit finished(true, m_fixedFilePath);

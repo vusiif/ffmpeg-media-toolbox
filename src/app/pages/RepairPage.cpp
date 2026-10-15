@@ -76,6 +76,8 @@ RepairPage::RepairPage(FFmpegLocator *ffmpegLocator,
     // Connect Repair signals
     connect(m_repairProcess, &UntruncProcess::logMessage,
             this, &RepairPage::onRepairLog);
+    connect(m_repairProcess, &UntruncProcess::progressChanged,
+            this, &RepairPage::onRepairProgress);
     connect(m_repairProcess, &UntruncProcess::finished,
             this, &RepairPage::onRepairFinished);
 
@@ -232,7 +234,8 @@ void RepairPage::setupRepairTab(QWidget *tab)
 
     // Progress bar
     m_repairProgressBar = new ElaProgressBar(m_repairControlCard);
-    m_repairProgressBar->setRange(0, 0); // indeterminate
+    m_repairProgressBar->setRange(0, 100);
+    m_repairProgressBar->setValue(0);
     m_repairProgressBar->setVisible(false);
     leftLayout->addWidget(m_repairProgressBar);
 
@@ -450,6 +453,8 @@ void RepairPage::onStartRepair()
 
     m_startRepairBtn->setEnabled(false);
     m_cancelRepairBtn->setEnabled(true);
+    m_repairProgressBar->setRange(0, 100);
+    m_repairProgressBar->setValue(0);
     m_repairProgressBar->setVisible(true);
     m_resultBar->setVisible(false);
     m_repairStatusLabel->setVisible(true);
@@ -464,6 +469,7 @@ void RepairPage::onCancelRepair()
     m_repairProcess->cancel();
     m_startRepairBtn->setEnabled(true);
     m_cancelRepairBtn->setEnabled(false);
+    m_repairProgressBar->setValue(0);
     m_repairProgressBar->setVisible(false);
     m_repairStatusLabel->setText(trId("repair.repairCancelled"));
 }
@@ -473,6 +479,13 @@ void RepairPage::onRepairLog(const QString &line)
     m_console->appendPlainText(line);
 }
 
+void RepairPage::onRepairProgress(double fraction)
+{
+    const int pct = qBound(0, static_cast<int>(fraction * 100.0), 100);
+    m_repairProgressBar->setValue(pct);
+    m_repairStatusLabel->setText(trId("repair.repairingPct").arg(pct));
+}
+
 void RepairPage::onRepairFinished(bool success, const QString &fixedPath)
 {
     m_startRepairBtn->setEnabled(true);
@@ -480,6 +493,7 @@ void RepairPage::onRepairFinished(bool success, const QString &fixedPath)
     m_repairProgressBar->setVisible(false);
 
     if (success && !fixedPath.isEmpty()) {
+        m_repairProgressBar->setValue(100);
         m_lastFixedPath = fixedPath;
         m_repairStatusLabel->setText(trId("repair.success"));
         m_resultLabel->setText(QFileInfo(fixedPath).fileName());

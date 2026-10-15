@@ -1,8 +1,60 @@
 #include "FFmpegCommandBuilder.h"
+#include "FFmpegCapabilities.h"
 
 FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
     : QObject(parent)
 {
+}
+
+bool FFmpegCommandBuilder::canFallbackToSoftware(const QStringList &arguments, QStringList *fallbackArgs)
+{
+    bool hasHw = false;
+    QStringList result;
+    result.reserve(arguments.size());
+
+    for (int i = 0; i < arguments.size(); ++i) {
+        const QString &arg = arguments.at(i);
+
+        // Strip hardware acceleration flags
+        if (arg == QLatin1String("-hwaccel") ||
+            arg == QLatin1String("-hwaccel_device") ||
+            arg == QLatin1String("-hwaccel_output_format")) {
+            hasHw = true;
+            if (i + 1 < arguments.size() && !arguments.at(i + 1).startsWith(QLatin1Char('-'))) {
+                ++i;
+            }
+            continue;
+        }
+
+        // Replace hardware video encoder with software encoder
+        if ((arg == QLatin1String("-c:v") || arg == QLatin1String("-vcodec")) && i + 1 < arguments.size()) {
+            const QString &val = arguments.at(i + 1);
+            if (FFmpegCapabilities::isHwEncoder(val)) {
+                hasHw = true;
+                const QString sw = FFmpegCapabilities::fallbackSoftwareEncoder(val);
+                result << arg << (sw.isEmpty() ? QStringLiteral("libx264") : sw);
+                ++i;
+                continue;
+            }
+        }
+
+        // Sanitize hardware-specific presets (e.g. NVENC p1-p7) to a standard libx264/libx265 preset
+        if (arg == QLatin1String("-preset") && i + 1 < arguments.size()) {
+            const QString &val = arguments.at(i + 1);
+            if (val.startsWith(QLatin1Char('p')) && val.size() == 2 && val.at(1).isDigit()) {
+                result << arg << QStringLiteral("medium");
+                ++i;
+                continue;
+            }
+        }
+
+        result << arg;
+    }
+
+    if (hasHw && fallbackArgs) {
+        *fallbackArgs = result;
+    }
+    return hasHw;
 }
 
 QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &options) const

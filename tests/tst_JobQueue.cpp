@@ -14,6 +14,7 @@ private slots:
     void runsQueuedJobsWithinConcurrencyLimit();
     void cancelWhileRunningLeavesJobCancelledAndFreesSlot();
     void shortJobCompletesAndSignalsAllFinished();
+    void hardwareAccelerationFailureFallsBackToSoftware();
 };
 
 namespace {
@@ -116,6 +117,39 @@ void JobQueueTest::shortJobCompletesAndSignalsAllFinished()
     QTRY_COMPARE_WITH_TIMEOUT(allFinishedSpy.count(), 1, 30000);
     QTest::qWait(200);
     QCOMPARE(allFinishedSpy.count(), 1);
+}
+
+void JobQueueTest::hardwareAccelerationFailureFallsBackToSoftware()
+{
+    FFmpegLocator locator;
+    locator.waitForDetection();
+    if (!locator.isValid()) {
+        QSKIP("ffmpeg/ffprobe not available");
+    }
+
+    JobQueue queue(&locator, nullptr);
+    auto *job = new Job(&queue);
+    job->setCommand(locator.ffmpegPath(),
+                    {QStringLiteral("-y"),
+                     QStringLiteral("-hwaccel"), QStringLiteral("non_existent_dummy_hwaccel"),
+                     QStringLiteral("-f"), QStringLiteral("lavfi"),
+                     QStringLiteral("-i"), QStringLiteral("testsrc=duration=0.2:size=128x128:rate=10"),
+                     QStringLiteral("-c:v"), QStringLiteral("h264_nvenc"),
+                     QStringLiteral("-f"), QStringLiteral("null"), QStringLiteral("-")});
+    job->setTotalDuration(0.2);
+
+    QVERIFY(job->autoSoftwareFallback());
+    QVERIFY(!job->fallbackAttempted());
+
+    queue.addJob(job);
+
+    // Initial hardware invocation fails due to invalid hwaccel/encoder,
+    // triggers automatic fallback to software libx264, and completes successfully.
+    QTRY_VERIFY_WITH_TIMEOUT(job->status() == JobStatus::Completed, 30000);
+    QVERIFY(job->fallbackAttempted());
+    QCOMPARE(job->progress(), 1.0);
+    QVERIFY(job->commandArguments().contains(QStringLiteral("libx264")));
+    QVERIFY(!job->commandArguments().contains(QStringLiteral("-hwaccel")));
 }
 
 QTEST_GUILESS_MAIN(JobQueueTest)

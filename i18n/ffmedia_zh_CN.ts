@@ -719,6 +719,10 @@
         <source>repair.repairing</source>
         <translation>正在重建视频结构...</translation>
     </message>
+    <message id="repair.repairingPct">
+        <source>repair.repairingPct</source>
+        <translation>正在重建视频结构... %1%</translation>
+    </message>
     <message id="repair.repairCancelled">
         <source>repair.repairCancelled</source>
         <translation>修复已取消</translation>

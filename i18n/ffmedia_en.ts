@@ -719,6 +719,10 @@
         <source>repair.repairing</source>
         <translation>Rebuilding video structure...</translation>
     </message>
+    <message id="repair.repairingPct">
+        <source>repair.repairingPct</source>
+        <translation>Rebuilding video structure... %1%</translation>
+    </message>
     <message id="repair.repairCancelled">
         <source>repair.repairCancelled</source>
         <translation>Repair cancelled</translation>

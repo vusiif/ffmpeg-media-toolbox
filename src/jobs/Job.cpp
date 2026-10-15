@@ -90,3 +90,8 @@ void Job::addLog(const QString &message)
         m_logs.removeFirst();
     }
 }
+
+bool Job::autoSoftwareFallback() const { return m_autoSoftwareFallback; }
+void Job::setAutoSoftwareFallback(bool enable) { m_autoSoftwareFallback = enable; }
+bool Job::fallbackAttempted() const { return m_fallbackAttempted; }
+void Job::setFallbackAttempted(bool attempted) { m_fallbackAttempted = attempted; }

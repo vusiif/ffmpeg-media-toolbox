@@ -66,6 +66,8 @@ private slots:
     void pipWithCrf();
     void formatTimePadsComponents();
     void escapeFilterValueEscapesMetaChars();
+    void canFallbackToSoftwareReplacesHwEncodersAndDropsHwaccel();
+    void canFallbackToSoftwareLeavesPlainSoftwareCommandUntouched();
 
 private:
     FFmpegCommandBuilder m_builder;
@@ -875,6 +877,56 @@ void FFmpegCommandBuilderTest::escapeFilterValueEscapesMetaChars()
              QStringLiteral("a\\;b"));
     QCOMPARE(FFmpegCommandBuilder::escapeFilterValue(QStringLiteral("a\\b")),
              QStringLiteral("a\\\\b"));
+}
+
+void FFmpegCommandBuilderTest::canFallbackToSoftwareReplacesHwEncodersAndDropsHwaccel()
+{
+    const QStringList hwCmd = {
+        QStringLiteral("-y"),
+        QStringLiteral("-hwaccel"), QStringLiteral("cuda"),
+        QStringLiteral("-i"), QStringLiteral("input.mp4"),
+        QStringLiteral("-c:v"), QStringLiteral("h264_nvenc"),
+        QStringLiteral("-preset"), QStringLiteral("p4"),
+        QStringLiteral("-c:a"), QStringLiteral("aac"),
+        QStringLiteral("output.mp4")
+    };
+
+    QStringList swCmd;
+    const bool changed = FFmpegCommandBuilder::canFallbackToSoftware(hwCmd, &swCmd);
+    QVERIFY(changed);
+
+    QVERIFY(!swCmd.contains(QStringLiteral("-hwaccel")));
+    QVERIFY(!swCmd.contains(QStringLiteral("cuda")));
+    QVERIFY(!swCmd.contains(QStringLiteral("h264_nvenc")));
+    QVERIFY(!swCmd.contains(QStringLiteral("p4")));
+
+    // Replaced with libx264 and medium
+    const int cvIdx = swCmd.indexOf(QStringLiteral("-c:v"));
+    QVERIFY(cvIdx >= 0 && cvIdx + 1 < swCmd.size());
+    QCOMPARE(swCmd.at(cvIdx + 1), QStringLiteral("libx264"));
+
+    const int presetIdx = swCmd.indexOf(QStringLiteral("-preset"));
+    QVERIFY(presetIdx >= 0 && presetIdx + 1 < swCmd.size());
+    QCOMPARE(swCmd.at(presetIdx + 1), QStringLiteral("medium"));
+
+    // Audio and other options preserved
+    QVERIFY(swCmd.contains(QStringLiteral("aac")));
+    QVERIFY(swCmd.contains(QStringLiteral("output.mp4")));
+}
+
+void FFmpegCommandBuilderTest::canFallbackToSoftwareLeavesPlainSoftwareCommandUntouched()
+{
+    const QStringList swCmd = {
+        QStringLiteral("-y"),
+        QStringLiteral("-i"), QStringLiteral("input.mp4"),
+        QStringLiteral("-c:v"), QStringLiteral("libx264"),
+        QStringLiteral("-c:a"), QStringLiteral("aac"),
+        QStringLiteral("output.mp4")
+    };
+
+    QStringList result;
+    const bool changed = FFmpegCommandBuilder::canFallbackToSoftware(swCmd, &result);
+    QVERIFY(!changed);
 }
 
 QTEST_GUILESS_MAIN(FFmpegCommandBuilderTest)

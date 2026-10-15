@@ -49,6 +49,7 @@ private slots:
     void onStartRepair();
     void onCancelRepair();
     void onRepairLog(const QString &line);
+    void onRepairProgress(double fraction);
     void onRepairFinished(bool success, const QString &fixedPath);
     void onOpenOutputFolder();
     void onPreviewFixedVideo();

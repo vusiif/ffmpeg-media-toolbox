@@ -90,6 +90,7 @@ void JobQueue::retryJob(const QString &jobId)
     job->setStatus(JobStatus::Pending);
     job->setProgress(0);
     job->setErrorMessage({});
+    job->setFallbackAttempted(false);
     startNext();
 }
 
@@ -175,6 +176,23 @@ void JobQueue::onJobFinished(bool success)
             job->setProgress(1.0);
             job->addLog(QStringLiteral("Completed successfully"));
         } else {
+            if (job->autoSoftwareFallback() && !job->fallbackAttempted()) {
+                QStringList fallbackArgs;
+                if (FFmpegCommandBuilder::canFallbackToSoftware(job->commandArguments(), &fallbackArgs)) {
+                    job->setFallbackAttempted(true);
+                    job->setCommand(job->commandProgram(), fallbackArgs);
+                    job->setStatus(JobStatus::Pending);
+                    job->setProgress(0);
+                    job->addLog(QStringLiteral("Hardware acceleration failed. Automatically falling back to software encoding (%1)...")
+                                    .arg(job->commandDisplayString()));
+                    m_processes.remove(jobId);
+                    process->deleteLater();
+                    emit runningCountChanged();
+                    startNext();
+                    return;
+                }
+            }
+
             job->setStatus(JobStatus::Failed);
             job->setErrorMessage(process->stderrOutput());
             job->addLog(QStringLiteral("Failed: %1").arg(process->stderrOutput()));
