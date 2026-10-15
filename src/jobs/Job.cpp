@@ -1,5 +1,7 @@
 #include "Job.h"
 
+#include "ffmpeg/FFmpegProcess.h"
+
 Job::Job(QObject *parent)
     : QObject(parent)
     , m_id(QUuid::createUuid())
@@ -58,9 +60,11 @@ void Job::setCommand(const QString &program, const QStringList &arguments)
 
 QString Job::commandDisplayString() const
 {
+    // Preview must match what JobQueue/FFmpegProcess actually executes,
+    // progress plumbing included (AI_PLAN §34).
     QStringList parts;
     parts << m_commandProgram;
-    for (const QString &arg : m_commandArguments) {
+    for (const QString &arg : FFmpegProcess::buildInvocationArguments(m_commandArguments)) {
         if (arg.contains(QLatin1Char(' '))) {
             parts << QStringLiteral("\"%1\"").arg(arg);
         } else {

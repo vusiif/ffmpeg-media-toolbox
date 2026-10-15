@@ -49,6 +49,7 @@ private:
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QVideoWidget *m_videoWidget = nullptr;
+    QWidget *m_placeholderWidget = nullptr;
 
     DamageTimelineSlider *m_timeline = nullptr;
     ElaPushButton *m_playButton = nullptr;

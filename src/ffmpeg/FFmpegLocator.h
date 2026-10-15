@@ -21,6 +21,8 @@ public:
     bool isValid() const;
 
     Q_INVOKABLE bool autoDetect();
+    Q_INVOKABLE void autoDetectAsync();
+    Q_INVOKABLE bool waitForDetection(int timeoutMs = 10000);
     Q_INVOKABLE bool setCustomPaths(const QString &ffmpeg, const QString &ffprobe);
     Q_INVOKABLE void resetToAutoDetect();
 

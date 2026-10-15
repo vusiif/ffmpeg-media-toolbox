@@ -1,9 +1,11 @@
 #pragma once
 
+#include <QFutureWatcher>
 #include <QObject>
 #include <QSet>
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 class FFmpegLocator;
 
@@ -21,7 +23,11 @@ public:
     explicit FFmpegCapabilities(const FFmpegLocator *locator, QObject *parent = nullptr);
 
     bool isLoaded() const;
+    bool isScanning() const;
 
+    // Starts a capability scan off the GUI thread. Returns false only when
+    // there is no usable FFmpeg to scan. A request issued while a scan is in
+    // flight is coalesced into a single follow-up run.
     Q_INVOKABLE bool scan();
 
     bool hasFormat(const QString &name) const;
@@ -89,6 +95,24 @@ signals:
     void capabilitiesChanged();
 
 private:
+    // Everything a scan produces, computed on a worker thread so the GUI
+    // thread never blocks on the FFmpeg subprocesses.
+    struct ScanResult {
+        QSet<QString> formats;
+        QSet<QString> codecs;
+        QSet<QString> encoders;
+        QSet<QString> decoders;
+        QSet<QString> filters;
+        QSet<QString> hwAccels;
+        QSet<QString> verifiedHwEncoders;
+        QVector<HwDevice> hwDevices;
+        bool loaded = false;
+    };
+
+    static ScanResult runScan(const QString &ffmpeg);
+    void launchScan(const QString &ffmpeg);
+    void onScanFinished();
+
     const FFmpegLocator *m_locator;
     QSet<QString> m_formats;
     QSet<QString> m_codecs;
@@ -99,4 +123,8 @@ private:
     QSet<QString> m_verifiedHwEncoders;
     QVector<HwDevice> m_hwDevices;
     bool m_loaded = false;
+
+    QFutureWatcher<ScanResult> *m_watcher = nullptr;
+    bool m_scanRunning = false;
+    bool m_rescanQueued = false;
 };

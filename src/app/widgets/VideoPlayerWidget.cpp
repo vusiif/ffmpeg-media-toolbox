@@ -18,16 +18,22 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     , m_player(new QMediaPlayer(this))
     , m_audioOutput(new QAudioOutput(this))
     , m_videoWidget(new QVideoWidget(this))
+    , m_placeholderWidget(new QWidget(this))
 {
     m_player->setAudioOutput(m_audioOutput);
     m_player->setVideoOutput(m_videoWidget);
     m_videoWidget->setMinimumSize(480, 270);
     m_videoWidget->setStyleSheet(QStringLiteral("background-color: black; border-radius: 8px;"));
+    m_videoWidget->setVisible(false);
+
+    m_placeholderWidget->setMinimumSize(480, 270);
+    m_placeholderWidget->setStyleSheet(QStringLiteral("background-color: #121212; border: 1px dashed rgba(128, 128, 128, 0.3); border-radius: 8px;"));
 
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(8);
 
+    root->addWidget(m_placeholderWidget, 1);
     root->addWidget(m_videoWidget, 1);
 
     m_timeline = new DamageTimelineSlider(Qt::Horizontal, this);
@@ -80,6 +86,8 @@ void VideoPlayerWidget::loadMedia(const QString &filePath)
 {
     m_player->stop();
     m_skipStatusLabel->clear();
+    m_placeholderWidget->setVisible(false);
+    m_videoWidget->setVisible(true);
     m_player->setSource(QUrl::fromLocalFile(filePath));
 }
 

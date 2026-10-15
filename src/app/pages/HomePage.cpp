@@ -54,14 +54,17 @@ HomePage::HomePage(FFmpegLocator *locator, FFmpegCapabilities *caps, QWidget *pa
     m_rescanButton = new ElaPushButton(statusCard);
     connect(m_rescanButton, &ElaPushButton::clicked, this, [=]() {
         m_locator->autoDetect();
-        m_caps->scan();
         m_versionValue->setText(m_locator->ffmpegVersion());
-        if (m_caps->hasHwAcceleration()) {
-            m_hwValue->setText(m_caps->primaryHwDeviceName());
-        } else {
-            m_hwValue->setText(trId("convert.hwAccel.none"));
-        }
+        // Scan runs asynchronously; refreshHwStatus() is driven by the
+        // capabilitiesChanged signal when the scan completes.
+        m_caps->scan();
     });
+    connect(m_locator, &FFmpegLocator::pathsChanged, this, [this]() {
+        m_versionValue->setText(m_locator->ffmpegVersion());
+        m_caps->scan();
+    });
+    connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
+            this, &HomePage::refreshHwStatus);
 
     statusLayout->addWidget(m_statusTitle);
     statusLayout->addLayout(versionRow);
@@ -82,10 +85,15 @@ void HomePage::retranslateUi()
     m_versionCaption->setText(trId("ffmpeg.version") + QStringLiteral(":"));
     m_versionValue->setText(m_locator->ffmpegVersion());
     m_hwCaption->setText(trId("home.hwAccel") + QStringLiteral(":"));
+    refreshHwStatus();
+    m_rescanButton->setText(trId("ffmpeg.rescan"));
+}
+
+void HomePage::refreshHwStatus()
+{
     if (m_caps->hasHwAcceleration()) {
         m_hwValue->setText(m_caps->primaryHwDeviceName());
     } else {
         m_hwValue->setText(trId("convert.hwAccel.none"));
     }
-    m_rescanButton->setText(trId("ffmpeg.rescan"));
 }

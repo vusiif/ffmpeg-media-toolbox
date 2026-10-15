@@ -6,6 +6,8 @@
 
 #include <QPointer>
 
+#include <algorithm>
+
 JobQueue::JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService, QObject *parent)
     : QObject(parent)
     , m_locator(locator)
@@ -35,15 +37,20 @@ void JobQueue::addJob(Job *job)
 
 void JobQueue::startNext()
 {
-    if (runningJobCount() >= m_maxConcurrent) {
+    if (m_processes.size() >= m_maxConcurrent) {
         return;
     }
 
     for (int i = 0; i < m_model->count(); ++i) {
         Job *job = m_model->getJob(i);
         if (job && job->status() == JobStatus::Pending) {
+            // A cancelled job's process may still be winding down; its slot
+            // stays occupied until that process reports finished.
+            if (m_processes.contains(job->id())) {
+                continue;
+            }
             startJob(job);
-            if (runningJobCount() >= m_maxConcurrent) {
+            if (m_processes.size() >= m_maxConcurrent) {
                 break;
             }
         }
@@ -55,7 +62,12 @@ void JobQueue::cancelJob(const QString &jobId)
     Job *job = m_model->findJobById(jobId);
     if (!job) return;
 
-    if (job->status() == JobStatus::Running) {
+    const JobStatus status = job->status();
+    if (status != JobStatus::Running && status != JobStatus::Pending) {
+        return;
+    }
+
+    if (status == JobStatus::Running) {
         auto it = m_processes.find(job->id());
         if (it != m_processes.end()) {
             it.value()->cancel();
@@ -107,6 +119,14 @@ void JobQueue::startJob(Job *job)
     job->setProgress(0);
     job->addLog(QStringLiteral("Starting: %1").arg(job->commandDisplayString()));
 
+    // Retry-after-cancel can race the previous process's wind-down. Detach and
+    // dispose of any stale process so it can never touch this job again.
+    if (FFmpegProcess *stale = m_processes.take(job->id())) {
+        stale->disconnect(this);
+        stale->kill();
+        stale->deleteLater();
+    }
+
     FFmpegProcess *process = new FFmpegProcess(this);
 
     // The job can be cleared while its process is still winding down
@@ -132,17 +152,25 @@ void JobQueue::onJobFinished(bool success)
     FFmpegProcess *process = qobject_cast<FFmpegProcess*>(sender());
     if (!process) return;
 
-    QUuid jobId;
-    for (auto it = m_processes.begin(); it != m_processes.end(); ++it) {
-        if (it.value() == process) {
-            jobId = it.key();
-            break;
-        }
+    auto it = std::find_if(m_processes.begin(), m_processes.end(),
+                           [process](FFmpegProcess *p) { return p == process; });
+    if (it == m_processes.end()) {
+        // Duplicate or stale emission (e.g. a superseded winding-down
+        // process): accounting must not run twice for one process.
+        return;
     }
+    const QUuid jobId = it.key();
 
     Job *job = m_model->findJobById(jobId.toString());
     if (job) {
-        if (success) {
+        const JobStatus status = job->status();
+        if (status == JobStatus::Cancelled) {
+            // Cancellation stays Cancelled through terminate/kill/finished.
+            job->addLog(QStringLiteral("Cancelled"));
+        } else if (status == JobStatus::Pending) {
+            // Retried while the old process wound down; leave it Pending so
+            // startNext() can launch a fresh process for it.
+        } else if (success) {
             job->setStatus(JobStatus::Completed);
             job->setProgress(1.0);
             job->addLog(QStringLiteral("Completed successfully"));
@@ -158,24 +186,16 @@ void JobQueue::onJobFinished(bool success)
 
     emit runningCountChanged();
 
-    bool anyRunning = false;
+    bool anyActive = m_processes.isEmpty();
     for (int i = 0; i < m_model->count(); ++i) {
-        if (m_model->getJob(i)->status() == JobStatus::Running) {
-            anyRunning = true;
+        const JobStatus status = m_model->getJob(i)->status();
+        if (status == JobStatus::Running || status == JobStatus::Pending) {
+            anyActive = false;
             break;
         }
     }
-    if (!anyRunning) {
-        bool anyPending = false;
-        for (int i = 0; i < m_model->count(); ++i) {
-            if (m_model->getJob(i)->status() == JobStatus::Pending) {
-                anyPending = true;
-                break;
-            }
-        }
-        if (!anyPending) {
-            emit allJobsFinished();
-        }
+    if (anyActive) {
+        emit allJobsFinished();
     }
 
     startNext();
@@ -183,11 +203,7 @@ void JobQueue::onJobFinished(bool success)
 
 int JobQueue::runningJobCount() const
 {
-    int count = 0;
-    for (int i = 0; i < m_model->count(); ++i) {
-        if (m_model->getJob(i)->status() == JobStatus::Running) {
-            count++;
-        }
-    }
-    return count;
+    // Live processes are the real concurrency unit: a cancelled job whose
+    // process is still terminating must keep occupying its slot.
+    return m_processes.size();
 }

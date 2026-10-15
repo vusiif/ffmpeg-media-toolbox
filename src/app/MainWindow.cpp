@@ -66,10 +66,16 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     setUserInfoCardTitle(trId("app.title"));
     setUserInfoCardSubTitle(formatShortVersion(m_ffmpegLocator->ffmpegVersion()));
 
+    connect(m_ffmpegLocator, &FFmpegLocator::pathsChanged, this, [this]() {
+        setUserInfoCardSubTitle(formatShortVersion(m_ffmpegLocator->ffmpegVersion()));
+        m_ffmpegCaps->scan();
+    });
+
     initPages();
 
-    // Detect once at startup so the codec lists only offer encoders this
-    // build actually ships (see AI_PLAN §42); failures fall back silently.
+    // Kick off an asynchronous capability scan so startup stays responsive;
+    // the codec lists only offer encoders this build ships (AI_PLAN §42).
+    // Failures fall back silently.
     m_ffmpegCaps->scan();
 
     connect(m_languageManager, &LanguageManager::languageChanged,

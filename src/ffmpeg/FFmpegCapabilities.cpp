@@ -2,6 +2,7 @@
 #include "FFmpegLocator.h"
 
 #include <QProcess>
+#include <QtConcurrent>
 
 FFmpegCapabilities::FFmpegCapabilities(const FFmpegLocator *locator, QObject *parent)
     : QObject(parent)
@@ -10,6 +11,7 @@ FFmpegCapabilities::FFmpegCapabilities(const FFmpegLocator *locator, QObject *pa
 }
 
 bool FFmpegCapabilities::isLoaded() const { return m_loaded; }
+bool FFmpegCapabilities::isScanning() const { return m_scanRunning; }
 
 bool FFmpegCapabilities::scan()
 {
@@ -17,29 +19,88 @@ bool FFmpegCapabilities::scan()
         return false;
     }
 
-    QString ffmpeg = m_locator->ffmpegPath();
+    if (m_scanRunning) {
+        // A scan is already in flight; coalesce this request into a single
+        // follow-up run so overlapping callers cannot pile up worker jobs.
+        m_rescanQueued = true;
+        return true;
+    }
+
+    launchScan(m_locator->ffmpegPath());
+    return true;
+}
+
+void FFmpegCapabilities::launchScan(const QString &ffmpeg)
+{
+    if (ffmpeg.isEmpty()) {
+        return;
+    }
+
+    m_scanRunning = true;
+    if (!m_watcher) {
+        m_watcher = new QFutureWatcher<ScanResult>(this);
+        connect(m_watcher, &QFutureWatcher<ScanResult>::finished,
+                this, &FFmpegCapabilities::onScanFinished);
+    }
+    // runScan only reads its argument copies, never `this`, so this object may
+    // be destroyed while a scan is in flight without a dangling read.
+    m_watcher->setFuture(QtConcurrent::run(&FFmpegCapabilities::runScan, ffmpeg));
+}
+
+void FFmpegCapabilities::onScanFinished()
+{
+    m_scanRunning = false;
+
+    if (m_watcher) {
+        const ScanResult result = m_watcher->result();
+        m_formats = result.formats;
+        m_codecs = result.codecs;
+        m_encoders = result.encoders;
+        m_decoders = result.decoders;
+        m_filters = result.filters;
+        m_hwAccels = result.hwAccels;
+        m_verifiedHwEncoders = result.verifiedHwEncoders;
+        m_hwDevices = result.hwDevices;
+        if (result.loaded) {
+            m_loaded = true;
+        }
+        emit capabilitiesChanged();
+    }
+
+    if (m_rescanQueued) {
+        m_rescanQueued = false;
+        if (m_locator && m_locator->isValid()) {
+            launchScan(m_locator->ffmpegPath());
+        }
+    }
+}
+
+FFmpegCapabilities::ScanResult FFmpegCapabilities::runScan(const QString &ffmpeg)
+{
+    ScanResult result;
+    if (ffmpeg.isEmpty()) {
+        return result;
+    }
 
     auto runQuery = [&](const QStringList &args) -> QString {
         QProcess proc;
         proc.start(ffmpeg, args);
         if (!proc.waitForFinished(10000)) {
             proc.kill();
+            proc.waitForFinished(1000);
             return {};
         }
         return QString::fromUtf8(proc.readAllStandardOutput());
     };
 
-    m_formats = parseListOutput(runQuery({QStringLiteral("-formats")}));
-    m_codecs = parseListOutput(runQuery({QStringLiteral("-codecs")}));
-    m_encoders = parseListOutput(runQuery({QStringLiteral("-encoders")}));
-    m_decoders = parseListOutput(runQuery({QStringLiteral("-decoders")}));
-    m_filters = parseListOutput(runQuery({QStringLiteral("-filters")}));
-    m_hwAccels = parseListOutput(runQuery({QStringLiteral("-hwaccels")}));
+    result.formats = parseListOutput(runQuery({QStringLiteral("-formats")}));
+    result.codecs = parseListOutput(runQuery({QStringLiteral("-codecs")}));
+    result.encoders = parseListOutput(runQuery({QStringLiteral("-encoders")}));
+    result.decoders = parseListOutput(runQuery({QStringLiteral("-decoders")}));
+    result.filters = parseListOutput(runQuery({QStringLiteral("-filters")}));
+    result.hwAccels = parseListOutput(runQuery({QStringLiteral("-hwaccels")}));
 
     // Probe hardware encoder capabilities
-    m_hwDevices.clear();
-    m_verifiedHwEncoders.clear();
-
     const struct VendorProbe {
         HwVendor vendor;
         const char *name;
@@ -66,6 +127,7 @@ bool FFmpegCapabilities::scan()
         proc.start(ffmpeg, probeArgs);
         if (!proc.waitForFinished(1500)) {
             proc.kill();
+            proc.waitForFinished(1000);
             return false;
         }
         return (proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0);
@@ -79,20 +141,19 @@ bool FFmpegCapabilities::scan()
 
         for (const char *encStr : v.encoders) {
             const QString enc = QString::fromLatin1(encStr);
-            if (m_encoders.contains(enc) && probeEncoder(enc)) {
+            if (result.encoders.contains(enc) && probeEncoder(enc)) {
                 dev.supportedEncoders.append(enc);
-                m_verifiedHwEncoders.insert(enc);
+                result.verifiedHwEncoders.insert(enc);
             }
         }
 
         if (!dev.supportedEncoders.isEmpty()) {
-            m_hwDevices.append(dev);
+            result.hwDevices.append(dev);
         }
     }
 
-    m_loaded = true;
-    emit capabilitiesChanged();
-    return true;
+    result.loaded = true;
+    return result;
 }
 
 bool FFmpegCapabilities::hasFormat(const QString &name) const { return m_formats.contains(name); }

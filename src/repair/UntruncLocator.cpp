@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QtConcurrent>
 
 namespace {
 bool isValidUntrunc(const QString &path)
@@ -20,7 +21,38 @@ bool isValidUntrunc(const QString &path)
 UntruncLocator::UntruncLocator(QObject *parent)
     : QObject(parent)
 {
-    scan();
+    scanAsync();
+}
+
+void UntruncLocator::scanAsync()
+{
+    QPointer<UntruncLocator> self = this;
+    (void)QtConcurrent::run([self]() {
+        if (!self) return;
+        QMetaObject::invokeMethod(self, [self]() {
+            if (self) {
+                self->scan();
+            }
+        });
+    });
+}
+
+bool UntruncLocator::waitForScan(int timeoutMs)
+{
+    if (m_available) {
+        return true;
+    }
+
+    QEventLoop loop;
+    connect(this, &UntruncLocator::availabilityChanged, &loop, &QEventLoop::quit);
+
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(timeoutMs);
+
+    loop.exec();
+    return m_available;
 }
 
 bool UntruncLocator::scan()

@@ -20,6 +20,8 @@ if(NOT DEFINED CMAKE_PREFIX_PATH)
         set(CMAKE_PREFIX_PATH "$ENV{Qt6_DIR}")
     elseif(DEFINED ENV{QT_DIR})
         set(CMAKE_PREFIX_PATH "$ENV{QT_DIR}")
+    elseif(EXISTS "C:/Qt/6.12.0/msvc2022_64")
+        set(CMAKE_PREFIX_PATH "C:/Qt/6.12.0/msvc2022_64")
     elseif(EXISTS "C:/Qt/6.11.1/msvc2022_64")
         set(CMAKE_PREFIX_PATH "C:/Qt/6.11.1/msvc2022_64")
     endif()
@@ -157,7 +159,7 @@ add_custom_command(TARGET ffmedia-toolbox POST_BUILD
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job UntruncProcess CorruptedVideoScanner)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue UntruncProcess CorruptedVideoScanner)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

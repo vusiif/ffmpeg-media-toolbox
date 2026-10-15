@@ -99,8 +99,9 @@ void JobTest::commandDisplayQuotesArgsWithSpaces()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(job.commandProgram(), QStringLiteral("ffmpeg"));
     QCOMPARE(job.commandArguments().size(), 3);
+    // Preview mirrors the real invocation, progress plumbing included.
     QCOMPARE(job.commandDisplayString(),
-             QStringLiteral("ffmpeg -i \"my file.mp4\" out.mp4"));
+             QStringLiteral("ffmpeg -progress pipe:1 -nostats -i \"my file.mp4\" out.mp4"));
 }
 
 void JobTest::logsAreAppendedAndCapped()

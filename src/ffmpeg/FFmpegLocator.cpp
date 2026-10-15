@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QCoreApplication>
+#include <QtConcurrent>
 
 static constexpr auto kSettingsGroup = "FFmpegLocator";
 static constexpr auto kKeyFfmpeg = "ffmpegPath";
@@ -16,7 +17,7 @@ FFmpegLocator::FFmpegLocator(QObject *parent)
 {
     loadSavedPaths();
     if (m_ffmpegPath.isEmpty() || m_ffprobePath.isEmpty()) {
-        autoDetect();
+        autoDetectAsync();
     }
 }
 
@@ -24,6 +25,53 @@ QString FFmpegLocator::ffmpegPath() const { return m_ffmpegPath; }
 QString FFmpegLocator::ffprobePath() const { return m_ffprobePath; }
 QString FFmpegLocator::ffmpegVersion() const { return m_ffmpegVersion; }
 bool FFmpegLocator::isValid() const { return !m_ffmpegPath.isEmpty() && !m_ffprobePath.isEmpty(); }
+
+void FFmpegLocator::autoDetectAsync()
+{
+    QPointer<FFmpegLocator> self = this;
+    (void)QtConcurrent::run([self]() {
+        if (!self) return;
+        auto ffmpegResult = self->probe(self->findInPath(QStringLiteral("ffmpeg")));
+        if (ffmpegResult.path.isEmpty()) {
+            ffmpegResult = self->probe(self->findCommonLocations(QStringLiteral("ffmpeg")));
+        }
+
+        auto ffprobeResult = self->probe(self->findInPath(QStringLiteral("ffprobe")));
+        if (ffprobeResult.path.isEmpty()) {
+            ffprobeResult = self->probe(self->findCommonLocations(QStringLiteral("ffprobe")));
+        }
+
+        QMetaObject::invokeMethod(self, [self, ffmpegResult, ffprobeResult]() {
+            if (!self) return;
+            if (!ffmpegResult.path.isEmpty() && !ffprobeResult.path.isEmpty()) {
+                self->m_ffmpegPath = ffmpegResult.path;
+                self->m_ffprobePath = ffprobeResult.path;
+                self->m_ffmpegVersion = ffmpegResult.version;
+                self->m_customPaths = false;
+                self->savePaths();
+                emit self->pathsChanged();
+            }
+        });
+    });
+}
+
+bool FFmpegLocator::waitForDetection(int timeoutMs)
+{
+    if (isValid()) {
+        return true;
+    }
+
+    QEventLoop loop;
+    connect(this, &FFmpegLocator::pathsChanged, &loop, &QEventLoop::quit);
+
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(timeoutMs);
+
+    loop.exec();
+    return isValid();
+}
 
 bool FFmpegLocator::autoDetect()
 {

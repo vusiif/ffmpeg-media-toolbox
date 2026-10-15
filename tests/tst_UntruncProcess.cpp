@@ -8,12 +8,23 @@ class tst_UntruncProcess : public QObject
 
 private slots:
     void testLocator();
+    void testLocatorNonBlockingStartup();
     void testPredictFixedPath();
 };
+
+void tst_UntruncProcess::testLocatorNonBlockingStartup()
+{
+    // Instantiation must be fast and non-blocking
+    UntruncLocator locator;
+    // Must complete and become available via waitForScan
+    QVERIFY(locator.waitForScan(10000));
+    QVERIFY(locator.isAvailable());
+}
 
 void tst_UntruncProcess::testLocator()
 {
     UntruncLocator locator;
+    locator.waitForScan();
     // Should locate untrunc from Others/untrunc/untrunc_x64/untrunc.exe or installed directory
     QVERIFY(locator.isAvailable());
     QVERIFY(!locator.untruncPath().isEmpty());

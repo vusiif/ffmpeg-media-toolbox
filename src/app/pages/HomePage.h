@@ -17,6 +17,8 @@ public:
     void retranslateUi();
 
 private:
+    void refreshHwStatus();
+
     FFmpegLocator *m_locator;
     FFmpegCapabilities *m_caps;
 

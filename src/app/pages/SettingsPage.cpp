@@ -58,6 +58,7 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
         m_caps->scan();
         refresh();
     });
+    connect(m_locator, &FFmpegLocator::pathsChanged, this, &SettingsPage::refresh);
     connect(m_caps, &FFmpegCapabilities::capabilitiesChanged, this, &SettingsPage::refresh);
 
     m_languageCaption = new ElaText(QString(), 13, this);

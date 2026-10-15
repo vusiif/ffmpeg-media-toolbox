@@ -33,26 +33,27 @@ void ElaThemeAnimationWidget::startAnimation(int msec)
 
 void ElaThemeAnimationWidget::paintEvent(QPaintEvent* event)
 {
+    if (_pOldWindowBackground.isNull())
+    {
+        return;
+    }
+
     QPainter painter(this);
     painter.save();
     painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     painter.setPen(Qt::NoPen);
 
-    // 合成图片
-    QImage animationImage(_pOldWindowBackground.size(), QImage::Format_ARGB32);
-    animationImage.fill(Qt::transparent);
-    QPainter animationImagePainter(&animationImage);
-    animationImagePainter.setRenderHints(QPainter::Antialiasing);
-    animationImagePainter.drawImage(_pOldWindowBackground.rect(), _pOldWindowBackground);
-    animationImagePainter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOut);
+    // Dynamic radial transition revealing the newly painted window underneath
+    // by clipping out the expanding circle from the old window snapshot
     qreal devicePixelRatioF = _pOldWindowBackground.devicePixelRatioF();
-    QPainterPath clipPath;
-    clipPath.moveTo(_pCenter.x() * devicePixelRatioF, _pCenter.y() * devicePixelRatioF);
-    clipPath.addEllipse(QPointF(_pCenter.x() * devicePixelRatioF, _pCenter.y() * devicePixelRatioF), _pRadius * devicePixelRatioF, _pRadius * devicePixelRatioF);
-    animationImagePainter.setClipPath(clipPath);
-    animationImagePainter.drawImage(animationImage.rect(), animationImage);
-    animationImagePainter.end();
+    QPainterPath fullPath;
+    fullPath.addRect(rect());
 
-    painter.drawImage(rect(), animationImage);
+    QPainterPath circlePath;
+    circlePath.addEllipse(QPointF(_pCenter.x(), _pCenter.y()), _pRadius, _pRadius);
+
+    QPainterPath clipPath = fullPath.subtracted(circlePath);
+    painter.setClipPath(clipPath);
+    painter.drawImage(rect(), _pOldWindowBackground);
     painter.restore();
 }

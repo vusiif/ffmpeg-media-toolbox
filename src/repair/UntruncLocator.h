@@ -13,6 +13,8 @@ public:
     explicit UntruncLocator(QObject *parent = nullptr);
 
     bool scan();
+    void scanAsync();
+    bool waitForScan(int timeoutMs = 5000);
 
     bool isAvailable() const;
     QString untruncPath() const;

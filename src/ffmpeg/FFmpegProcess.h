@@ -39,6 +39,13 @@ public:
     void cancel();
     void kill();
 
+    // The progress plumbing every FFmpegProcess invocation is prefixed with.
+    // Order matters: `-progress` must be immediately followed by its value.
+    static QStringList progressArguments();
+    // Full argument list actually handed to QProcess for `arguments`.
+    // Single source of truth for both execution and command preview.
+    static QStringList buildInvocationArguments(const QStringList &arguments);
+
     bool isRunning() const;
     double progress() const;
     State state() const;
@@ -69,11 +76,15 @@ private slots:
 
 private:
     void setState(State state);
+    void emitFinishedOnce(bool success);
 
     QProcess *m_process = nullptr;
     QTimer *m_killTimer = nullptr;
 
     State m_state = State::Idle;
+    bool m_finishedEmitted = false;
+    bool m_cancelRequested = false;
+    bool m_shuttingDown = false;
     double m_progress = 0;
     double m_totalDuration = 0;
     QString m_stderrOutput;

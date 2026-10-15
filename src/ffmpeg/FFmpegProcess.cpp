@@ -26,14 +26,37 @@ FFmpegProcess::FFmpegProcess(QObject *parent)
 
 FFmpegProcess::~FFmpegProcess()
 {
+    // Never emit from a half-destroyed object; the receiver (JobQueue) may
+    // already have torn down its members.
+    m_shuttingDown = true;
+    disconnect(m_process, nullptr, this, nullptr);
     if (m_process->state() != QProcess::NotRunning) {
         m_process->kill();
         m_process->waitForFinished(2000);
     }
 }
 
+QStringList FFmpegProcess::progressArguments()
+{
+    return {
+        QStringLiteral("-progress"),
+        QStringLiteral("pipe:1"),
+        QStringLiteral("-nostats"),
+    };
+}
+
+QStringList FFmpegProcess::buildInvocationArguments(const QStringList &arguments)
+{
+    QStringList args = progressArguments();
+    args.append(arguments);
+    return args;
+}
+
 bool FFmpegProcess::start(const QString &program, const QStringList &arguments, double totalDuration)
 {
+    if (m_shuttingDown) {
+        return false;
+    }
     if (m_process->state() != QProcess::NotRunning) {
         return false;
     }
@@ -43,18 +66,15 @@ bool FFmpegProcess::start(const QString &program, const QStringList &arguments, 
     m_stderrOutput.clear();
     m_progressBuffer.clear();
     m_currentProgress = FFmpegProgress();
-
-    QStringList args = arguments;
-    args.prepend(QStringLiteral("-progress"));
-    args.prepend(QStringLiteral("pipe:1"));
-    args.prepend(QStringLiteral("-nostats"));
+    m_finishedEmitted = false;
+    m_cancelRequested = false;
 
     setState(State::Running);
-    m_process->start(program, args);
+    m_process->start(program, buildInvocationArguments(arguments));
 
     if (!m_process->waitForStarted(5000)) {
         setState(State::Failed);
-        emit finished(false);
+        emitFinishedOnce(false);
         return false;
     }
 
@@ -63,10 +83,12 @@ bool FFmpegProcess::start(const QString &program, const QStringList &arguments, 
 
 void FFmpegProcess::cancel()
 {
-    if (m_process->state() == QProcess::NotRunning) {
+    if (m_shuttingDown || m_process->state() == QProcess::NotRunning) {
         return;
     }
 
+    m_cancelRequested = true;
+    setState(State::Cancelled);
     m_process->write("q");
     m_process->closeWriteChannel();
     m_killTimer->start();
@@ -74,10 +96,12 @@ void FFmpegProcess::cancel()
 
 void FFmpegProcess::kill()
 {
-    if (m_process->state() == QProcess::NotRunning) {
+    if (m_shuttingDown || m_process->state() == QProcess::NotRunning) {
         return;
     }
 
+    m_cancelRequested = true;
+    setState(State::Cancelled);
     m_process->kill();
 }
 
@@ -118,19 +142,20 @@ void FFmpegProcess::onFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     m_killTimer->stop();
 
-    if (m_state == State::Cancelled) {
-        emit finished(false);
+    if (m_cancelRequested) {
+        setState(State::Cancelled);
+        emitFinishedOnce(false);
         return;
     }
 
     if (exitStatus == QProcess::CrashExit || exitCode != 0) {
         setState(State::Failed);
-        emit finished(false);
+        emitFinishedOnce(false);
     } else {
         m_progress = 1.0;
         emit progressChanged();
         setState(State::Finished);
-        emit finished(true);
+        emitFinishedOnce(true);
     }
 }
 
@@ -138,8 +163,20 @@ void FFmpegProcess::onErrorOccurred(QProcess::ProcessError error)
 {
     if (error == QProcess::FailedToStart) {
         setState(State::Failed);
-        emit finished(false);
+        emitFinishedOnce(false);
     }
+}
+
+void FFmpegProcess::emitFinishedOnce(bool success)
+{
+    // QProcess can surface the same failure through both errorOccurred and
+    // finished (and start() reports it too); downstream accounting must see
+    // exactly one finished per run.
+    if (m_finishedEmitted || m_shuttingDown) {
+        return;
+    }
+    m_finishedEmitted = true;
+    emit finished(success);
 }
 
 bool FFmpegProcess::parseProgressLine(const QString &line, FFmpegProgress &progress,

@@ -1,6 +1,7 @@
 #include <QtTest>
 
 #include "ffmpeg/FFmpegCapabilities.h"
+#include "ffmpeg/FFmpegLocator.h"
 #include "media/MediaProbeService.h"
 
 class ParsersTest : public QObject
@@ -22,6 +23,10 @@ private slots:
 
     void filterEncodersKeepsCandidatesBeforeScan();
     void encoderCandidateListsAreNonEmpty();
+
+    void scanRunsAsynchronouslyAndKeepsFilteringSemantics();
+    void overlappingScanRequestsCoalesce();
+    void destroyWhileScanningIsSafe();
 };
 
 void ParsersTest::capabilitiesListEntries()
@@ -254,6 +259,72 @@ void ParsersTest::encoderCandidateListsAreNonEmpty()
     QVERIFY(video.contains(QStringLiteral("libx264")));
     QVERIFY(video.contains(QStringLiteral("h264_nvenc")));
     QVERIFY(audio.contains(QStringLiteral("aac")));
+}
+
+void ParsersTest::scanRunsAsynchronouslyAndKeepsFilteringSemantics()
+{
+    FFmpegLocator locator;
+    locator.waitForDetection();
+    if (!locator.isValid()) {
+        QSKIP("ffmpeg/ffprobe not available");
+    }
+
+    FFmpegCapabilities caps(&locator);
+    QVERIFY(!caps.isLoaded());
+
+    QVERIFY(caps.scan());
+    // scan() must return immediately; the result only lands via the event loop.
+    QVERIFY(!caps.isLoaded());
+
+    QTRY_VERIFY_WITH_TIMEOUT(caps.isLoaded(), 90000);
+    QVERIFY(!caps.isScanning());
+    QVERIFY(caps.encoderCount() > 0);
+
+    // Filtering semantics: output is always a subset of the candidates, and a
+    // software encoder is offered exactly when the scan found it.
+    const QStringList in = {QStringLiteral("libx264"), QStringLiteral("h264_nvenc")};
+    const QStringList out = caps.filterEncoders(in);
+    QVERIFY(out.size() <= in.size());
+    for (const QString &encoder : out) {
+        QVERIFY(in.contains(encoder));
+    }
+    QCOMPARE(out.contains(QStringLiteral("libx264")),
+             caps.hasEncoder(QStringLiteral("libx264")));
+}
+
+void ParsersTest::overlappingScanRequestsCoalesce()
+{
+    FFmpegLocator locator;
+    locator.waitForDetection();
+    if (!locator.isValid()) {
+        QSKIP("ffmpeg/ffprobe not available");
+    }
+
+    FFmpegCapabilities caps(&locator);
+    QVERIFY(caps.scan());
+    QVERIFY(caps.scan());
+    QVERIFY(caps.scan());
+    QVERIFY(caps.isScanning());
+
+    QTRY_VERIFY_WITH_TIMEOUT(caps.isLoaded(), 90000);
+    QTRY_VERIFY_WITH_TIMEOUT(!caps.isScanning(), 90000);
+    QVERIFY(caps.encoderCount() > 0);
+}
+
+void ParsersTest::destroyWhileScanningIsSafe()
+{
+    FFmpegLocator locator;
+    locator.waitForDetection();
+    if (!locator.isValid()) {
+        QSKIP("ffmpeg/ffprobe not available");
+    }
+
+    auto *caps = new FFmpegCapabilities(&locator);
+    QVERIFY(caps->scan());
+    // Deleting mid-flight must not leave the worker touching freed memory.
+    delete caps;
+    QTest::qWait(200);
+    QVERIFY(true);
 }
 
 QTEST_GUILESS_MAIN(ParsersTest)
