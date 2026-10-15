@@ -747,5 +747,17 @@
         <source>repair.browse</source>
         <translation>选择视频</translation>
     </message>
+    <message id="repair.clearConsole">
+        <source>repair.clearConsole</source>
+        <translation>清空日志</translation>
+    </message>
+    <message id="settings.engineCard">
+        <source>settings.engineCard</source>
+        <translation>FFmpeg 引擎环境</translation>
+    </message>
+    <message id="settings.prefsCard">
+        <source>settings.prefsCard</source>
+        <translation>常规偏好设置</translation>
+    </message>
 </context>
 </TS>

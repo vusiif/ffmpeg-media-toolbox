@@ -747,5 +747,17 @@
         <source>repair.browse</source>
         <translation>Select Video</translation>
     </message>
+    <message id="repair.clearConsole">
+        <source>repair.clearConsole</source>
+        <translation>Clear Console</translation>
+    </message>
+    <message id="settings.engineCard">
+        <source>settings.engineCard</source>
+        <translation>FFmpeg Engine Environment</translation>
+    </message>
+    <message id="settings.prefsCard">
+        <source>settings.prefsCard</source>
+        <translation>Preferences</translation>
+    </message>
 </context>
 </TS>

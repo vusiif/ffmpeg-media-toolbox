@@ -10,6 +10,7 @@ class LanguageManager;
 class ElaText;
 class ElaPushButton;
 class ElaComboBox;
+class ElaScrollPageArea;
 
 class SettingsPage : public QWidget
 {
@@ -33,6 +34,10 @@ private:
     LanguageManager *m_languageManager;
 
     ElaText *m_titleLabel = nullptr;
+
+    // Engine Card
+    ElaScrollPageArea *m_engineCard = nullptr;
+    ElaText *m_engineCardTitle = nullptr;
     ElaText *m_statusCaption = nullptr;
     ElaText *m_statusValue = nullptr;
     ElaText *m_ffmpegPathCaption = nullptr;
@@ -41,12 +46,17 @@ private:
     ElaText *m_ffprobePathValue = nullptr;
     ElaText *m_versionCaption = nullptr;
     ElaText *m_versionValue = nullptr;
-    ElaPushButton *m_rescanButton = nullptr;
-    ElaPushButton *m_clearHistoryButton = nullptr;
     ElaText *m_capsCaption = nullptr;
     ElaText *m_capsValue = nullptr;
+    ElaPushButton *m_rescanButton = nullptr;
+
+    // Preferences Card
+    ElaScrollPageArea *m_prefsCard = nullptr;
+    ElaText *m_prefsCardTitle = nullptr;
     ElaText *m_languageCaption = nullptr;
     ElaComboBox *m_languageCombo = nullptr;
     ElaText *m_concurrencyCaption = nullptr;
     ElaComboBox *m_concurrencyCombo = nullptr;
+    ElaText *m_historyCaption = nullptr;
+    ElaPushButton *m_clearHistoryButton = nullptr;
 };

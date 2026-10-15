@@ -13,7 +13,9 @@ class ElaText;
 class ElaLineEdit;
 class ElaPushButton;
 class ElaProgressBar;
-class QTabWidget;
+class ElaPivot;
+class ElaScrollPageArea;
+class QStackedWidget;
 class QPlainTextEdit;
 
 class RepairPage : public QWidget
@@ -68,9 +70,14 @@ private:
     QString m_referencePath;
     QString m_lastFixedPath;
 
-    QTabWidget *m_tabWidget = nullptr;
+    ElaText *m_pageTitleLabel = nullptr;
+    ElaPivot *m_pivot = nullptr;
+    QStackedWidget *m_stackedWidget = nullptr;
+    QString m_scanTabTitle;
+    QString m_repairTabTitle;
 
     // Scan Tab UI
+    ElaScrollPageArea *m_scanControlCard = nullptr;
     ElaText *m_scanTitleLabel = nullptr;
     ElaText *m_scanDescLabel = nullptr;
     ElaText *m_scanInputCaption = nullptr;
@@ -80,9 +87,11 @@ private:
     ElaPushButton *m_scanCancelBtn = nullptr;
     ElaProgressBar *m_scanProgressBar = nullptr;
     ElaText *m_scanStatusLabel = nullptr;
+    ElaScrollPageArea *m_playerCard = nullptr;
     VideoPlayerWidget *m_playerWidget = nullptr;
 
     // Repair Tab UI
+    ElaScrollPageArea *m_repairControlCard = nullptr;
     ElaText *m_repairTitleLabel = nullptr;
     ElaText *m_repairDescLabel = nullptr;
     ElaText *m_corruptedCaption = nullptr;
@@ -99,6 +108,8 @@ private:
     ElaText *m_resultLabel = nullptr;
     ElaPushButton *m_openFolderBtn = nullptr;
     ElaPushButton *m_previewFixedBtn = nullptr;
+
+    ElaScrollPageArea *m_consoleCard = nullptr;
     ElaText *m_consoleCaption = nullptr;
     ElaPushButton *m_clearConsoleBtn = nullptr;
     QPlainTextEdit *m_console = nullptr;

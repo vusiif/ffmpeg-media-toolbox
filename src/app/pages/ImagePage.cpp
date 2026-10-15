@@ -13,6 +13,7 @@
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
 #include "ElaPushButton.h"
+#include "ElaScrollPageArea.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
@@ -30,13 +31,14 @@ ImagePage::ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     , m_queue(queue)
 {
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(30, 30, 30, 30);
+    root->setContentsMargins(30, 24, 30, 24);
     root->setSpacing(16);
 
     auto *titleRow = new QHBoxLayout();
     m_titleLabel = new ElaText(QString(), 13, this);
     m_titleLabel->setTextPixelSize(28);
     m_browseButton = new ElaPushButton(this);
+    m_browseButton->setFixedHeight(32);
     connect(m_browseButton, &ElaPushButton::clicked, this, &ImagePage::browseInput);
     titleRow->addWidget(m_titleLabel);
     titleRow->addStretch();
@@ -46,61 +48,77 @@ ImagePage::ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     auto *body = new QHBoxLayout();
     body->setSpacing(16);
 
-    auto *previewBox = new QVBoxLayout();
-    m_previewLabel = new QLabel(this);
+    // Left Column: Preview Card
+    auto *previewCard = new ElaScrollPageArea(this);
+    previewCard->setMinimumHeight(0);
+    previewCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *previewLayout = new QVBoxLayout(previewCard);
+    previewLayout->setContentsMargins(16, 16, 16, 16);
+    previewLayout->setSpacing(10);
+
+    m_previewLabel = new QLabel(previewCard);
     m_previewLabel->setMinimumSize(300, 220);
     m_previewLabel->setAlignment(Qt::AlignCenter);
-    m_previewLabel->setFrameShape(QFrame::StyledPanel);
+    m_previewLabel->setStyleSheet(QStringLiteral("QLabel { background: rgba(128, 128, 128, 0.08); border-radius: 6px; }"));
     m_previewLabel->setScaledContents(false);
-    m_fileLabel = new ElaText(QString(), 13, this);
+
+    m_fileLabel = new ElaText(QString(), 13, previewCard);
     m_fileLabel->setTextPixelSize(12);
-    previewBox->addWidget(m_previewLabel, 1);
-    previewBox->addWidget(m_fileLabel);
-    body->addLayout(previewBox, 1);
+    m_fileLabel->setWordWrap(true);
+    m_fileLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
-    auto *form = new QFormLayout();
-    form->setSpacing(10);
+    previewLayout->addWidget(m_previewLabel, 1);
+    previewLayout->addWidget(m_fileLabel);
+    body->addWidget(previewCard, 1);
 
-    m_formatCaption = new ElaText(QString(), 13, this);
-    m_formatCombo = new ElaComboBox(this);
+    // Right Column: Settings Card
+    auto *settingsCard = new ElaScrollPageArea(this);
+    settingsCard->setMinimumHeight(0);
+    settingsCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *form = new QFormLayout(settingsCard);
+    form->setContentsMargins(16, 16, 16, 16);
+    form->setSpacing(12);
+
+    m_formatCaption = new ElaText(QString(), 13, settingsCard);
+    m_formatCombo = new ElaComboBox(settingsCard);
     m_formatCombo->addItems({QStringLiteral("png"), QStringLiteral("jpeg"), QStringLiteral("webp"),
                              QStringLiteral("bmp")});
 
-    m_cropCaption = new ElaText(QString(), 13, this);
+    m_cropCaption = new ElaText(QString(), 13, settingsCard);
     auto *cropRow = new QHBoxLayout();
-    m_cropX = new ElaSpinBox(this);
-    m_cropY = new ElaSpinBox(this);
-    m_cropW = new ElaSpinBox(this);
-    m_cropH = new ElaSpinBox(this);
+    m_cropX = new ElaSpinBox(settingsCard);
+    m_cropY = new ElaSpinBox(settingsCard);
+    m_cropW = new ElaSpinBox(settingsCard);
+    m_cropH = new ElaSpinBox(settingsCard);
     for (ElaSpinBox *spin : {m_cropX, m_cropY, m_cropW, m_cropH}) {
         spin->setRange(0, 10000);
         cropRow->addWidget(spin);
     }
 
-    m_resizeCaption = new ElaText(QString(), 13, this);
+    m_resizeCaption = new ElaText(QString(), 13, settingsCard);
     auto *resizeRow = new QHBoxLayout();
-    m_resizeW = new ElaSpinBox(this);
-    m_resizeH = new ElaSpinBox(this);
+    m_resizeW = new ElaSpinBox(settingsCard);
+    m_resizeH = new ElaSpinBox(settingsCard);
     for (ElaSpinBox *spin : {m_resizeW, m_resizeH}) {
         spin->setRange(0, 10000);
         resizeRow->addWidget(spin);
     }
 
-    m_rotateCaption = new ElaText(QString(), 13, this);
-    m_rotateCombo = new ElaComboBox(this);
+    m_rotateCaption = new ElaText(QString(), 13, settingsCard);
+    m_rotateCombo = new ElaComboBox(settingsCard);
     m_rotateCombo->addItems({QStringLiteral("0"), QStringLiteral("90"),
                              QStringLiteral("180"), QStringLiteral("270")});
 
-    m_flipCaption = new ElaText(QString(), 13, this);
+    m_flipCaption = new ElaText(QString(), 13, settingsCard);
     auto *flipRow = new QHBoxLayout();
-    m_flipH = new ElaCheckBox(this);
-    m_flipV = new ElaCheckBox(this);
+    m_flipH = new ElaCheckBox(settingsCard);
+    m_flipV = new ElaCheckBox(settingsCard);
     flipRow->addWidget(m_flipH);
     flipRow->addWidget(m_flipV);
     flipRow->addStretch();
 
-    m_qualityCaption = new ElaText(QString(), 13, this);
-    m_qualitySpin = new ElaSpinBox(this);
+    m_qualityCaption = new ElaText(QString(), 13, settingsCard);
+    m_qualitySpin = new ElaSpinBox(settingsCard);
     m_qualitySpin->setRange(1, 100);
     m_qualitySpin->setValue(90);
 
@@ -110,13 +128,21 @@ ImagePage::ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_rotateCaption, m_rotateCombo);
     form->addRow(m_flipCaption, flipRow);
     form->addRow(m_qualityCaption, m_qualitySpin);
-    body->addLayout(form, 1);
+
+    auto *rightWrapper = new QVBoxLayout();
+    rightWrapper->setContentsMargins(0, 0, 0, 0);
+    rightWrapper->setSpacing(10);
+    rightWrapper->addWidget(settingsCard);
+    rightWrapper->addStretch();
+    body->addLayout(rightWrapper, 1);
 
     root->addLayout(body, 1);
 
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
+    m_addButton->setFixedHeight(38);
+    m_addButton->setMinimumWidth(140);
     connect(m_addButton, &ElaPushButton::clicked, this, &ImagePage::addToQueue);
     buttonRow->addWidget(m_addButton);
     root->addLayout(buttonRow);

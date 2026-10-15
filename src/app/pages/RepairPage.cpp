@@ -10,18 +10,20 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QFormLayout>
 #include <QHBoxLayout>
 #include <QMimeData>
 #include <QPlainTextEdit>
-#include <QTabWidget>
+#include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
 
 #include "ElaLineEdit.h"
+#include "ElaPivot.h"
 #include "ElaProgressBar.h"
 #include "ElaPushButton.h"
+#include "ElaScrollPageArea.h"
 #include "ElaText.h"
+#include "ElaTheme.h"
 
 RepairPage::RepairPage(FFmpegLocator *ffmpegLocator,
                        MediaProbeService *probeService,
@@ -37,25 +39,33 @@ RepairPage::RepairPage(FFmpegLocator *ffmpegLocator,
     setAcceptDrops(true);
 
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(30, 20, 30, 20);
-    root->setSpacing(12);
+    root->setContentsMargins(30, 24, 30, 24);
+    root->setSpacing(14);
 
-    m_tabWidget = new QTabWidget(this);
-    m_tabWidget->setStyleSheet(QStringLiteral(
-        "QTabWidget::pane { border: 1px solid rgba(128, 128, 128, 0.2); border-radius: 8px; padding: 12px; }"
-        "QTabBar::tab { padding: 8px 18px; font-weight: bold; margin-right: 4px; border-top-left-radius: 6px; border-top-right-radius: 6px; }"
-        "QTabBar::tab:selected { background: rgba(0, 120, 212, 0.15); color: #0078d4; }"
-    ));
+    m_pageTitleLabel = new ElaText(QString(), 13, this);
+    m_pageTitleLabel->setTextPixelSize(28);
+    root->addWidget(m_pageTitleLabel);
+
+    // Fluent Pivot Segmented Switcher
+    m_pivot = new ElaPivot(this);
+    m_pivot->setPivotSpacing(16);
+    m_pivot->setMarkWidth(90);
+    root->addWidget(m_pivot);
+
+    // Stacked Pages
+    m_stackedWidget = new QStackedWidget(this);
 
     auto *scanTab = new QWidget(this);
     setupScanTab(scanTab);
-    m_tabWidget->addTab(scanTab, QString());
+    m_stackedWidget->addWidget(scanTab);
 
     auto *repairTab = new QWidget(this);
     setupRepairTab(repairTab);
-    m_tabWidget->addTab(repairTab, QString());
+    m_stackedWidget->addWidget(repairTab);
 
-    root->addWidget(m_tabWidget);
+    root->addWidget(m_stackedWidget, 1);
+
+    connect(m_pivot, &ElaPivot::pivotClicked, m_stackedWidget, &QStackedWidget::setCurrentIndex);
 
     // Connect Scanner signals
     connect(m_scanner, &CorruptedVideoScanner::progressChanged,
@@ -77,148 +87,233 @@ RepairPage::~RepairPage() = default;
 void RepairPage::setupScanTab(QWidget *tab)
 {
     auto *layout = new QVBoxLayout(tab);
-    layout->setContentsMargins(10, 10, 10, 10);
-    layout->setSpacing(10);
+    layout->setContentsMargins(0, 4, 0, 0);
+    layout->setSpacing(14);
 
-    m_scanTitleLabel = new ElaText(QString(), 13, tab);
-    m_scanTitleLabel->setTextPixelSize(22);
-    m_scanDescLabel = new ElaText(QString(), 12, tab);
+    // Card 1: Scan Controls
+    m_scanControlCard = new ElaScrollPageArea(tab);
+    m_scanControlCard->setMinimumHeight(0);
+    m_scanControlCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *controlLayout = new QVBoxLayout(m_scanControlCard);
+    controlLayout->setContentsMargins(18, 16, 18, 16);
+    controlLayout->setSpacing(12);
+
+    m_scanTitleLabel = new ElaText(QString(), 15, m_scanControlCard);
+    m_scanTitleLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_scanDescLabel = new ElaText(QString(), 12, m_scanControlCard);
     m_scanDescLabel->setWordWrap(true);
-    layout->addWidget(m_scanTitleLabel);
-    layout->addWidget(m_scanDescLabel);
+    controlLayout->addWidget(m_scanTitleLabel);
+    controlLayout->addWidget(m_scanDescLabel);
 
     auto *inputRow = new QHBoxLayout();
-    m_scanInputCaption = new ElaText(QString(), 13, tab);
-    m_scanInputEdit = new ElaLineEdit(tab);
+    m_scanInputCaption = new ElaText(QString(), 13, m_scanControlCard);
+    m_scanInputEdit = new ElaLineEdit(m_scanControlCard);
     m_scanInputEdit->setReadOnly(true);
-    m_scanBrowseBtn = new ElaPushButton(tab);
+    m_scanBrowseBtn = new ElaPushButton(m_scanControlCard);
+    m_scanBrowseBtn->setFixedHeight(32);
     connect(m_scanBrowseBtn, &ElaPushButton::clicked, this, &RepairPage::onBrowseScanInput);
 
     inputRow->addWidget(m_scanInputCaption);
     inputRow->addWidget(m_scanInputEdit, 1);
     inputRow->addWidget(m_scanBrowseBtn);
-    layout->addLayout(inputRow);
+    controlLayout->addLayout(inputRow);
 
     auto *actionRow = new QHBoxLayout();
-    m_scanStartBtn = new ElaPushButton(tab);
-    m_scanCancelBtn = new ElaPushButton(tab);
+    m_scanStartBtn = new ElaPushButton(m_scanControlCard);
+    m_scanStartBtn->setFixedHeight(34);
+    m_scanStartBtn->setMinimumWidth(120);
+    m_scanStartBtn->setEnabled(false);
+
+    m_scanCancelBtn = new ElaPushButton(m_scanControlCard);
+    m_scanCancelBtn->setFixedHeight(34);
     m_scanCancelBtn->setEnabled(false);
-    m_scanStatusLabel = new ElaText(QString(), 12, tab);
+
+    m_scanProgressBar = new ElaProgressBar(m_scanControlCard);
+    m_scanProgressBar->setRange(0, 100);
+    m_scanProgressBar->setValue(0);
+    m_scanProgressBar->setVisible(false);
+
+    m_scanStatusLabel = new ElaText(QString(), 12, m_scanControlCard);
+    m_scanStatusLabel->setWordWrap(true);
 
     connect(m_scanStartBtn, &ElaPushButton::clicked, this, &RepairPage::onStartScan);
     connect(m_scanCancelBtn, &ElaPushButton::clicked, this, &RepairPage::onCancelScan);
 
     actionRow->addWidget(m_scanStartBtn);
     actionRow->addWidget(m_scanCancelBtn);
+    actionRow->addWidget(m_scanProgressBar, 1);
     actionRow->addWidget(m_scanStatusLabel);
-    actionRow->addStretch();
-    layout->addLayout(actionRow);
+    controlLayout->addLayout(actionRow);
 
-    m_scanProgressBar = new ElaProgressBar(tab);
-    m_scanProgressBar->setRange(0, 100);
-    m_scanProgressBar->setValue(0);
-    m_scanProgressBar->setVisible(false);
-    layout->addWidget(m_scanProgressBar);
+    layout->addWidget(m_scanControlCard);
 
-    m_playerWidget = new VideoPlayerWidget(tab);
-    layout->addWidget(m_playerWidget, 1);
+    // Card 2: Video Player & Corruption Timeline
+    m_playerCard = new ElaScrollPageArea(tab);
+    m_playerCard->setMinimumHeight(0);
+    m_playerCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *playerLayout = new QVBoxLayout(m_playerCard);
+    playerLayout->setContentsMargins(12, 12, 12, 12);
+
+    m_playerWidget = new VideoPlayerWidget(m_playerCard);
+    playerLayout->addWidget(m_playerWidget);
+
+    layout->addWidget(m_playerCard, 1);
 }
 
 void RepairPage::setupRepairTab(QWidget *tab)
 {
-    auto *layout = new QVBoxLayout(tab);
-    layout->setContentsMargins(10, 10, 10, 10);
-    layout->setSpacing(10);
+    auto *layout = new QHBoxLayout(tab);
+    layout->setContentsMargins(0, 4, 0, 0);
+    layout->setSpacing(14);
 
-    m_repairTitleLabel = new ElaText(QString(), 13, tab);
-    m_repairTitleLabel->setTextPixelSize(22);
-    m_repairDescLabel = new ElaText(QString(), 12, tab);
+    // Left Column: Configuration & Execution Card
+    m_repairControlCard = new ElaScrollPageArea(tab);
+    m_repairControlCard->setMinimumHeight(0);
+    m_repairControlCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *leftLayout = new QVBoxLayout(m_repairControlCard);
+    leftLayout->setContentsMargins(18, 16, 18, 16);
+    leftLayout->setSpacing(14);
+
+    m_repairTitleLabel = new ElaText(QString(), 15, m_repairControlCard);
+    m_repairTitleLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_repairDescLabel = new ElaText(QString(), 12, m_repairControlCard);
     m_repairDescLabel->setWordWrap(true);
-    layout->addWidget(m_repairTitleLabel);
-    layout->addWidget(m_repairDescLabel);
-
-    auto *form = new QFormLayout();
-    form->setSpacing(10);
+    leftLayout->addWidget(m_repairTitleLabel);
+    leftLayout->addWidget(m_repairDescLabel);
 
     // Corrupted file row
-    m_corruptedCaption = new ElaText(QString(), 13, tab);
+    auto *corruptedCol = new QVBoxLayout();
+    corruptedCol->setSpacing(6);
+    m_corruptedCaption = new ElaText(QString(), 13, m_repairControlCard);
     auto *corruptRow = new QHBoxLayout();
-    m_corruptedEdit = new ElaLineEdit(tab);
+    m_corruptedEdit = new ElaLineEdit(m_repairControlCard);
     m_corruptedEdit->setReadOnly(true);
-    m_corruptedBrowseBtn = new ElaPushButton(tab);
+    m_corruptedBrowseBtn = new ElaPushButton(m_repairControlCard);
+    m_corruptedBrowseBtn->setFixedHeight(32);
     connect(m_corruptedBrowseBtn, &ElaPushButton::clicked, this, &RepairPage::onBrowseCorrupted);
     corruptRow->addWidget(m_corruptedEdit, 1);
     corruptRow->addWidget(m_corruptedBrowseBtn);
-    form->addRow(m_corruptedCaption, corruptRow);
+    corruptedCol->addWidget(m_corruptedCaption);
+    corruptedCol->addLayout(corruptRow);
+    leftLayout->addLayout(corruptedCol);
 
     // Reference file row
-    m_referenceCaption = new ElaText(QString(), 13, tab);
+    auto *refCol = new QVBoxLayout();
+    refCol->setSpacing(6);
+    m_referenceCaption = new ElaText(QString(), 13, m_repairControlCard);
     auto *refRow = new QHBoxLayout();
-    m_referenceEdit = new ElaLineEdit(tab);
+    m_referenceEdit = new ElaLineEdit(m_repairControlCard);
     m_referenceEdit->setReadOnly(true);
-    m_referenceBrowseBtn = new ElaPushButton(tab);
+    m_referenceBrowseBtn = new ElaPushButton(m_repairControlCard);
+    m_referenceBrowseBtn->setFixedHeight(32);
     connect(m_referenceBrowseBtn, &ElaPushButton::clicked, this, &RepairPage::onBrowseReference);
     refRow->addWidget(m_referenceEdit, 1);
     refRow->addWidget(m_referenceBrowseBtn);
-    form->addRow(m_referenceCaption, refRow);
+    refCol->addWidget(m_referenceCaption);
+    refCol->addLayout(refRow);
+    leftLayout->addLayout(refCol);
 
-    layout->addLayout(form);
-
+    // Action buttons
     auto *actionRow = new QHBoxLayout();
-    m_startRepairBtn = new ElaPushButton(tab);
-    m_cancelRepairBtn = new ElaPushButton(tab);
-    m_cancelRepairBtn->setEnabled(false);
-    m_repairStatusLabel = new ElaText(QString(), 12, tab);
-
+    m_startRepairBtn = new ElaPushButton(m_repairControlCard);
+    m_startRepairBtn->setFixedHeight(36);
+    m_startRepairBtn->setMinimumWidth(130);
     connect(m_startRepairBtn, &ElaPushButton::clicked, this, &RepairPage::onStartRepair);
+
+    m_cancelRepairBtn = new ElaPushButton(m_repairControlCard);
+    m_cancelRepairBtn->setFixedHeight(36);
+    m_cancelRepairBtn->setEnabled(false);
     connect(m_cancelRepairBtn, &ElaPushButton::clicked, this, &RepairPage::onCancelRepair);
 
     actionRow->addWidget(m_startRepairBtn);
     actionRow->addWidget(m_cancelRepairBtn);
-    actionRow->addWidget(m_repairStatusLabel);
     actionRow->addStretch();
-    layout->addLayout(actionRow);
+    leftLayout->addLayout(actionRow);
 
-    m_repairProgressBar = new ElaProgressBar(tab);
-    m_repairProgressBar->setRange(0, 0); // marquee / indeterminate
+    // Progress bar
+    m_repairProgressBar = new ElaProgressBar(m_repairControlCard);
+    m_repairProgressBar->setRange(0, 0); // indeterminate
     m_repairProgressBar->setVisible(false);
-    layout->addWidget(m_repairProgressBar);
+    leftLayout->addWidget(m_repairProgressBar);
+
+    // Status label
+    m_repairStatusLabel = new ElaText(QString(), 12, m_repairControlCard);
+    m_repairStatusLabel->setWordWrap(true);
+    m_repairStatusLabel->setVisible(false);
+    leftLayout->addWidget(m_repairStatusLabel);
 
     // Result action bar
-    m_resultBar = new QWidget(tab);
-    auto *resLayout = new QHBoxLayout(m_resultBar);
-    resLayout->setContentsMargins(0, 0, 0, 0);
-    m_resultLabel = new ElaText(QString(), 13, m_resultBar);
-    m_openFolderBtn = new ElaPushButton(m_resultBar);
-    m_previewFixedBtn = new ElaPushButton(m_resultBar);
+    m_resultBar = new QWidget(m_repairControlCard);
+    auto *resultLayout = new QVBoxLayout(m_resultBar);
+    resultLayout->setContentsMargins(0, 0, 0, 0);
+    resultLayout->setSpacing(8);
 
+    m_resultLabel = new ElaText(QString(), 13, m_resultBar);
+    m_resultLabel->setStyleSheet(QStringLiteral("font-weight: bold; color: #107c41;"));
+    auto *resultBtnRow = new QHBoxLayout();
+    m_openFolderBtn = new ElaPushButton(m_resultBar);
+    m_openFolderBtn->setFixedHeight(32);
     connect(m_openFolderBtn, &ElaPushButton::clicked, this, &RepairPage::onOpenOutputFolder);
+
+    m_previewFixedBtn = new ElaPushButton(m_resultBar);
+    m_previewFixedBtn->setFixedHeight(32);
     connect(m_previewFixedBtn, &ElaPushButton::clicked, this, &RepairPage::onPreviewFixedVideo);
 
-    resLayout->addWidget(m_resultLabel);
-    resLayout->addWidget(m_openFolderBtn);
-    resLayout->addWidget(m_previewFixedBtn);
-    resLayout->addStretch();
+    resultBtnRow->addWidget(m_openFolderBtn);
+    resultBtnRow->addWidget(m_previewFixedBtn);
+    resultBtnRow->addStretch();
+    resultLayout->addWidget(m_resultLabel);
+    resultLayout->addLayout(resultBtnRow);
     m_resultBar->setVisible(false);
-    layout->addWidget(m_resultBar);
+    leftLayout->addWidget(m_resultBar);
+
+    leftLayout->addStretch();
+    layout->addWidget(m_repairControlCard, 1);
+
+    // Right Column: Log Console Card
+    m_consoleCard = new ElaScrollPageArea(tab);
+    m_consoleCard->setMinimumHeight(0);
+    m_consoleCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *rightLayout = new QVBoxLayout(m_consoleCard);
+    rightLayout->setContentsMargins(18, 16, 18, 16);
+    rightLayout->setSpacing(12);
 
     auto *logHeader = new QHBoxLayout();
-    m_consoleCaption = new ElaText(QString(), 13, tab);
-    m_clearConsoleBtn = new ElaPushButton(tab);
+    m_consoleCaption = new ElaText(QString(), 15, m_consoleCard);
+    m_consoleCaption->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_clearConsoleBtn = new ElaPushButton(m_consoleCard);
+    m_clearConsoleBtn->setFixedHeight(28);
     connect(m_clearConsoleBtn, &ElaPushButton::clicked, this, [this]() {
         m_console->clear();
     });
     logHeader->addWidget(m_consoleCaption);
     logHeader->addStretch();
     logHeader->addWidget(m_clearConsoleBtn);
-    layout->addLayout(logHeader);
+    rightLayout->addLayout(logHeader);
 
-    m_console = new QPlainTextEdit(tab);
+    m_console = new QPlainTextEdit(m_consoleCard);
     m_console->setReadOnly(true);
-    m_console->setStyleSheet(QStringLiteral(
-        "QPlainTextEdit { background-color: #1a1a1a; color: #00ff66; "
-        "font-family: Consolas, 'Courier New', monospace; font-size: 12px; border-radius: 6px; padding: 6px; }"));
-    layout->addWidget(m_console, 1);
+
+    const auto updateConsoleTheme = [this](ElaThemeType::ThemeMode mode) {
+        if (mode == ElaThemeType::Dark) {
+            m_console->setStyleSheet(QStringLiteral(
+                "QPlainTextEdit { background-color: #1a1a1a; color: #cccccc; "
+                "border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; "
+                "font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; padding: 8px; }"
+            ));
+        } else {
+            m_console->setStyleSheet(QStringLiteral(
+                "QPlainTextEdit { background-color: #f6f6f6; color: #222222; "
+                "border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 6px; "
+                "font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; padding: 8px; }"
+            ));
+        }
+    };
+    connect(eTheme, &ElaTheme::themeModeChanged, this, updateConsoleTheme);
+    updateConsoleTheme(eTheme->getThemeMode());
+
+    rightLayout->addWidget(m_console, 1);
+    layout->addWidget(m_consoleCard, 1);
 }
 
 void RepairPage::dragEnterEvent(QDragEnterEvent *event)
@@ -236,9 +331,10 @@ void RepairPage::dropEvent(QDropEvent *event)
     const QString path = urls.first().toLocalFile();
     if (path.isEmpty()) return;
 
-    if (m_tabWidget->currentIndex() == 0) {
+    if (m_stackedWidget->currentIndex() == 0) {
         m_scanFilePath = path;
         m_scanInputEdit->setText(path);
+        m_scanStartBtn->setEnabled(true);
         m_playerWidget->loadMedia(path);
         m_playerWidget->clearSegments();
     } else {
@@ -262,6 +358,7 @@ void RepairPage::onBrowseScanInput()
     m_scanFilePath = path;
     m_scanInputEdit->setText(path);
     m_scanStatusLabel->clear();
+    m_scanStartBtn->setEnabled(true);
     m_playerWidget->loadMedia(path);
     m_playerWidget->clearSegments();
 
@@ -340,11 +437,13 @@ void RepairPage::onBrowseReference()
 void RepairPage::onStartRepair()
 {
     if (m_corruptedPath.isEmpty() || m_referencePath.isEmpty()) {
+        m_repairStatusLabel->setVisible(true);
         m_repairStatusLabel->setText(trId("repair.errorSelectBoth"));
         return;
     }
 
     if (!m_untruncLocator->isAvailable()) {
+        m_repairStatusLabel->setVisible(true);
         m_repairStatusLabel->setText(trId("repair.untruncNotFound"));
         return;
     }
@@ -353,6 +452,7 @@ void RepairPage::onStartRepair()
     m_cancelRepairBtn->setEnabled(true);
     m_repairProgressBar->setVisible(true);
     m_resultBar->setVisible(false);
+    m_repairStatusLabel->setVisible(true);
     m_repairStatusLabel->setText(trId("repair.repairing"));
     m_console->clear();
 
@@ -410,14 +510,25 @@ void RepairPage::onPreviewFixedVideo()
         m_scanDuration = info.duration;
     }
 
-    m_tabWidget->setCurrentIndex(0);
+    m_pivot->setCurrentIndex(0);
+    m_stackedWidget->setCurrentIndex(0);
     m_playerWidget->play();
 }
 
 void RepairPage::retranslateUi()
 {
-    m_tabWidget->setTabText(0, trId("repair.tab.scan"));
-    m_tabWidget->setTabText(1, trId("repair.tab.untrunc"));
+    const int currentIdx = m_pivot->getCurrentIndex();
+    if (!m_scanTabTitle.isEmpty()) {
+        m_pivot->removePivot(m_scanTabTitle);
+        m_pivot->removePivot(m_repairTabTitle);
+    }
+    m_scanTabTitle = trId("repair.tab.scan");
+    m_repairTabTitle = trId("repair.tab.untrunc");
+    m_pivot->appendPivot(m_scanTabTitle);
+    m_pivot->appendPivot(m_repairTabTitle);
+    m_pivot->setCurrentIndex(currentIdx >= 0 ? currentIdx : 0);
+
+    m_pageTitleLabel->setText(trId("nav.repair"));
 
     // Tab 1
     m_scanTitleLabel->setText(trId("repair.scan.title"));
@@ -439,7 +550,7 @@ void RepairPage::retranslateUi()
     m_openFolderBtn->setText(trId("repair.openFolder"));
     m_previewFixedBtn->setText(trId("repair.previewFixed"));
     m_consoleCaption->setText(trId("repair.console"));
-    m_clearConsoleBtn->setText(trId("common.clear"));
+    m_clearConsoleBtn->setText(trId("repair.clearConsole"));
 
     m_playerWidget->retranslateUi();
 }
