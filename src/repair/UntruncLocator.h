@@ -20,6 +20,8 @@ public:
     QString untruncPath() const;
     void setCustomPath(const QString &path);
 
+    static QString findUntruncExecutable();
+
 signals:
     void availabilityChanged(bool available);
     void pathChanged(const QString &path);

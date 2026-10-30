@@ -93,8 +93,38 @@ void VideoPlayerWidget::loadMedia(const QString &filePath)
 
 void VideoPlayerWidget::setCorruptedSegments(const QVector<CorruptedSegment> &segments)
 {
-    m_segments = segments;
-    m_timeline->setSegments(segments);
+    if (segments.isEmpty()) {
+        m_segments.clear();
+        m_timeline->clearSegments();
+        return;
+    }
+
+    // Sort segments by start time
+    QVector<CorruptedSegment> sorted = segments;
+    std::sort(sorted.begin(), sorted.end(), [](const CorruptedSegment &a, const CorruptedSegment &b) {
+        return a.start < b.start;
+    });
+
+    // Merge overlapping or adjacent segments within 0.3s
+    QVector<CorruptedSegment> merged;
+    merged.reserve(sorted.size());
+    merged.append(sorted.first());
+
+    for (int i = 1; i < sorted.size(); ++i) {
+        const auto &curr = sorted.at(i);
+        auto &last = merged.last();
+        if (curr.start <= last.end + 0.3) {
+            last.end = qMax(last.end, curr.end);
+            if (!last.errorMsg.contains(curr.errorMsg)) {
+                last.errorMsg += QStringLiteral("; ") + curr.errorMsg;
+            }
+        } else {
+            merged.append(curr);
+        }
+    }
+
+    m_segments = merged;
+    m_timeline->setSegments(merged);
 }
 
 void VideoPlayerWidget::clearSegments()
@@ -159,7 +189,7 @@ void VideoPlayerWidget::onPositionChanged(qint64 positionMs)
         const double currentSec = positionMs / 1000.0;
         for (const auto &seg : m_segments) {
             if (currentSec >= seg.start && currentSec < seg.end) {
-                const double targetSec = seg.end + 0.5;
+                const double targetSec = seg.end + 0.3;
                 const qint64 targetMs = static_cast<qint64>(targetSec * 1000.0);
                 if (targetMs < m_durationMs) {
                     m_player->setPosition(targetMs);
@@ -168,6 +198,9 @@ void VideoPlayerWidget::onPositionChanged(qint64 positionMs)
                             .arg(seg.start, 0, 'f', 1)
                             .arg(seg.end, 0, 'f', 1));
                     emit skippedSegment(seg.start, targetSec);
+                } else {
+                    // Reached the end of video after corruption segment
+                    stop();
                 }
                 break;
             }

@@ -29,9 +29,18 @@ void UntruncLocator::scanAsync()
     QPointer<UntruncLocator> self = this;
     (void)QtConcurrent::run([self]() {
         if (!self) return;
-        QMetaObject::invokeMethod(self, [self]() {
-            if (self) {
-                self->scan();
+        const QString found = findUntruncExecutable();
+        QMetaObject::invokeMethod(self, [self, found]() {
+            if (!self) return;
+            const bool newAvailable = !found.isEmpty();
+            const bool changed = (newAvailable != self->m_available) || (found != self->m_untruncPath);
+
+            self->m_untruncPath = found;
+            self->m_available = newAvailable;
+
+            if (changed) {
+                emit self->availabilityChanged(self->m_available);
+                emit self->pathChanged(self->m_untruncPath);
             }
         });
     });
@@ -55,7 +64,7 @@ bool UntruncLocator::waitForScan(int timeoutMs)
     return m_available;
 }
 
-bool UntruncLocator::scan()
+QString UntruncLocator::findUntruncExecutable()
 {
     QString found;
 
@@ -94,6 +103,12 @@ bool UntruncLocator::scan()
         }
     }
 
+    return found;
+}
+
+bool UntruncLocator::scan()
+{
+    const QString found = findUntruncExecutable();
     const bool newAvailable = !found.isEmpty();
     const bool changed = (newAvailable != m_available) || (found != m_untruncPath);
 
