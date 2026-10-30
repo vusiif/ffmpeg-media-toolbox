@@ -71,6 +71,18 @@
         <source>convert.title</source>
         <translation>Format Conversion</translation>
     </message>
+    <message id="convert.card.input">
+        <source>convert.card.input</source>
+        <translation>Media Source &amp; Probing</translation>
+    </message>
+    <message id="convert.card.encoding">
+        <source>convert.card.encoding</source>
+        <translation>Presets &amp; Encoding Settings</translation>
+    </message>
+    <message id="convert.card.preview">
+        <source>convert.card.preview</source>
+        <translation>Output &amp; Command Preview</translation>
+    </message>
     <message id="convert.input">
         <source>convert.input</source>
         <translation>Input File</translation>

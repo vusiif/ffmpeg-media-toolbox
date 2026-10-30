@@ -19,6 +19,8 @@ class ElaLineEdit;
 class ElaComboBox;
 class ElaSpinBox;
 class ElaCheckBox;
+class ElaScrollArea;
+class ElaScrollPageArea;
 
 class ConvertPage : public QWidget
 {
@@ -67,6 +69,11 @@ private:
     MediaFile m_probeInfo;
 
     ElaText *m_titleLabel = nullptr;
+    ElaScrollArea *m_scrollArea = nullptr;
+
+    // Card 1: Media Source & Probing
+    ElaScrollPageArea *m_inputCard = nullptr;
+    ElaText *m_inputCardTitle = nullptr;
     ElaText *m_inputCaption = nullptr;
     ElaLineEdit *m_inputEdit = nullptr;
     ElaPushButton *m_browseButton = nullptr;
@@ -75,7 +82,10 @@ private:
     ElaText *m_infoLabel = nullptr;
     ElaText *m_metaCaption = nullptr;
     ElaText *m_metaValue = nullptr;
-    ElaText *m_estLabel = nullptr;
+
+    // Card 2: Presets & Encoding Settings
+    ElaScrollPageArea *m_codecCard = nullptr;
+    ElaText *m_codecCardTitle = nullptr;
     ElaText *m_presetCaption = nullptr;
     ElaComboBox *m_presetCombo = nullptr;
     ElaPushButton *m_presetSaveButton = nullptr;
@@ -93,6 +103,8 @@ private:
     ElaCheckBox *m_hwAccelCheck = nullptr;
     ElaText *m_hwDeviceLabel = nullptr;
 
+    // Card 3: Advanced Media & Filters
+    ElaScrollPageArea *m_advCard = nullptr;
     ElaCheckBox *m_advToggle = nullptr;
     QWidget *m_advContainer = nullptr;
 
@@ -117,7 +129,13 @@ private:
     ElaText *m_afCaption = nullptr;
     ElaLineEdit *m_afEdit = nullptr;
 
+    // Card 4: Preview & Estimate
+    ElaScrollPageArea *m_previewCard = nullptr;
+    ElaText *m_previewCardTitle = nullptr;
+    ElaText *m_estLabel = nullptr;
     ElaText *m_previewCaption = nullptr;
     ElaLineEdit *m_previewEdit = nullptr;
+
+    // Bottom Action Row
     ElaPushButton *m_addButton = nullptr;
 };

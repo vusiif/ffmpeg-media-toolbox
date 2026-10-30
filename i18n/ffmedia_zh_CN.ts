@@ -71,6 +71,18 @@
         <source>convert.title</source>
         <translation>格式转换</translation>
     </message>
+    <message id="convert.card.input">
+        <source>convert.card.input</source>
+        <translation>媒体源与探测信息</translation>
+    </message>
+    <message id="convert.card.encoding">
+        <source>convert.card.encoding</source>
+        <translation>预设与编码参数</translation>
+    </message>
+    <message id="convert.card.preview">
+        <source>convert.card.preview</source>
+        <translation>输出与命令预览</translation>
+    </message>
     <message id="convert.input">
         <source>convert.input</source>
         <translation>输入文件</translation>

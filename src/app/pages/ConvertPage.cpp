@@ -18,6 +18,8 @@
 #include "ElaComboBox.h"
 #include "ElaLineEdit.h"
 #include "ElaPushButton.h"
+#include "ElaScrollArea.h"
+#include "ElaScrollPageArea.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "app/AppSettings.h"
@@ -71,43 +73,81 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_titleLabel->setTextPixelSize(28);
     root->addWidget(m_titleLabel);
 
+    m_scrollArea = new ElaScrollArea(this);
+    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setIsGrabGesture(true);
+    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    auto *scrollBody = new QWidget(m_scrollArea);
+    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    auto *bodyLayout = new QVBoxLayout(scrollBody);
+    bodyLayout->setContentsMargins(0, 0, 10, 0);
+    bodyLayout->setSpacing(14);
+
+    // Card 1: Media Source & Probing
+    m_inputCard = new ElaScrollPageArea(scrollBody);
+    m_inputCard->setMinimumHeight(0);
+    m_inputCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *inputLayout = new QVBoxLayout(m_inputCard);
+    inputLayout->setContentsMargins(18, 16, 18, 16);
+    inputLayout->setSpacing(10);
+
+    m_inputCardTitle = new ElaText(QString(), 15, m_inputCard);
+    m_inputCardTitle->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    inputLayout->addWidget(m_inputCardTitle);
+
     auto *inputRow = new QHBoxLayout();
-    m_inputCaption = new ElaText(QString(), 13, this);
-    m_inputEdit = new ElaLineEdit(this);
+    m_inputCaption = new ElaText(QString(), 13, m_inputCard);
+    m_inputEdit = new ElaLineEdit(m_inputCard);
     m_inputEdit->setReadOnly(true);
-    m_browseButton = new ElaPushButton(this);
+    m_browseButton = new ElaPushButton(m_inputCard);
     connect(m_browseButton, &ElaPushButton::clicked, this, &ConvertPage::browseInput);
     inputRow->addWidget(m_inputCaption);
     inputRow->addWidget(m_inputEdit, 1);
     inputRow->addWidget(m_browseButton);
-    root->addLayout(inputRow);
+    inputLayout->addLayout(inputRow);
 
     auto *recentRow = new QHBoxLayout();
-    m_recentCaption = new ElaText(QString(), 13, this);
-    m_recentCombo = new ElaComboBox(this);
+    m_recentCaption = new ElaText(QString(), 13, m_inputCard);
+    m_recentCombo = new ElaComboBox(m_inputCard);
     m_recentCaption->setVisible(false);
     m_recentCombo->setVisible(false);
     recentRow->addWidget(m_recentCaption);
     recentRow->addWidget(m_recentCombo, 1);
-    root->addLayout(recentRow);
+    inputLayout->addLayout(recentRow);
 
-    m_infoLabel = new ElaText(QString(), 13, this);
+    m_infoLabel = new ElaText(QString(), 13, m_inputCard);
     m_infoLabel->setTextPixelSize(12);
-    root->addWidget(m_infoLabel);
+    inputLayout->addWidget(m_infoLabel);
 
-    m_metaCaption = new ElaText(QString(), 13, this);
-    m_metaValue = new ElaText(QString(), 13, this);
+    m_metaCaption = new ElaText(QString(), 13, m_inputCard);
+    m_metaCaption->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_metaValue = new ElaText(QString(), 13, m_inputCard);
     m_metaValue->setWordWrap(true);
     m_metaCaption->setVisible(false);
     m_metaValue->setVisible(false);
-    root->addWidget(m_metaCaption);
-    root->addWidget(m_metaValue);
+    inputLayout->addWidget(m_metaCaption);
+    inputLayout->addWidget(m_metaValue);
+
+    bodyLayout->addWidget(m_inputCard);
+
+    // Card 2: Presets & Encoding Settings
+    m_codecCard = new ElaScrollPageArea(scrollBody);
+    m_codecCard->setMinimumHeight(0);
+    m_codecCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *codecLayout = new QVBoxLayout(m_codecCard);
+    codecLayout->setContentsMargins(18, 16, 18, 16);
+    codecLayout->setSpacing(10);
+
+    m_codecCardTitle = new ElaText(QString(), 15, m_codecCard);
+    m_codecCardTitle->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    codecLayout->addWidget(m_codecCardTitle);
 
     auto *presetRow = new QHBoxLayout();
-    m_presetCaption = new ElaText(QString(), 13, this);
-    m_presetCombo = new ElaComboBox(this);
-    m_presetSaveButton = new ElaPushButton(this);
-    m_presetDeleteButton = new ElaPushButton(this);
+    m_presetCaption = new ElaText(QString(), 13, m_codecCard);
+    m_presetCombo = new ElaComboBox(m_codecCard);
+    m_presetSaveButton = new ElaPushButton(m_codecCard);
+    m_presetDeleteButton = new ElaPushButton(m_codecCard);
     connect(m_presetCombo, &ElaComboBox::currentTextChanged,
             this, &ConvertPage::loadPreset);
     connect(m_presetSaveButton, &ElaPushButton::clicked, this, &ConvertPage::savePreset);
@@ -116,34 +156,33 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     presetRow->addWidget(m_presetCombo, 1);
     presetRow->addWidget(m_presetSaveButton);
     presetRow->addWidget(m_presetDeleteButton);
-    root->addLayout(presetRow);
+    codecLayout->addLayout(presetRow);
 
     auto *form = new QFormLayout();
     form->setSpacing(10);
 
-    m_formatCaption = new ElaText(QString(), 13, this);
-    m_formatCombo = new ElaComboBox(this);
+    m_formatCaption = new ElaText(QString(), 13, m_codecCard);
+    m_formatCombo = new ElaComboBox(m_codecCard);
     m_formatCombo->addItems({QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
                              QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("mp3"),
                              QStringLiteral("aac"), QStringLiteral("flac"), QStringLiteral("wav")});
 
-    m_codecCaption = new ElaText(QString(), 13, this);
-    m_codecCombo = new ElaComboBox(this);
+    m_codecCaption = new ElaText(QString(), 13, m_codecCard);
+    m_codecCombo = new ElaComboBox(m_codecCard);
 
-    m_audioCodecCaption = new ElaText(QString(), 13, this);
-    m_audioCodecCombo = new ElaComboBox(this);
+    m_audioCodecCaption = new ElaText(QString(), 13, m_codecCard);
+    m_audioCodecCombo = new ElaComboBox(m_codecCard);
 
-    m_qualityCaption = new ElaText(QString(), 13, this);
-    m_qualitySpin = new ElaSpinBox(this);
+    m_qualityCaption = new ElaText(QString(), 13, m_codecCard);
+    m_qualitySpin = new ElaSpinBox(m_codecCard);
     m_qualitySpin->setRange(0, 51);
     m_qualitySpin->setValue(23);
 
-    m_smartCopyCheck = new ElaCheckBox(this);
+    m_smartCopyCheck = new ElaCheckBox(m_codecCard);
+    m_stripMetaCheck = new ElaCheckBox(m_codecCard);
 
-    m_stripMetaCheck = new ElaCheckBox(this);
-
-    m_hwAccelCheck = new ElaCheckBox(this);
-    m_hwDeviceLabel = new ElaText(QString(), 12, this);
+    m_hwAccelCheck = new ElaCheckBox(m_codecCard);
+    m_hwDeviceLabel = new ElaText(QString(), 12, m_codecCard);
     m_hwDeviceLabel->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
     auto *hwRow = new QHBoxLayout();
     hwRow->addWidget(m_hwAccelCheck);
@@ -179,17 +218,30 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_codecCaption, m_codecCombo);
     form->addRow(m_audioCodecCaption, m_audioCodecCombo);
     form->addRow(m_qualityCaption, m_qualitySpin);
-    form->addRow(new ElaText(QString(), 13, this), m_smartCopyCheck);
-    form->addRow(new ElaText(QString(), 13, this), m_stripMetaCheck);
-    form->addRow(new ElaText(QString(), 13, this), hwRow);
+    form->addRow(new ElaText(QString(), 13, m_codecCard), m_smartCopyCheck);
+    form->addRow(new ElaText(QString(), 13, m_codecCard), m_stripMetaCheck);
+    form->addRow(new ElaText(QString(), 13, m_codecCard), hwRow);
+    codecLayout->addLayout(form);
 
-    m_advToggle = new ElaCheckBox(this);
-    form->addRow(new ElaText(QString(), 13, this), m_advToggle);
-    root->addLayout(form);
+    bodyLayout->addWidget(m_codecCard);
 
-    m_advContainer = new QWidget(this);
+    // Card 3: Advanced Options (Collapsible)
+    m_advCard = new ElaScrollPageArea(scrollBody);
+    m_advCard->setMinimumHeight(0);
+    m_advCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *advCardLayout = new QVBoxLayout(m_advCard);
+    advCardLayout->setContentsMargins(18, 16, 18, 16);
+    advCardLayout->setSpacing(8);
+
+    m_advToggle = new ElaCheckBox(m_advCard);
+    connect(m_advToggle, &ElaCheckBox::toggled, this, [this](bool checked) {
+        m_advContainer->setVisible(checked);
+    });
+    advCardLayout->addWidget(m_advToggle);
+
+    m_advContainer = new QWidget(m_advCard);
     auto *advForm = new QFormLayout(m_advContainer);
-    advForm->setContentsMargins(0, 0, 0, 0);
+    advForm->setContentsMargins(0, 8, 0, 0);
     advForm->setSpacing(8);
 
     // Audio Bitrate
@@ -279,22 +331,47 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     advForm->addRow(m_afCaption, m_afEdit);
 
     m_advContainer->setVisible(false);
-    connect(m_advToggle, &ElaCheckBox::toggled, m_advContainer, &QWidget::setVisible);
-    root->addWidget(m_advContainer);
+    advCardLayout->addWidget(m_advContainer);
 
-    m_estLabel = new ElaText(QString(), 13, this);
+    bodyLayout->addWidget(m_advCard);
+
+    // Card 4: Output Preview & Size Estimation
+    m_previewCard = new ElaScrollPageArea(scrollBody);
+    m_previewCard->setMinimumHeight(0);
+    m_previewCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *previewLayout = new QVBoxLayout(m_previewCard);
+    previewLayout->setContentsMargins(18, 16, 18, 16);
+    previewLayout->setSpacing(10);
+
+    auto *previewTopRow = new QHBoxLayout();
+    m_previewCardTitle = new ElaText(QString(), 15, m_previewCard);
+    m_previewCardTitle->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_estLabel = new ElaText(QString(), 13, m_previewCard);
+    m_estLabel->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
     m_estLabel->setVisible(false);
-    root->addWidget(m_estLabel);
+    previewTopRow->addWidget(m_previewCardTitle);
+    previewTopRow->addStretch();
+    previewTopRow->addWidget(m_estLabel);
+    previewLayout->addLayout(previewTopRow);
 
-    m_previewCaption = new ElaText(QString(), 13, this);
-    m_previewEdit = new ElaLineEdit(this);
+    m_previewCaption = new ElaText(QString(), 13, m_previewCard);
+    m_previewEdit = new ElaLineEdit(m_previewCard);
     m_previewEdit->setReadOnly(true);
-    root->addWidget(m_previewCaption);
-    root->addWidget(m_previewEdit);
+    previewLayout->addWidget(m_previewCaption);
+    previewLayout->addWidget(m_previewEdit);
 
+    bodyLayout->addWidget(m_previewCard);
+
+    bodyLayout->addStretch();
+    m_scrollArea->setWidget(scrollBody);
+    root->addWidget(m_scrollArea, 1);
+
+    // Pinned Bottom Action Row
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
+    m_addButton->setFixedHeight(38);
+    m_addButton->setMinimumWidth(160);
     connect(m_addButton, &ElaPushButton::clicked, this, &ConvertPage::addToQueue);
     buttonRow->addWidget(m_addButton);
     root->addLayout(buttonRow);
@@ -706,6 +783,15 @@ void ConvertPage::refreshPresetList()
 void ConvertPage::retranslateUi()
 {
     m_titleLabel->setText(trId("convert.title"));
+    if (m_inputCardTitle) {
+        m_inputCardTitle->setText(trId("convert.card.input"));
+    }
+    if (m_codecCardTitle) {
+        m_codecCardTitle->setText(trId("convert.card.encoding"));
+    }
+    if (m_previewCardTitle) {
+        m_previewCardTitle->setText(trId("convert.card.preview"));
+    }
     m_inputCaption->setText(trId("convert.input") + QStringLiteral(":"));
     m_recentCaption->setText(trId("common.recent") + QStringLiteral(":"));
     m_browseButton->setText(trId("common.browse"));
