@@ -275,6 +275,22 @@
         <source>video.title</source>
         <translation>视频工具</translation>
     </message>
+    <message id="video.tab.clip">
+        <source>video.tab.clip</source>
+        <translation>剪辑与调整</translation>
+    </message>
+    <message id="video.tab.audio">
+        <source>video.tab.audio</source>
+        <translation>音频处理</translation>
+    </message>
+    <message id="video.tab.effects">
+        <source>video.tab.effects</source>
+        <translation>水印与字幕</translation>
+    </message>
+    <message id="video.tab.frames">
+        <source>video.tab.frames</source>
+        <translation>动图与帧提取</translation>
+    </message>
     <message id="video.trim">
         <source>video.trim</source>
         <translation>剪辑</translation>

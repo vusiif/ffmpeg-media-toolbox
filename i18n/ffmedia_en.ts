@@ -275,6 +275,22 @@
         <source>video.title</source>
         <translation>Video Tools</translation>
     </message>
+    <message id="video.tab.clip">
+        <source>video.tab.clip</source>
+        <translation>Clip &amp; Adjust</translation>
+    </message>
+    <message id="video.tab.audio">
+        <source>video.tab.audio</source>
+        <translation>Audio Tools</translation>
+    </message>
+    <message id="video.tab.effects">
+        <source>video.tab.effects</source>
+        <translation>Overlay &amp; Subtitles</translation>
+    </message>
+    <message id="video.tab.frames">
+        <source>video.tab.frames</source>
+        <translation>Frames &amp; Animation</translation>
+    </message>
     <message id="video.trim">
         <source>video.trim</source>
         <translation>Trim</translation>

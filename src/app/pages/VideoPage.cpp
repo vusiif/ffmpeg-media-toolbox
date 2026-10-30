@@ -5,11 +5,11 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
-#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -17,9 +17,11 @@
 #include "ElaComboBox.h"
 #include "ElaDoubleSpinBox.h"
 #include "ElaLineEdit.h"
+#include "ElaPivot.h"
 #include "ElaPushButton.h"
 #include "ElaScrollArea.h"
 #include "ElaScrollBar.h"
+#include "ElaScrollPageArea.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "conversion/RemuxPolicy.h"
@@ -41,17 +43,24 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(30, 30, 30, 30);
-    root->setSpacing(16);
+    root->setSpacing(14);
 
     m_titleLabel = new ElaText(QString(), 13, this);
     m_titleLabel->setTextPixelSize(28);
     root->addWidget(m_titleLabel);
 
-    auto *inputRow = new QHBoxLayout();
-    m_inputCaption = new ElaText(QString(), 13, this);
-    m_inputEdit = new ElaLineEdit(this);
+    // Common Source Video Input Card
+    auto *inputCard = new ElaScrollPageArea(this);
+    inputCard->setMinimumHeight(0);
+    inputCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *inputCardLayout = new QHBoxLayout(inputCard);
+    inputCardLayout->setContentsMargins(18, 12, 18, 12);
+    inputCardLayout->setSpacing(12);
+
+    m_inputCaption = new ElaText(QString(), 13, inputCard);
+    m_inputEdit = new ElaLineEdit(inputCard);
     m_inputEdit->setReadOnly(true);
-    m_browseButton = new ElaPushButton(this);
+    m_browseButton = new ElaPushButton(inputCard);
     connect(m_browseButton, &ElaPushButton::clicked, this, [=]() {
         const QString path = browseFile(trId("nav.video"),
                                         QStringLiteral("Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv);;All files (*)"));
@@ -60,161 +69,171 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
             m_inputEdit->setText(path);
         }
     });
-    inputRow->addWidget(m_inputCaption);
-    inputRow->addWidget(m_inputEdit, 1);
-    inputRow->addWidget(m_browseButton);
-    root->addLayout(inputRow);
+    inputCardLayout->addWidget(m_inputCaption);
+    inputCardLayout->addWidget(m_inputEdit, 1);
+    inputCardLayout->addWidget(m_browseButton);
+    root->addWidget(inputCard);
 
-    auto *scroll = new ElaScrollArea(this);
-    scroll->setWidgetResizable(true);
-    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    auto *scrollBody = new QWidget(scroll);
-    scrollBody->setStyleSheet(QStringLiteral(
-        "background-color: transparent;"
-        "QGroupBox {"
-        "  font-weight: bold;"
-        "  border: 1px solid rgba(255, 255, 255, 0.08);"
-        "  border-radius: 6px;"
-        "  margin-top: 12px;"
-        "  padding-top: 14px;"
-        "  background-color: rgba(255, 255, 255, 0.03);"
-        "}"
-        "QGroupBox::title {"
-        "  subcontrol-origin: margin;"
-        "  subcontrol-position: top left;"
-        "  left: 10px;"
-        "  padding: 0 4px;"
-        "  color: #0078d4;"
-        "}"
-    ));
-    auto *body = new QVBoxLayout(scrollBody);
-    body->setContentsMargins(0, 0, 10, 0);
-    body->setSpacing(12);
+    // Segmented Navigation Switcher
+    m_pivot = new ElaPivot(this);
+    m_pivot->setPivotSpacing(16);
+    m_pivot->setMarkWidth(90);
+    root->addWidget(m_pivot);
 
-    auto makeRow = [](QGroupBox *box) {
-        auto *row = new QFormLayout(box);
-        row->setSpacing(8);
-        return row;
+    m_stackedWidget = new QStackedWidget(this);
+    connect(m_pivot, &ElaPivot::pivotClicked, m_stackedWidget, &QStackedWidget::setCurrentIndex);
+    root->addWidget(m_stackedWidget, 1);
+
+    auto createTab = [this](QWidget *&bodyWidget, QVBoxLayout *&bodyLayout) {
+        auto *tab = new QWidget(m_stackedWidget);
+        auto *tabLayout = new QVBoxLayout(tab);
+        tabLayout->setContentsMargins(0, 4, 0, 0);
+        tabLayout->setSpacing(0);
+
+        auto *scroll = new ElaScrollArea(tab);
+        scroll->setWidgetResizable(true);
+        scroll->setIsGrabGesture(true);
+        scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+        bodyWidget = new QWidget(scroll);
+        bodyWidget->setStyleSheet(QStringLiteral("background-color: transparent;"));
+        bodyLayout = new QVBoxLayout(bodyWidget);
+        bodyLayout->setContentsMargins(0, 0, 10, 0);
+        bodyLayout->setSpacing(14);
+
+        scroll->setWidget(bodyWidget);
+        tabLayout->addWidget(scroll);
+        return tab;
     };
-    auto makeCaption = [](QGroupBox *box) {
-        return new ElaText(QString(), 13, box);
+
+    auto createCard = [](QWidget *parent, ElaText *&titleLabel) {
+        auto *card = new ElaScrollPageArea(parent);
+        card->setMinimumHeight(0);
+        card->setMaximumHeight(QWIDGETSIZE_MAX);
+        auto *layout = new QVBoxLayout(card);
+        layout->setContentsMargins(18, 16, 18, 16);
+        layout->setSpacing(10);
+
+        titleLabel = new ElaText(QString(), 15, card);
+        titleLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
+        layout->addWidget(titleLabel);
+        return card;
     };
-    auto makeQueueButton = [](QGroupBox *box) {
-        auto *button = new ElaPushButton(box);
-        auto *layout = qobject_cast<QFormLayout *>(box->layout());
-        if (layout) {
-            layout->addRow(button);
+
+    auto createCardButton = [](ElaScrollPageArea *card) {
+        auto *button = new ElaPushButton(card);
+        button->setFixedHeight(36);
+        button->setMinimumWidth(140);
+        auto *btnRow = new QHBoxLayout();
+        btnRow->addStretch();
+        btnRow->addWidget(button);
+        if (auto *layout = qobject_cast<QVBoxLayout *>(card->layout())) {
+            layout->addLayout(btnRow);
         }
         return button;
     };
 
-    // Trim
-    m_trimBox = new QGroupBox(scrollBody);
-    auto *trimForm = makeRow(m_trimBox);
-    m_trimStartCaption = makeCaption(m_trimBox);
-    m_trimStart = new ElaDoubleSpinBox(m_trimBox);
+    auto makeCaption = [](ElaScrollPageArea *card) {
+        return new ElaText(QString(), 13, card);
+    };
+
+    // =========================================================================
+    // Tab 1: 剪辑与调整 (Clip & Adjust)
+    // =========================================================================
+    QWidget *bodyClip = nullptr;
+    QVBoxLayout *bodyClipLayout = nullptr;
+    QWidget *tabClip = createTab(bodyClip, bodyClipLayout);
+
+    // Trim Card
+    m_trimCard = createCard(bodyClip, m_trimTitleLabel);
+    auto *trimForm = new QFormLayout();
+    trimForm->setSpacing(8);
+    m_trimStartCaption = makeCaption(m_trimCard);
+    m_trimStart = new ElaDoubleSpinBox(m_trimCard);
     m_trimStart->setRange(0, 86400);
     m_trimStart->setDecimals(1);
-    m_trimEndCaption = makeCaption(m_trimBox);
-    m_trimEnd = new ElaDoubleSpinBox(m_trimBox);
+    m_trimEndCaption = makeCaption(m_trimCard);
+    m_trimEnd = new ElaDoubleSpinBox(m_trimCard);
     m_trimEnd->setRange(0, 86400);
     m_trimEnd->setDecimals(1);
-    m_trimFormatCaption = makeCaption(m_trimBox);
-    m_trimFormat = new ElaComboBox(m_trimBox);
+    m_trimFormatCaption = makeCaption(m_trimCard);
+    m_trimFormat = new ElaComboBox(m_trimCard);
     m_trimFormat->addItems({QStringLiteral(""), QStringLiteral("mp4"), QStringLiteral("mkv"),
                             QStringLiteral("mov"), QStringLiteral("webm")});
-    m_trimCopyCaption = makeCaption(m_trimBox);
-    m_trimCopy = new ElaCheckBox(m_trimBox);
+    m_trimCopyCaption = makeCaption(m_trimCard);
+    m_trimCopy = new ElaCheckBox(m_trimCard);
     trimForm->addRow(m_trimStartCaption, m_trimStart);
     trimForm->addRow(m_trimEndCaption, m_trimEnd);
     trimForm->addRow(m_trimFormatCaption, m_trimFormat);
     trimForm->addRow(m_trimCopyCaption, m_trimCopy);
-    m_trimButton = makeQueueButton(m_trimBox);
+    qobject_cast<QVBoxLayout *>(m_trimCard->layout())->addLayout(trimForm);
+    m_trimButton = createCardButton(m_trimCard);
     connect(m_trimButton, &ElaPushButton::clicked, this, &VideoPage::trim);
-    body->addWidget(m_trimBox);
+    bodyClipLayout->addWidget(m_trimCard);
 
-    // Extract audio
-    m_audioBox = new QGroupBox(scrollBody);
-    auto *audioForm = makeRow(m_audioBox);
-    m_audioFormatCaption = makeCaption(m_audioBox);
-    m_audioFormat = new ElaComboBox(m_audioBox);
-    m_audioFormat->addItems({QStringLiteral("mp3"), QStringLiteral("aac"), QStringLiteral("flac"),
-                             QStringLiteral("wav"), QStringLiteral("opus"), QStringLiteral("m4a")});
-    m_audioBitrateCaption = makeCaption(m_audioBox);
-    m_audioBitrate = new ElaSpinBox(m_audioBox);
-    m_audioBitrate->setRange(0, 512);
-    m_audioBitrate->setValue(192);
-    audioForm->addRow(m_audioFormatCaption, m_audioFormat);
-    audioForm->addRow(m_audioBitrateCaption, m_audioBitrate);
-    m_audioButton = makeQueueButton(m_audioBox);
-    connect(m_audioButton, &ElaPushButton::clicked, this, &VideoPage::extractAudio);
-    body->addWidget(m_audioBox);
+    // Adjust Card (crop / resize / rotate)
+    m_adjCard = createCard(bodyClip, m_adjTitleLabel);
+    auto *adjForm = new QFormLayout();
+    adjForm->setSpacing(8);
+    m_adjCropCaption = makeCaption(m_adjCard);
+    auto *cropRow = new QHBoxLayout();
+    m_adjCropX = new ElaSpinBox(m_adjCard);
+    m_adjCropY = new ElaSpinBox(m_adjCard);
+    m_adjCropW = new ElaSpinBox(m_adjCard);
+    m_adjCropH = new ElaSpinBox(m_adjCard);
+    for (ElaSpinBox *spin : {m_adjCropX, m_adjCropY, m_adjCropW, m_adjCropH}) {
+        spin->setRange(0, 10000);
+        cropRow->addWidget(spin);
+    }
+    adjForm->addRow(m_adjCropCaption, cropRow);
+    m_adjResizeCaption = makeCaption(m_adjCard);
+    auto *resizeRow = new QHBoxLayout();
+    m_adjResizeW = new ElaSpinBox(m_adjCard);
+    m_adjResizeH = new ElaSpinBox(m_adjCard);
+    for (ElaSpinBox *spin : {m_adjResizeW, m_adjResizeH}) {
+        spin->setRange(0, 10000);
+        resizeRow->addWidget(spin);
+    }
+    adjForm->addRow(m_adjResizeCaption, resizeRow);
+    m_adjRotateCaption = makeCaption(m_adjCard);
+    m_adjRotateCombo = new ElaComboBox(m_adjCard);
+    m_adjRotateCombo->addItems({QStringLiteral("0"), QStringLiteral("90"),
+                                QStringLiteral("180"), QStringLiteral("270")});
+    adjForm->addRow(m_adjRotateCaption, m_adjRotateCombo);
+    m_adjQualityCaption = makeCaption(m_adjCard);
+    m_adjQualitySpin = new ElaSpinBox(m_adjCard);
+    m_adjQualitySpin->setRange(0, 51);
+    m_adjQualitySpin->setValue(23);
+    adjForm->addRow(m_adjQualityCaption, m_adjQualitySpin);
+    qobject_cast<QVBoxLayout *>(m_adjCard->layout())->addLayout(adjForm);
+    m_adjButton = createCardButton(m_adjCard);
+    connect(m_adjButton, &ElaPushButton::clicked, this, &VideoPage::adjust);
+    bodyClipLayout->addWidget(m_adjCard);
 
-    // Mute
-    m_muteBox = new QGroupBox(scrollBody);
-    auto *muteForm = makeRow(m_muteBox);
-    m_muteFormatCaption = makeCaption(m_muteBox);
-    m_muteFormat = new ElaComboBox(m_muteBox);
-    m_muteFormat->addItems({QStringLiteral(""), QStringLiteral("mp4"), QStringLiteral("mkv"),
-                            QStringLiteral("webm")});
-    muteForm->addRow(m_muteFormatCaption, m_muteFormat);
-    m_muteButton = makeQueueButton(m_muteBox);
-    connect(m_muteButton, &ElaPushButton::clicked, this, &VideoPage::mute);
-    body->addWidget(m_muteBox);
-
-    // Screenshot
-    m_shotBox = new QGroupBox(scrollBody);
-    auto *shotForm = makeRow(m_shotBox);
-    m_shotTimeCaption = makeCaption(m_shotBox);
-    m_shotTime = new ElaDoubleSpinBox(m_shotBox);
-    m_shotTime->setRange(0, 86400);
-    m_shotTime->setDecimals(1);
-    m_shotFormatCaption = makeCaption(m_shotBox);
-    m_shotFormat = new ElaComboBox(m_shotBox);
-    m_shotFormat->addItems({QStringLiteral("png"), QStringLiteral("jpeg"), QStringLiteral("webp")});
-    shotForm->addRow(m_shotTimeCaption, m_shotTime);
-    shotForm->addRow(m_shotFormatCaption, m_shotFormat);
-    m_shotButton = makeQueueButton(m_shotBox);
-    connect(m_shotButton, &ElaPushButton::clicked, this, &VideoPage::screenshot);
-    body->addWidget(m_shotBox);
-
-    // GIF
-    m_gifBox = new QGroupBox(scrollBody);
-    auto *gifForm = makeRow(m_gifBox);
-    m_gifStartCaption = makeCaption(m_gifBox);
-    m_gifStart = new ElaDoubleSpinBox(m_gifBox);
-    m_gifStart->setRange(0, 86400);
-    m_gifStart->setDecimals(1);
-    m_gifEndCaption = makeCaption(m_gifBox);
-    m_gifEnd = new ElaDoubleSpinBox(m_gifBox);
-    m_gifEnd->setRange(0, 86400);
-    m_gifEnd->setDecimals(1);
-    m_gifFpsCaption = makeCaption(m_gifBox);
-    m_gifFps = new ElaSpinBox(m_gifBox);
-    m_gifFps->setRange(1, 60);
-    m_gifFps->setValue(12);
-    m_gifWidthCaption = makeCaption(m_gifBox);
-    m_gifWidth = new ElaSpinBox(m_gifBox);
-    m_gifWidth->setRange(0, 4096);
-    m_gifWidth->setValue(480);
-    gifForm->addRow(m_gifStartCaption, m_gifStart);
-    gifForm->addRow(m_gifEndCaption, m_gifEnd);
-    gifForm->addRow(m_gifFpsCaption, m_gifFps);
-    gifForm->addRow(m_gifWidthCaption, m_gifWidth);
-    m_gifButton = makeQueueButton(m_gifBox);
-    connect(m_gifButton, &ElaPushButton::clicked, this, &VideoPage::makeGif);
-    body->addWidget(m_gifBox);
-
-    // Video join
-    m_joinBox = new QGroupBox(scrollBody);
-    auto *joinLayout = new QVBoxLayout(m_joinBox);
-    joinLayout->setSpacing(8);
-    m_joinList = new QListWidget(m_joinBox);
-    m_joinList->setStyleSheet(QStringLiteral("QListWidget { background-color: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; }"));
-    joinLayout->addWidget(m_joinList);
+    // Join Card
+    m_joinCard = createCard(bodyClip, m_joinTitleLabel);
+    auto *joinCardLayout = qobject_cast<QVBoxLayout *>(m_joinCard->layout());
+    m_joinList = new QListWidget(m_joinCard);
+    m_joinList->setStyleSheet(QStringLiteral(
+        "QListWidget {"
+        "  background-color: transparent;"
+        "  border: 1px solid rgba(128, 128, 128, 0.25);"
+        "  border-radius: 6px;"
+        "  padding: 4px;"
+        "}"
+        "QListWidget::item {"
+        "  padding: 4px 8px;"
+        "  border-radius: 4px;"
+        "}"
+        "QListWidget::item:selected {"
+        "  background-color: rgba(0, 120, 212, 0.25);"
+        "}"
+    ));
+    m_joinList->setMinimumHeight(100);
+    joinCardLayout->addWidget(m_joinList);
     auto *joinButtons = new QHBoxLayout();
-    m_joinAddButton = new ElaPushButton(m_joinBox);
-    m_joinRemoveButton = new ElaPushButton(m_joinBox);
+    m_joinAddButton = new ElaPushButton(m_joinCard);
+    m_joinRemoveButton = new ElaPushButton(m_joinCard);
     connect(m_joinAddButton, &ElaPushButton::clicked, this, [=]() {
         const QStringList paths = QFileDialog::getOpenFileNames(
             this, trId("video.join"), QString(),
@@ -235,39 +254,72 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     joinButtons->addWidget(m_joinAddButton);
     joinButtons->addWidget(m_joinRemoveButton);
     joinButtons->addStretch();
-    joinLayout->addLayout(joinButtons);
-    m_joinButton = new ElaPushButton(m_joinBox);
+    joinCardLayout->addLayout(joinButtons);
+    m_joinButton = createCardButton(m_joinCard);
     connect(m_joinButton, &ElaPushButton::clicked, this, &VideoPage::joinVideos);
-    joinLayout->addWidget(m_joinButton);
-    body->addWidget(m_joinBox);
+    bodyClipLayout->addWidget(m_joinCard);
 
-    // Sequence
-    m_seqBox = new QGroupBox(scrollBody);
-    auto *seqForm = makeRow(m_seqBox);
-    m_seqModeCaption = makeCaption(m_seqBox);
-    m_seqMode = new ElaComboBox(m_seqBox);
-    m_seqMode->addItems({QString(), QString()});
-    m_seqPatternCaption = makeCaption(m_seqBox);
-    m_seqPattern = new ElaLineEdit(m_seqBox);
-    m_seqPattern->setText(QStringLiteral("frame_%04d.png"));
-    m_seqFpsCaption = makeCaption(m_seqBox);
-    m_seqFps = new ElaDoubleSpinBox(m_seqBox);
-    m_seqFps->setRange(0.1, 240);
-    m_seqFps->setValue(25);
-    seqForm->addRow(m_seqModeCaption, m_seqMode);
-    seqForm->addRow(m_seqPatternCaption, m_seqPattern);
-    seqForm->addRow(m_seqFpsCaption, m_seqFps);
-    m_seqButton = makeQueueButton(m_seqBox);
-    connect(m_seqButton, &ElaPushButton::clicked, this, &VideoPage::sequence);
-    body->addWidget(m_seqBox);
+    bodyClipLayout->addStretch();
+    m_stackedWidget->addWidget(tabClip);
 
-    // Watermark
-    m_wmBox = new QGroupBox(scrollBody);
-    auto *wmForm = makeRow(m_wmBox);
+    // =========================================================================
+    // Tab 2: 音频处理 (Audio Tools)
+    // =========================================================================
+    QWidget *bodyAudio = nullptr;
+    QVBoxLayout *bodyAudioLayout = nullptr;
+    QWidget *tabAudio = createTab(bodyAudio, bodyAudioLayout);
+
+    // Extract Audio Card
+    m_audioCard = createCard(bodyAudio, m_audioTitleLabel);
+    auto *audioForm = new QFormLayout();
+    audioForm->setSpacing(8);
+    m_audioFormatCaption = makeCaption(m_audioCard);
+    m_audioFormat = new ElaComboBox(m_audioCard);
+    m_audioFormat->addItems({QStringLiteral("mp3"), QStringLiteral("aac"), QStringLiteral("flac"),
+                             QStringLiteral("wav"), QStringLiteral("opus"), QStringLiteral("m4a")});
+    m_audioBitrateCaption = makeCaption(m_audioCard);
+    m_audioBitrate = new ElaSpinBox(m_audioCard);
+    m_audioBitrate->setRange(0, 512);
+    m_audioBitrate->setValue(192);
+    audioForm->addRow(m_audioFormatCaption, m_audioFormat);
+    audioForm->addRow(m_audioBitrateCaption, m_audioBitrate);
+    qobject_cast<QVBoxLayout *>(m_audioCard->layout())->addLayout(audioForm);
+    m_audioButton = createCardButton(m_audioCard);
+    connect(m_audioButton, &ElaPushButton::clicked, this, &VideoPage::extractAudio);
+    bodyAudioLayout->addWidget(m_audioCard);
+
+    // Mute Card
+    m_muteCard = createCard(bodyAudio, m_muteTitleLabel);
+    auto *muteForm = new QFormLayout();
+    muteForm->setSpacing(8);
+    m_muteFormatCaption = makeCaption(m_muteCard);
+    m_muteFormat = new ElaComboBox(m_muteCard);
+    m_muteFormat->addItems({QStringLiteral(""), QStringLiteral("mp4"), QStringLiteral("mkv"),
+                            QStringLiteral("webm")});
+    muteForm->addRow(m_muteFormatCaption, m_muteFormat);
+    qobject_cast<QVBoxLayout *>(m_muteCard->layout())->addLayout(muteForm);
+    m_muteButton = createCardButton(m_muteCard);
+    connect(m_muteButton, &ElaPushButton::clicked, this, &VideoPage::mute);
+    bodyAudioLayout->addWidget(m_muteCard);
+
+    bodyAudioLayout->addStretch();
+    m_stackedWidget->addWidget(tabAudio);
+
+    // =========================================================================
+    // Tab 3: 水印与字幕 (Overlay & Subtitles)
+    // =========================================================================
+    QWidget *bodyEffects = nullptr;
+    QVBoxLayout *bodyEffectsLayout = nullptr;
+    QWidget *tabEffects = createTab(bodyEffects, bodyEffectsLayout);
+
+    // Watermark Card
+    m_wmCard = createCard(bodyEffects, m_wmTitleLabel);
+    auto *wmForm = new QFormLayout();
+    wmForm->setSpacing(8);
     auto *wmPathRow = new QHBoxLayout();
-    m_wmPath = new ElaLineEdit(m_wmBox);
+    m_wmPath = new ElaLineEdit(m_wmCard);
     m_wmPath->setReadOnly(true);
-    m_wmBrowseButton = new ElaPushButton(m_wmBox);
+    m_wmBrowseButton = new ElaPushButton(m_wmCard);
     connect(m_wmBrowseButton, &ElaPushButton::clicked, this, [=]() {
         const QString path = browseFile(trId("video.watermark"),
                                         QStringLiteral("Image files (*.png *.jpg *.jpeg *.webp *.bmp);;All files (*)"));
@@ -277,115 +329,34 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     });
     wmPathRow->addWidget(m_wmPath, 1);
     wmPathRow->addWidget(m_wmBrowseButton);
-    m_wmImageCaption = makeCaption(m_wmBox);
-    m_wmPositionCaption = makeCaption(m_wmBox);
-    m_wmPosition = new ElaComboBox(m_wmBox);
+    m_wmImageCaption = makeCaption(m_wmCard);
+    m_wmPositionCaption = makeCaption(m_wmCard);
+    m_wmPosition = new ElaComboBox(m_wmCard);
     m_wmPosition->addItem(QString(), QStringLiteral("bottom-right"));
     m_wmPosition->addItem(QString(), QStringLiteral("bottom-left"));
     m_wmPosition->addItem(QString(), QStringLiteral("top-right"));
     m_wmPosition->addItem(QString(), QStringLiteral("top-left"));
     m_wmPosition->addItem(QString(), QStringLiteral("center"));
-    m_wmOpacityCaption = makeCaption(m_wmBox);
-    m_wmOpacity = new ElaSpinBox(m_wmBox);
+    m_wmOpacityCaption = makeCaption(m_wmCard);
+    m_wmOpacity = new ElaSpinBox(m_wmCard);
     m_wmOpacity->setRange(0, 100);
     m_wmOpacity->setValue(100);
     wmForm->addRow(m_wmImageCaption, wmPathRow);
     wmForm->addRow(m_wmPositionCaption, m_wmPosition);
     wmForm->addRow(m_wmOpacityCaption, m_wmOpacity);
-    m_wmButton = makeQueueButton(m_wmBox);
+    qobject_cast<QVBoxLayout *>(m_wmCard->layout())->addLayout(wmForm);
+    m_wmButton = createCardButton(m_wmCard);
     connect(m_wmButton, &ElaPushButton::clicked, this, &VideoPage::watermark);
-    body->addWidget(m_wmBox);
+    bodyEffectsLayout->addWidget(m_wmCard);
 
-    // Subtitle mux
-    m_subBox = new QGroupBox(scrollBody);
-    auto *subForm = makeRow(m_subBox);
-    auto *subPathRow = new QHBoxLayout();
-    m_subPath = new ElaLineEdit(m_subBox);
-    m_subPath->setReadOnly(true);
-    m_subPathButton = new ElaPushButton(m_subBox);
-    connect(m_subPathButton, &ElaPushButton::clicked, this, [=]() {
-        const QString path = browseFile(
-            trId("video.subtitle"),
-            QStringLiteral("Subtitle files (*.srt *.ass *.ssa *.vtt);;All files (*)"));
-        if (!path.isEmpty()) {
-            m_subtitleFile = path;
-            m_subPath->setText(path);
-        }
-    });
-    subPathRow->addWidget(m_subPath, 1);
-    subPathRow->addWidget(m_subPathButton);
-    m_subCaption = makeCaption(m_subBox);
-    subForm->addRow(m_subCaption, subPathRow);
-
-    m_subBurnCheck = new ElaCheckBox(m_subBox);
-    subForm->addRow(new ElaText(QString(), 13, m_subBox), m_subBurnCheck);
-
-    m_subQualityCaption = makeCaption(m_subBox);
-    m_subQualitySpin = new ElaSpinBox(m_subBox);
-    m_subQualitySpin->setRange(0, 51);
-    m_subQualitySpin->setValue(23);
-    m_subQualityCaption->setVisible(false);
-    m_subQualitySpin->setVisible(false);
-    subForm->addRow(m_subQualityCaption, m_subQualitySpin);
-    connect(m_subBurnCheck, &ElaCheckBox::toggled, this, [this](bool checked) {
-        m_subQualityCaption->setVisible(checked);
-        m_subQualitySpin->setVisible(checked);
-    });
-
-    m_subButton = makeQueueButton(m_subBox);
-    connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
-    body->addWidget(m_subBox);
-
-    // Adjust (crop / resize / rotate) - mirrors the image page layout.
-    m_adjBox = new QGroupBox(scrollBody);
-    auto *adjForm = makeRow(m_adjBox);
-
-    m_adjCropCaption = makeCaption(m_adjBox);
-    auto *cropRow = new QHBoxLayout();
-    m_adjCropX = new ElaSpinBox(m_adjBox);
-    m_adjCropY = new ElaSpinBox(m_adjBox);
-    m_adjCropW = new ElaSpinBox(m_adjBox);
-    m_adjCropH = new ElaSpinBox(m_adjBox);
-    for (ElaSpinBox *spin : {m_adjCropX, m_adjCropY, m_adjCropW, m_adjCropH}) {
-        spin->setRange(0, 10000);
-        cropRow->addWidget(spin);
-    }
-    adjForm->addRow(m_adjCropCaption, cropRow);
-
-    m_adjResizeCaption = makeCaption(m_adjBox);
-    auto *resizeRow = new QHBoxLayout();
-    m_adjResizeW = new ElaSpinBox(m_adjBox);
-    m_adjResizeH = new ElaSpinBox(m_adjBox);
-    for (ElaSpinBox *spin : {m_adjResizeW, m_adjResizeH}) {
-        spin->setRange(0, 10000);
-        resizeRow->addWidget(spin);
-    }
-    adjForm->addRow(m_adjResizeCaption, resizeRow);
-
-    m_adjRotateCaption = makeCaption(m_adjBox);
-    m_adjRotateCombo = new ElaComboBox(m_adjBox);
-    m_adjRotateCombo->addItems({QStringLiteral("0"), QStringLiteral("90"),
-                                QStringLiteral("180"), QStringLiteral("270")});
-    adjForm->addRow(m_adjRotateCaption, m_adjRotateCombo);
-
-    m_adjQualityCaption = makeCaption(m_adjBox);
-    m_adjQualitySpin = new ElaSpinBox(m_adjBox);
-    m_adjQualitySpin->setRange(0, 51);
-    m_adjQualitySpin->setValue(23);
-    adjForm->addRow(m_adjQualityCaption, m_adjQualitySpin);
-
-    m_adjButton = makeQueueButton(m_adjBox);
-    connect(m_adjButton, &ElaPushButton::clicked, this, &VideoPage::adjust);
-    body->addWidget(m_adjBox);
-
-    // Picture-in-Picture
-    m_pipBox = new QGroupBox(scrollBody);
-    auto *pipForm = makeRow(m_pipBox);
-
+    // Picture-in-Picture Card
+    m_pipCard = createCard(bodyEffects, m_pipTitleLabel);
+    auto *pipForm = new QFormLayout();
+    pipForm->setSpacing(8);
     auto *pipPathRow = new QHBoxLayout();
-    m_pipPath = new ElaLineEdit(m_pipBox);
+    m_pipPath = new ElaLineEdit(m_pipCard);
     m_pipPath->setReadOnly(true);
-    m_pipBrowseButton = new ElaPushButton(m_pipBox);
+    m_pipBrowseButton = new ElaPushButton(m_pipCard);
     connect(m_pipBrowseButton, &ElaPushButton::clicked, this, [=]() {
         const QString path = browseFile(
             trId("video.pip"),
@@ -397,49 +368,162 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     });
     pipPathRow->addWidget(m_pipPath, 1);
     pipPathRow->addWidget(m_pipBrowseButton);
-    m_pipVideoCaption = makeCaption(m_pipBox);
+    m_pipVideoCaption = makeCaption(m_pipCard);
     pipForm->addRow(m_pipVideoCaption, pipPathRow);
-
-    m_pipSizeCaption = makeCaption(m_pipBox);
+    m_pipSizeCaption = makeCaption(m_pipCard);
     auto *pipSizeRow = new QHBoxLayout();
-    m_pipWidth = new ElaSpinBox(m_pipBox);
+    m_pipWidth = new ElaSpinBox(m_pipCard);
     m_pipWidth->setRange(0, 10000);
     m_pipWidth->setValue(320);
-    m_pipHeight = new ElaSpinBox(m_pipBox);
+    m_pipHeight = new ElaSpinBox(m_pipCard);
     m_pipHeight->setRange(0, 10000);
     m_pipHeight->setValue(0);
     pipSizeRow->addWidget(m_pipWidth);
     pipSizeRow->addWidget(m_pipHeight);
     pipForm->addRow(m_pipSizeCaption, pipSizeRow);
-
-    m_pipPositionCaption = makeCaption(m_pipBox);
-    m_pipPosition = new ElaComboBox(m_pipBox);
+    m_pipPositionCaption = makeCaption(m_pipCard);
+    m_pipPosition = new ElaComboBox(m_pipCard);
     m_pipPosition->addItem(QString(), QStringLiteral("bottom-right"));
     m_pipPosition->addItem(QString(), QStringLiteral("bottom-left"));
     m_pipPosition->addItem(QString(), QStringLiteral("top-right"));
     m_pipPosition->addItem(QString(), QStringLiteral("top-left"));
     m_pipPosition->addItem(QString(), QStringLiteral("center"));
     pipForm->addRow(m_pipPositionCaption, m_pipPosition);
-
-    m_pipMarginCaption = makeCaption(m_pipBox);
-    m_pipMargin = new ElaSpinBox(m_pipBox);
+    m_pipMarginCaption = makeCaption(m_pipCard);
+    m_pipMargin = new ElaSpinBox(m_pipCard);
     m_pipMargin->setRange(0, 500);
     m_pipMargin->setValue(10);
     pipForm->addRow(m_pipMarginCaption, m_pipMargin);
-
-    m_pipQualityCaption = makeCaption(m_pipBox);
-    m_pipQualitySpin = new ElaSpinBox(m_pipBox);
+    m_pipQualityCaption = makeCaption(m_pipCard);
+    m_pipQualitySpin = new ElaSpinBox(m_pipCard);
     m_pipQualitySpin->setRange(0, 51);
     m_pipQualitySpin->setValue(23);
     pipForm->addRow(m_pipQualityCaption, m_pipQualitySpin);
-
-    m_pipButton = makeQueueButton(m_pipBox);
+    qobject_cast<QVBoxLayout *>(m_pipCard->layout())->addLayout(pipForm);
+    m_pipButton = createCardButton(m_pipCard);
     connect(m_pipButton, &ElaPushButton::clicked, this, &VideoPage::pip);
-    body->addWidget(m_pipBox);
+    bodyEffectsLayout->addWidget(m_pipCard);
 
-    body->addStretch();
-    scroll->setWidget(scrollBody);
-    root->addWidget(scroll, 1);
+    // Subtitle Card
+    m_subCard = createCard(bodyEffects, m_subTitleLabel);
+    auto *subForm = new QFormLayout();
+    subForm->setSpacing(8);
+    auto *subPathRow = new QHBoxLayout();
+    m_subPath = new ElaLineEdit(m_subCard);
+    m_subPath->setReadOnly(true);
+    m_subPathButton = new ElaPushButton(m_subCard);
+    connect(m_subPathButton, &ElaPushButton::clicked, this, [=]() {
+        const QString path = browseFile(
+            trId("video.subtitle"),
+            QStringLiteral("Subtitle files (*.srt *.ass *.ssa *.vtt);;All files (*)"));
+        if (!path.isEmpty()) {
+            m_subtitleFile = path;
+            m_subPath->setText(path);
+        }
+    });
+    subPathRow->addWidget(m_subPath, 1);
+    subPathRow->addWidget(m_subPathButton);
+    m_subCaption = makeCaption(m_subCard);
+    subForm->addRow(m_subCaption, subPathRow);
+    m_subBurnCheck = new ElaCheckBox(m_subCard);
+    subForm->addRow(new ElaText(QString(), 13, m_subCard), m_subBurnCheck);
+    m_subQualityCaption = makeCaption(m_subCard);
+    m_subQualitySpin = new ElaSpinBox(m_subCard);
+    m_subQualitySpin->setRange(0, 51);
+    m_subQualitySpin->setValue(23);
+    m_subQualityCaption->setVisible(false);
+    m_subQualitySpin->setVisible(false);
+    subForm->addRow(m_subQualityCaption, m_subQualitySpin);
+    connect(m_subBurnCheck, &ElaCheckBox::toggled, this, [this](bool checked) {
+        m_subQualityCaption->setVisible(checked);
+        m_subQualitySpin->setVisible(checked);
+    });
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subForm);
+    m_subButton = createCardButton(m_subCard);
+    connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
+    bodyEffectsLayout->addWidget(m_subCard);
+
+    bodyEffectsLayout->addStretch();
+    m_stackedWidget->addWidget(tabEffects);
+
+    // =========================================================================
+    // Tab 4: 动图与帧提取 (Frames & Animation)
+    // =========================================================================
+    QWidget *bodyFrames = nullptr;
+    QVBoxLayout *bodyFramesLayout = nullptr;
+    QWidget *tabFrames = createTab(bodyFrames, bodyFramesLayout);
+
+    // Screenshot Card
+    m_shotCard = createCard(bodyFrames, m_shotTitleLabel);
+    auto *shotForm = new QFormLayout();
+    shotForm->setSpacing(8);
+    m_shotTimeCaption = makeCaption(m_shotCard);
+    m_shotTime = new ElaDoubleSpinBox(m_shotCard);
+    m_shotTime->setRange(0, 86400);
+    m_shotTime->setDecimals(1);
+    m_shotFormatCaption = makeCaption(m_shotCard);
+    m_shotFormat = new ElaComboBox(m_shotCard);
+    m_shotFormat->addItems({QStringLiteral("png"), QStringLiteral("jpeg"), QStringLiteral("webp")});
+    shotForm->addRow(m_shotTimeCaption, m_shotTime);
+    shotForm->addRow(m_shotFormatCaption, m_shotFormat);
+    qobject_cast<QVBoxLayout *>(m_shotCard->layout())->addLayout(shotForm);
+    m_shotButton = createCardButton(m_shotCard);
+    connect(m_shotButton, &ElaPushButton::clicked, this, &VideoPage::screenshot);
+    bodyFramesLayout->addWidget(m_shotCard);
+
+    // GIF Card
+    m_gifCard = createCard(bodyFrames, m_gifTitleLabel);
+    auto *gifForm = new QFormLayout();
+    gifForm->setSpacing(8);
+    m_gifStartCaption = makeCaption(m_gifCard);
+    m_gifStart = new ElaDoubleSpinBox(m_gifCard);
+    m_gifStart->setRange(0, 86400);
+    m_gifStart->setDecimals(1);
+    m_gifEndCaption = makeCaption(m_gifCard);
+    m_gifEnd = new ElaDoubleSpinBox(m_gifCard);
+    m_gifEnd->setRange(0, 86400);
+    m_gifEnd->setDecimals(1);
+    m_gifFpsCaption = makeCaption(m_gifCard);
+    m_gifFps = new ElaSpinBox(m_gifCard);
+    m_gifFps->setRange(1, 60);
+    m_gifFps->setValue(12);
+    m_gifWidthCaption = makeCaption(m_gifCard);
+    m_gifWidth = new ElaSpinBox(m_gifCard);
+    m_gifWidth->setRange(0, 4096);
+    m_gifWidth->setValue(480);
+    gifForm->addRow(m_gifStartCaption, m_gifStart);
+    gifForm->addRow(m_gifEndCaption, m_gifEnd);
+    gifForm->addRow(m_gifFpsCaption, m_gifFps);
+    gifForm->addRow(m_gifWidthCaption, m_gifWidth);
+    qobject_cast<QVBoxLayout *>(m_gifCard->layout())->addLayout(gifForm);
+    m_gifButton = createCardButton(m_gifCard);
+    connect(m_gifButton, &ElaPushButton::clicked, this, &VideoPage::makeGif);
+    bodyFramesLayout->addWidget(m_gifCard);
+
+    // Image Sequence Card
+    m_seqCard = createCard(bodyFrames, m_seqTitleLabel);
+    auto *seqForm = new QFormLayout();
+    seqForm->setSpacing(8);
+    m_seqModeCaption = makeCaption(m_seqCard);
+    m_seqMode = new ElaComboBox(m_seqCard);
+    m_seqMode->addItems({QString(), QString()});
+    m_seqPatternCaption = makeCaption(m_seqCard);
+    m_seqPattern = new ElaLineEdit(m_seqCard);
+    m_seqPattern->setText(QStringLiteral("frame_%04d.png"));
+    m_seqFpsCaption = makeCaption(m_seqCard);
+    m_seqFps = new ElaDoubleSpinBox(m_seqCard);
+    m_seqFps->setRange(0.1, 240);
+    m_seqFps->setValue(25);
+    seqForm->addRow(m_seqModeCaption, m_seqMode);
+    seqForm->addRow(m_seqPatternCaption, m_seqPattern);
+    seqForm->addRow(m_seqFpsCaption, m_seqFps);
+    qobject_cast<QVBoxLayout *>(m_seqCard->layout())->addLayout(seqForm);
+    m_seqButton = createCardButton(m_seqCard);
+    connect(m_seqButton, &ElaPushButton::clicked, this, &VideoPage::sequence);
+    bodyFramesLayout->addWidget(m_seqCard);
+
+    bodyFramesLayout->addStretch();
+    m_stackedWidget->addWidget(tabFrames);
 
     retranslateUi();
 }
@@ -644,44 +728,61 @@ void VideoPage::pip()
 
 void VideoPage::retranslateUi()
 {
+    const int currentIdx = m_pivot->getCurrentIndex();
+    if (!m_clipTabTitle.isEmpty()) {
+        m_pivot->removePivot(m_clipTabTitle);
+        m_pivot->removePivot(m_audioTabTitle);
+        m_pivot->removePivot(m_effectsTabTitle);
+        m_pivot->removePivot(m_framesTabTitle);
+    }
+    m_clipTabTitle = trId("video.tab.clip");
+    m_audioTabTitle = trId("video.tab.audio");
+    m_effectsTabTitle = trId("video.tab.effects");
+    m_framesTabTitle = trId("video.tab.frames");
+    m_pivot->appendPivot(m_clipTabTitle);
+    m_pivot->appendPivot(m_audioTabTitle);
+    m_pivot->appendPivot(m_effectsTabTitle);
+    m_pivot->appendPivot(m_framesTabTitle);
+    m_pivot->setCurrentIndex(currentIdx >= 0 ? currentIdx : 0);
+
     m_titleLabel->setText(trId("video.title"));
     m_inputCaption->setText(trId("convert.input") + QStringLiteral(":"));
     m_browseButton->setText(trId("common.browse"));
 
-    m_trimBox->setTitle(trId("video.trim"));
+    m_trimTitleLabel->setText(trId("video.trim"));
     m_trimStartCaption->setText(trId("common.start") + QStringLiteral(":"));
     m_trimEndCaption->setText(trId("common.end") + QStringLiteral(":"));
     m_trimFormatCaption->setText(trId("common.format") + QStringLiteral(":"));
     m_trimCopyCaption->setText(trId("video.trim.copy") + QStringLiteral(":"));
     m_trimButton->setText(trId("convert.addToQueue"));
 
-    m_audioBox->setTitle(trId("video.audio"));
+    m_audioTitleLabel->setText(trId("video.audio"));
     m_audioFormatCaption->setText(trId("common.format") + QStringLiteral(":"));
     m_audioBitrateCaption->setText(trId("video.audio.bitrate") + QStringLiteral(":"));
     m_audioButton->setText(trId("convert.addToQueue"));
 
-    m_muteBox->setTitle(trId("video.mute"));
+    m_muteTitleLabel->setText(trId("video.mute"));
     m_muteFormatCaption->setText(trId("common.format") + QStringLiteral(":"));
     m_muteButton->setText(trId("convert.addToQueue"));
 
-    m_shotBox->setTitle(trId("video.screenshot"));
+    m_shotTitleLabel->setText(trId("video.screenshot"));
     m_shotTimeCaption->setText(trId("video.shot.time") + QStringLiteral(":"));
     m_shotFormatCaption->setText(trId("common.format") + QStringLiteral(":"));
     m_shotButton->setText(trId("convert.addToQueue"));
 
-    m_gifBox->setTitle(trId("video.gif"));
+    m_gifTitleLabel->setText(trId("video.gif"));
     m_gifStartCaption->setText(trId("common.start") + QStringLiteral(":"));
     m_gifEndCaption->setText(trId("common.end") + QStringLiteral(":"));
     m_gifFpsCaption->setText(trId("common.fps") + QStringLiteral(":"));
     m_gifWidthCaption->setText(trId("common.width") + QStringLiteral(":"));
     m_gifButton->setText(trId("convert.addToQueue"));
 
-    m_joinBox->setTitle(trId("video.join"));
+    m_joinTitleLabel->setText(trId("video.join"));
     m_joinAddButton->setText(trId("common.open"));
     m_joinRemoveButton->setText(trId("common.delete"));
     m_joinButton->setText(trId("convert.addToQueue"));
 
-    m_seqBox->setTitle(trId("video.sequence"));
+    m_seqTitleLabel->setText(trId("video.sequence"));
     m_seqModeCaption->setText(trId("common.mode") + QStringLiteral(":"));
     m_seqMode->setItemText(0, trId("video.seq.imagesToVideo"));
     m_seqMode->setItemText(1, trId("video.seq.videoToImages"));
@@ -689,7 +790,7 @@ void VideoPage::retranslateUi()
     m_seqFpsCaption->setText(trId("common.fps") + QStringLiteral(":"));
     m_seqButton->setText(trId("convert.addToQueue"));
 
-    m_wmBox->setTitle(trId("video.watermark"));
+    m_wmTitleLabel->setText(trId("video.watermark"));
     m_wmImageCaption->setText(trId("common.image") + QStringLiteral(":"));
     m_wmPositionCaption->setText(trId("common.position") + QStringLiteral(":"));
     m_wmPosition->setItemText(0, trId("video.wm.bottomRight"));
@@ -701,21 +802,21 @@ void VideoPage::retranslateUi()
     m_wmButton->setText(trId("convert.addToQueue"));
     m_wmBrowseButton->setText(trId("common.browse"));
 
-    m_subBox->setTitle(trId("video.subtitle"));
+    m_subTitleLabel->setText(trId("video.subtitle"));
     m_subCaption->setText(trId("video.sub.file") + QStringLiteral(":"));
     m_subPathButton->setText(trId("common.browse"));
     m_subBurnCheck->setText(trId("video.sub.burn"));
     m_subQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_subButton->setText(trId("convert.addToQueue"));
 
-    m_adjBox->setTitle(trId("video.adjust"));
+    m_adjTitleLabel->setText(trId("video.adjust"));
     m_adjCropCaption->setText(trId("image.crop") + QStringLiteral(":"));
     m_adjResizeCaption->setText(trId("image.resize") + QStringLiteral(":"));
     m_adjRotateCaption->setText(trId("image.rotate") + QStringLiteral(":"));
     m_adjQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_adjButton->setText(trId("convert.addToQueue"));
 
-    m_pipBox->setTitle(trId("video.pip"));
+    m_pipTitleLabel->setText(trId("video.pip"));
     m_pipVideoCaption->setText(trId("video.pip.video") + QStringLiteral(":"));
     m_pipBrowseButton->setText(trId("common.browse"));
     m_pipSizeCaption->setText(trId("common.size") + QStringLiteral(" (W x H):"));

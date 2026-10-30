@@ -5,8 +5,11 @@
 class FFmpegLocator;
 class FFmpegCommandBuilder;
 class JobQueue;
-class QGroupBox;
 class QListWidget;
+class QStackedWidget;
+class ElaPivot;
+class ElaScrollArea;
+class ElaScrollPageArea;
 class ElaText;
 class ElaPushButton;
 class ElaLineEdit;
@@ -56,7 +59,16 @@ private:
     ElaLineEdit *m_inputEdit = nullptr;
     ElaPushButton *m_browseButton = nullptr;
 
-    QGroupBox *m_trimBox = nullptr;
+    ElaPivot *m_pivot = nullptr;
+    QStackedWidget *m_stackedWidget = nullptr;
+    QString m_clipTabTitle;
+    QString m_audioTabTitle;
+    QString m_effectsTabTitle;
+    QString m_framesTabTitle;
+
+    // Tab 1: Clip & Adjust
+    ElaScrollPageArea *m_trimCard = nullptr;
+    ElaText *m_trimTitleLabel = nullptr;
     ElaText *m_trimStartCaption = nullptr;
     ElaDoubleSpinBox *m_trimStart = nullptr;
     ElaText *m_trimEndCaption = nullptr;
@@ -67,72 +79,8 @@ private:
     ElaCheckBox *m_trimCopy = nullptr;
     ElaPushButton *m_trimButton = nullptr;
 
-    QGroupBox *m_audioBox = nullptr;
-    ElaText *m_audioFormatCaption = nullptr;
-    ElaComboBox *m_audioFormat = nullptr;
-    ElaText *m_audioBitrateCaption = nullptr;
-    ElaSpinBox *m_audioBitrate = nullptr;
-    ElaPushButton *m_audioButton = nullptr;
-
-    QGroupBox *m_muteBox = nullptr;
-    ElaText *m_muteFormatCaption = nullptr;
-    ElaComboBox *m_muteFormat = nullptr;
-    ElaPushButton *m_muteButton = nullptr;
-
-    QGroupBox *m_shotBox = nullptr;
-    ElaText *m_shotTimeCaption = nullptr;
-    ElaDoubleSpinBox *m_shotTime = nullptr;
-    ElaText *m_shotFormatCaption = nullptr;
-    ElaComboBox *m_shotFormat = nullptr;
-    ElaPushButton *m_shotButton = nullptr;
-
-    QGroupBox *m_gifBox = nullptr;
-    ElaText *m_gifStartCaption = nullptr;
-    ElaDoubleSpinBox *m_gifStart = nullptr;
-    ElaText *m_gifEndCaption = nullptr;
-    ElaDoubleSpinBox *m_gifEnd = nullptr;
-    ElaText *m_gifFpsCaption = nullptr;
-    ElaSpinBox *m_gifFps = nullptr;
-    ElaText *m_gifWidthCaption = nullptr;
-    ElaSpinBox *m_gifWidth = nullptr;
-    ElaPushButton *m_gifButton = nullptr;
-
-    QGroupBox *m_joinBox = nullptr;
-    QListWidget *m_joinList = nullptr;
-    ElaPushButton *m_joinAddButton = nullptr;
-    ElaPushButton *m_joinRemoveButton = nullptr;
-    ElaPushButton *m_joinButton = nullptr;
-
-    QGroupBox *m_seqBox = nullptr;
-    ElaText *m_seqModeCaption = nullptr;
-    ElaComboBox *m_seqMode = nullptr;
-    ElaText *m_seqPatternCaption = nullptr;
-    ElaLineEdit *m_seqPattern = nullptr;
-    ElaText *m_seqFpsCaption = nullptr;
-    ElaDoubleSpinBox *m_seqFps = nullptr;
-    ElaPushButton *m_seqButton = nullptr;
-
-    QGroupBox *m_wmBox = nullptr;
-    ElaText *m_wmImageCaption = nullptr;
-    ElaLineEdit *m_wmPath = nullptr;
-    ElaPushButton *m_wmBrowseButton = nullptr;
-    ElaText *m_wmPositionCaption = nullptr;
-    ElaComboBox *m_wmPosition = nullptr;
-    ElaText *m_wmOpacityCaption = nullptr;
-    ElaSpinBox *m_wmOpacity = nullptr;
-    ElaPushButton *m_wmButton = nullptr;
-
-    QGroupBox *m_subBox = nullptr;
-    ElaText *m_subCaption = nullptr;
-    ElaLineEdit *m_subPath = nullptr;
-    ElaPushButton *m_subPathButton = nullptr;
-    ElaCheckBox *m_subBurnCheck = nullptr;
-    ElaText *m_subQualityCaption = nullptr;
-    ElaSpinBox *m_subQualitySpin = nullptr;
-    ElaPushButton *m_subButton = nullptr;
-    QString m_subtitleFile;
-
-    QGroupBox *m_adjBox = nullptr;
+    ElaScrollPageArea *m_adjCard = nullptr;
+    ElaText *m_adjTitleLabel = nullptr;
     ElaText *m_adjCropCaption = nullptr;
     ElaSpinBox *m_adjCropX = nullptr;
     ElaSpinBox *m_adjCropY = nullptr;
@@ -147,7 +95,42 @@ private:
     ElaSpinBox *m_adjQualitySpin = nullptr;
     ElaPushButton *m_adjButton = nullptr;
 
-    QGroupBox *m_pipBox = nullptr;
+    ElaScrollPageArea *m_joinCard = nullptr;
+    ElaText *m_joinTitleLabel = nullptr;
+    QListWidget *m_joinList = nullptr;
+    ElaPushButton *m_joinAddButton = nullptr;
+    ElaPushButton *m_joinRemoveButton = nullptr;
+    ElaPushButton *m_joinButton = nullptr;
+
+    // Tab 2: Audio Tools
+    ElaScrollPageArea *m_audioCard = nullptr;
+    ElaText *m_audioTitleLabel = nullptr;
+    ElaText *m_audioFormatCaption = nullptr;
+    ElaComboBox *m_audioFormat = nullptr;
+    ElaText *m_audioBitrateCaption = nullptr;
+    ElaSpinBox *m_audioBitrate = nullptr;
+    ElaPushButton *m_audioButton = nullptr;
+
+    ElaScrollPageArea *m_muteCard = nullptr;
+    ElaText *m_muteTitleLabel = nullptr;
+    ElaText *m_muteFormatCaption = nullptr;
+    ElaComboBox *m_muteFormat = nullptr;
+    ElaPushButton *m_muteButton = nullptr;
+
+    // Tab 3: Overlay & Subtitles
+    ElaScrollPageArea *m_wmCard = nullptr;
+    ElaText *m_wmTitleLabel = nullptr;
+    ElaText *m_wmImageCaption = nullptr;
+    ElaLineEdit *m_wmPath = nullptr;
+    ElaPushButton *m_wmBrowseButton = nullptr;
+    ElaText *m_wmPositionCaption = nullptr;
+    ElaComboBox *m_wmPosition = nullptr;
+    ElaText *m_wmOpacityCaption = nullptr;
+    ElaSpinBox *m_wmOpacity = nullptr;
+    ElaPushButton *m_wmButton = nullptr;
+
+    ElaScrollPageArea *m_pipCard = nullptr;
+    ElaText *m_pipTitleLabel = nullptr;
     ElaText *m_pipVideoCaption = nullptr;
     ElaLineEdit *m_pipPath = nullptr;
     ElaPushButton *m_pipBrowseButton = nullptr;
@@ -162,6 +145,48 @@ private:
     ElaSpinBox *m_pipQualitySpin = nullptr;
     ElaPushButton *m_pipButton = nullptr;
     QString m_pipFile;
+
+    ElaScrollPageArea *m_subCard = nullptr;
+    ElaText *m_subTitleLabel = nullptr;
+    ElaText *m_subCaption = nullptr;
+    ElaLineEdit *m_subPath = nullptr;
+    ElaPushButton *m_subPathButton = nullptr;
+    ElaCheckBox *m_subBurnCheck = nullptr;
+    ElaText *m_subQualityCaption = nullptr;
+    ElaSpinBox *m_subQualitySpin = nullptr;
+    ElaPushButton *m_subButton = nullptr;
+    QString m_subtitleFile;
+
+    // Tab 4: Frames & Animation
+    ElaScrollPageArea *m_shotCard = nullptr;
+    ElaText *m_shotTitleLabel = nullptr;
+    ElaText *m_shotTimeCaption = nullptr;
+    ElaDoubleSpinBox *m_shotTime = nullptr;
+    ElaText *m_shotFormatCaption = nullptr;
+    ElaComboBox *m_shotFormat = nullptr;
+    ElaPushButton *m_shotButton = nullptr;
+
+    ElaScrollPageArea *m_gifCard = nullptr;
+    ElaText *m_gifTitleLabel = nullptr;
+    ElaText *m_gifStartCaption = nullptr;
+    ElaDoubleSpinBox *m_gifStart = nullptr;
+    ElaText *m_gifEndCaption = nullptr;
+    ElaDoubleSpinBox *m_gifEnd = nullptr;
+    ElaText *m_gifFpsCaption = nullptr;
+    ElaSpinBox *m_gifFps = nullptr;
+    ElaText *m_gifWidthCaption = nullptr;
+    ElaSpinBox *m_gifWidth = nullptr;
+    ElaPushButton *m_gifButton = nullptr;
+
+    ElaScrollPageArea *m_seqCard = nullptr;
+    ElaText *m_seqTitleLabel = nullptr;
+    ElaText *m_seqModeCaption = nullptr;
+    ElaComboBox *m_seqMode = nullptr;
+    ElaText *m_seqPatternCaption = nullptr;
+    ElaLineEdit *m_seqPattern = nullptr;
+    ElaText *m_seqFpsCaption = nullptr;
+    ElaDoubleSpinBox *m_seqFps = nullptr;
+    ElaPushButton *m_seqButton = nullptr;
 
     QStringList m_joinFiles;
 };
