@@ -19,6 +19,82 @@
         <source>home.hwAccel</source>
         <translation>Hardware Acceleration</translation>
     </message>
+    <message id="home.envCard">
+        <source>home.envCard</source>
+        <translation>Environment &amp; Hardware Acceleration</translation>
+    </message>
+    <message id="home.codecs">
+        <source>home.codecs</source>
+        <translation>Codec Support</translation>
+    </message>
+    <message id="home.untrunc">
+        <source>home.untrunc</source>
+        <translation>Repair Engine</translation>
+    </message>
+    <message id="home.untrunc.ready">
+        <source>home.untrunc.ready</source>
+        <translation>Ready</translation>
+    </message>
+    <message id="home.untrunc.missing">
+        <source>home.untrunc.missing</source>
+        <translation>Not Installed (Download recommended for video repair)</translation>
+    </message>
+    <message id="home.queueCard">
+        <source>home.queueCard</source>
+        <translation>Task Queue Status</translation>
+    </message>
+    <message id="home.queue.view">
+        <source>home.queue.view</source>
+        <translation>View Task Queue</translation>
+    </message>
+    <message id="home.queue.running">
+        <source>home.queue.running</source>
+        <translation>Running</translation>
+    </message>
+    <message id="home.queue.idle">
+        <source>home.queue.idle</source>
+        <translation>No active jobs</translation>
+    </message>
+    <message id="home.quickLaunch">
+        <source>home.quickLaunch</source>
+        <translation>Quick Launch</translation>
+    </message>
+    <message id="home.card.convert.title">
+        <source>home.card.convert.title</source>
+        <translation>Format Conversion</translation>
+    </message>
+    <message id="home.card.convert.desc">
+        <source>home.card.convert.desc</source>
+        <translation>High-quality transcoding, CRF tuning, GPU acceleration and color profiles</translation>
+    </message>
+    <message id="home.card.video.title">
+        <source>home.card.video.title</source>
+        <translation>Video Toolbox</translation>
+    </message>
+    <message id="home.card.video.desc">
+        <source>home.card.video.desc</source>
+        <translation>Precise trimming, joining, crop &amp; rotate, watermark and picture-in-picture</translation>
+    </message>
+    <message id="home.card.repair.title">
+        <source>home.card.repair.title</source>
+        <translation>Media Repair</translation>
+    </message>
+    <message id="home.card.repair.desc">
+        <source>home.card.repair.desc</source>
+        <translation>Corrupted stream scanning, seek-skip playback and untrunc reconstruction</translation>
+    </message>
+    <message id="home.card.batch.title">
+        <source>home.card.batch.title</source>
+        <translation>Batch Processing</translation>
+    </message>
+    <message id="home.card.batch.desc">
+        <source>home.card.batch.desc</source>
+        <translation>Batch multi-file parallel transcoding, naming templates and bulk export</translation>
+    </message>
+    <message id="home.launch">
+        <source>home.launch</source>
+        <translation>Launch</translation>
+    </message>
     <message id="ffmpeg.status">
         <source>ffmpeg.status</source>
         <translation>FFmpeg Status</translation>

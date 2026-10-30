@@ -19,6 +19,82 @@
         <source>home.hwAccel</source>
         <translation>硬件加速</translation>
     </message>
+    <message id="home.envCard">
+        <source>home.envCard</source>
+        <translation>系统环境与硬件加速</translation>
+    </message>
+    <message id="home.codecs">
+        <source>home.codecs</source>
+        <translation>编码支持</translation>
+    </message>
+    <message id="home.untrunc">
+        <source>home.untrunc</source>
+        <translation>修复引擎</translation>
+    </message>
+    <message id="home.untrunc.ready">
+        <source>home.untrunc.ready</source>
+        <translation>已就绪</translation>
+    </message>
+    <message id="home.untrunc.missing">
+        <source>home.untrunc.missing</source>
+        <translation>未安装 (建议下载以支持视频修复)</translation>
+    </message>
+    <message id="home.queueCard">
+        <source>home.queueCard</source>
+        <translation>任务队列状态</translation>
+    </message>
+    <message id="home.queue.view">
+        <source>home.queue.view</source>
+        <translation>查看任务队列</translation>
+    </message>
+    <message id="home.queue.running">
+        <source>home.queue.running</source>
+        <translation>运行中</translation>
+    </message>
+    <message id="home.queue.idle">
+        <source>home.queue.idle</source>
+        <translation>暂无运行中任务</translation>
+    </message>
+    <message id="home.quickLaunch">
+        <source>home.quickLaunch</source>
+        <translation>核心功能快速直达</translation>
+    </message>
+    <message id="home.card.convert.title">
+        <source>home.card.convert.title</source>
+        <translation>格式转换</translation>
+    </message>
+    <message id="home.card.convert.desc">
+        <source>home.card.convert.desc</source>
+        <translation>音视频多格式转换、CRF画质调优、硬件编码与色彩空间转换</translation>
+    </message>
+    <message id="home.card.video.title">
+        <source>home.card.video.title</source>
+        <translation>视频工具箱</translation>
+    </message>
+    <message id="home.card.video.desc">
+        <source>home.card.video.desc</source>
+        <translation>视频精确截取、多段拼接、画面裁剪旋转、水印与画中画合成</translation>
+    </message>
+    <message id="home.card.repair.title">
+        <source>home.card.repair.title</source>
+        <translation>视频损坏修复</translation>
+    </message>
+    <message id="home.card.repair.desc">
+        <source>home.card.repair.desc</source>
+        <translation>全量流扫描定位坏帧、损坏跳帧播放与 Untrunc 深度结构重建</translation>
+    </message>
+    <message id="home.card.batch.title">
+        <source>home.card.batch.title</source>
+        <translation>批量媒体处理</translation>
+    </message>
+    <message id="home.card.batch.desc">
+        <source>home.card.batch.desc</source>
+        <translation>批量多任务并行转码、命名模板自定义与格式批量输出</translation>
+    </message>
+    <message id="home.launch">
+        <source>home.launch</source>
+        <translation>立即前往</translation>
+    </message>
     <message id="ffmpeg.status">
         <source>ffmpeg.status</source>
         <translation>FFmpeg 状态</translation>

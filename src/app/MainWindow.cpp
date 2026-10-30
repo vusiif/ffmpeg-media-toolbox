@@ -93,7 +93,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::initPages()
 {
-    m_homePage = new HomePage(m_ffmpegLocator, m_ffmpegCaps, this);
+    m_homePage = new HomePage(m_ffmpegLocator, m_ffmpegCaps, m_jobQueue, m_untruncLocator, this);
     m_convertPage = new ConvertPage(m_ffmpegLocator, m_commandBuilder, m_mediaProbe,
                                     m_ffmpegCaps, m_recentFiles, m_jobQueue, this);
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
@@ -105,6 +105,16 @@ void MainWindow::initPages()
     m_queuePage = new QueuePage(m_jobQueue, this);
     m_settingsPage = new SettingsPage(m_ffmpegLocator, m_ffmpegCaps, m_recentFiles,
                                       m_jobQueue, m_languageManager, this);
+
+    m_homePage->setTargetPages(m_convertPage, m_videoPage, m_repairPage, m_batchPage, m_queuePage);
+    connect(m_homePage, &HomePage::navigationRequested, this, [this](QWidget *targetPage) {
+        if (targetPage) {
+            const QString key = targetPage->property("ElaPageKey").toString();
+            if (!key.isEmpty()) {
+                navigation(key);
+            }
+        }
+    });
 
     addPageNode(trId("nav.home"), m_homePage, ElaIconType::House);
     addPageNode(trId("nav.convert"), m_convertPage, ElaIconType::ArrowsRotate);
