@@ -72,6 +72,7 @@ private slots:
     void escapeFilterValueEscapesMetaChars();
     void canFallbackToSoftwareReplacesHwEncodersAndDropsHwaccel();
     void canFallbackToSoftwareLeavesPlainSoftwareCommandUntouched();
+    void normalizeMuxerFormatNormalizesAliases();
 
 private:
     FFmpegCommandBuilder m_builder;
@@ -551,7 +552,7 @@ void FFmpegCommandBuilderTest::trimCopyWithFormat()
                                 QString(), QString(), -1, true),
              QStringList({QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mp4"),
                           QStringLiteral("-c"), QStringLiteral("copy"),
-                          QStringLiteral("-f"), QStringLiteral("mkv"),
+                          QStringLiteral("-f"), QStringLiteral("matroska"),
                           QStringLiteral("out.mkv")}));
 }
 
@@ -887,7 +888,7 @@ void FFmpegCommandBuilderTest::watermarkAppendsOutputFormat()
                           QStringLiteral("[1:v]format=rgba,colorchannelmixer=aa=1[wm];"
                                          "[0:v][wm]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2"),
                           QStringLiteral("-map"), QStringLiteral("0:a?"),
-                          QStringLiteral("-f"), QStringLiteral("mkv"),
+                          QStringLiteral("-f"), QStringLiteral("matroska"),
                           QStringLiteral("out.mkv")}));
 }
 
@@ -1036,6 +1037,17 @@ void FFmpegCommandBuilderTest::canFallbackToSoftwareLeavesPlainSoftwareCommandUn
     QStringList result;
     const bool changed = FFmpegCommandBuilder::canFallbackToSoftware(swCmd, &result);
     QVERIFY(!changed);
+}
+
+void FFmpegCommandBuilderTest::normalizeMuxerFormatNormalizesAliases()
+{
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("aac")), QStringLiteral("adts"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("mkv")), QStringLiteral("matroska"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("m4a")), QStringLiteral("ipod"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("mp4")), QStringLiteral("mp4"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("mp3")), QStringLiteral("mp3"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("wav")), QStringLiteral("wav"));
+    QCOMPARE(FFmpegCommandBuilder::normalizeMuxerFormat(QStringLiteral("")), QString());
 }
 
 QTEST_GUILESS_MAIN(FFmpegCommandBuilderTest)

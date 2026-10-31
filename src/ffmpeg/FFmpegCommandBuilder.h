@@ -253,6 +253,7 @@ public:
     // expects on Windows).
     static QString escapeFilterPath(const QString &path);
     static QString formatTime(double seconds);
+    static QString normalizeMuxerFormat(const QString &format);
 
     // Auto Crop Detection
     QStringList buildCropdetect(const QString &inputPath, double seekSec = 10.0, int frames = 20) const;

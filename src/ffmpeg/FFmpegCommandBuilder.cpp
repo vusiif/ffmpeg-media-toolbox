@@ -211,7 +211,10 @@ QStringList FFmpegCommandBuilder::buildImageOperation(
     }
 
     if (!outputFormat.isEmpty()) {
-        args << QStringLiteral("-f") << outputFormat;
+        const QString muxer = normalizeMuxerFormat(outputFormat);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
 
     if (quality >= 0) {
@@ -323,7 +326,10 @@ QStringList FFmpegCommandBuilder::buildTrim(
         if (crf >= 0) args << QStringLiteral("-crf") << QString::number(crf);
     }
     if (!outputFormat.isEmpty()) {
-        args << QStringLiteral("-f") << outputFormat;
+        const QString muxer = normalizeMuxerFormat(outputFormat);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
     args << outputPath;
     return args;
@@ -350,7 +356,10 @@ QStringList FFmpegCommandBuilder::buildExtractAudio(
         args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(bitrateKbps);
     }
     if (!audioFormat.isEmpty()) {
-        args << QStringLiteral("-f") << audioFormat;
+        const QString muxer = normalizeMuxerFormat(audioFormat);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
     args << outputPath;
     return args;
@@ -413,7 +422,10 @@ QStringList FFmpegCommandBuilder::buildAudioProcess(const AudioProcessOptions &o
     }
 
     if (!options.format.isEmpty()) {
-        args << QStringLiteral("-f") << options.format;
+        const QString muxer = normalizeMuxerFormat(options.format);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
 
     args << options.outputPath;
@@ -442,7 +454,10 @@ QStringList FFmpegCommandBuilder::buildMute(
         if (crf >= 0) args << QStringLiteral("-crf") << QString::number(crf);
     }
     if (!outputFormat.isEmpty()) {
-        args << QStringLiteral("-f") << outputFormat;
+        const QString muxer = normalizeMuxerFormat(outputFormat);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
     args << outputPath;
     return args;
@@ -712,7 +727,10 @@ QStringList FFmpegCommandBuilder::buildWatermark(
     args << QStringLiteral("-filter_complex") << filter;
     args << QStringLiteral("-map") << QStringLiteral("0:a?");
     if (!outputFormat.isEmpty()) {
-        args << QStringLiteral("-f") << outputFormat;
+        const QString muxer = normalizeMuxerFormat(outputFormat);
+        if (!muxer.isEmpty()) {
+            args << QStringLiteral("-f") << muxer;
+        }
     }
     args << outputPath;
     return args;
@@ -804,6 +822,24 @@ QString FFmpegCommandBuilder::escapeFilterValue(const QString &value)
     result.replace(QLatin1Char('\''), QStringLiteral("\\'"));
     result.replace(QLatin1Char(';'), QStringLiteral("\\;"));
     return result;
+}
+
+QString FFmpegCommandBuilder::normalizeMuxerFormat(const QString &format)
+{
+    const QString f = format.trimmed().toLower();
+    if (f.isEmpty()) {
+        return QString();
+    }
+    if (f == QLatin1String("aac")) {
+        return QStringLiteral("adts");
+    }
+    if (f == QLatin1String("mkv")) {
+        return QStringLiteral("matroska");
+    }
+    if (f == QLatin1String("m4a")) {
+        return QStringLiteral("ipod");
+    }
+    return f;
 }
 
 QStringList FFmpegCommandBuilder::buildCropdetect(const QString &inputPath, double seekSec, int frames) const

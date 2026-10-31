@@ -791,7 +791,13 @@ void VideoPage::detectAutoCrop()
 
     const QString inputPath = m_inputFile;
     const QString ffmpegPath = m_locator->ffmpegPath();
-    const QStringList args = m_builder->buildCropdetect(inputPath, 10.0, 25);
+    const double duration = (m_trimPlayer && m_trimPlayer->durationSec() > 0)
+                                ? m_trimPlayer->durationSec()
+                                : 0.0;
+    const double seekSec = (duration > 0.0)
+                               ? qMin(1.0, duration * 0.1)
+                               : 1.0;
+    const QStringList args = m_builder->buildCropdetect(inputPath, seekSec, 25);
 
     auto *watcher = new QFutureWatcher<QString>(this);
     connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
@@ -822,7 +828,10 @@ void VideoPage::detectAutoCrop()
         if (!proc.waitForStarted(3000)) {
             return {};
         }
-        proc.waitForFinished(10000);
+        if (!proc.waitForFinished(10000)) {
+            proc.kill();
+            proc.waitForFinished(1000);
+        }
         return QString::fromUtf8(proc.readAllStandardError());
     });
     watcher->setFuture(future);

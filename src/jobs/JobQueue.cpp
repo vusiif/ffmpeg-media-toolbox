@@ -206,15 +206,17 @@ void JobQueue::onJobFinished(bool success)
     emit runningCountChanged();
     emit jobFinished(jobName, success);
 
-    bool anyActive = m_processes.isEmpty();
+    bool noActiveJobs = m_processes.isEmpty();
     for (int i = 0; i < m_model->count(); ++i) {
-        const JobStatus status = m_model->getJob(i)->status();
+        Job *j = m_model->getJob(i);
+        if (!j) continue;
+        const JobStatus status = j->status();
         if (status == JobStatus::Running || status == JobStatus::Pending) {
-            anyActive = false;
+            noActiveJobs = false;
             break;
         }
     }
-    if (anyActive) {
+    if (noActiveJobs) {
         emit allJobsFinished();
     }
 

@@ -176,8 +176,8 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     m_rateControlCaption = new ElaText(QString(), 13, m_codecCard);
     m_rateControlCombo = new ElaComboBox(m_codecCard);
-    m_rateControlCombo->addItem(QStringLiteral("CRF (质量优先)"));
-    m_rateControlCombo->addItem(QStringLiteral("Target Size (定向体积)"));
+    m_rateControlCombo->addItem(trId("convert.rateControl.crf"));
+    m_rateControlCombo->addItem(trId("convert.rateControl.targetSize"));
 
     m_qualityCaption = new ElaText(QString(), 13, m_codecCard);
     m_qualitySpin = new ElaSpinBox(m_codecCard);
