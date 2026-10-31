@@ -2,8 +2,12 @@
 
 #include "i18n/TrId.h"
 
+#include <QAction>
+#include <QApplication>
 #include <QCloseEvent>
+#include <QMenu>
 #include <QSettings>
+#include <QSystemTrayIcon>
 
 #include "ElaIcon.h"
 #include "app/AppSettings.h"
@@ -73,6 +77,27 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
     });
 
     initPages();
+    initTrayIcon();
+
+    connect(m_jobQueue, &JobQueue::allJobsFinished, this, [this]() {
+        QSettings s(AppSettings::organization(), AppSettings::application());
+        if (s.value(QStringLiteral("app/notifyOnFinish"), true).toBool()) {
+            showNotification(trId("tray.allFinished.title"),
+                             trId("tray.allFinished.msg"),
+                             false);
+        }
+    });
+
+    connect(m_jobQueue, &JobQueue::jobFinished, this, [this](const QString &name, bool success) {
+        if (!success) {
+            QSettings s(AppSettings::organization(), AppSettings::application());
+            if (s.value(QStringLiteral("app/notifyOnFinish"), true).toBool()) {
+                showNotification(trId("tray.jobFailed.title"),
+                                 trId("tray.jobFailed.msg").arg(name),
+                                 true);
+            }
+        }
+    });
 
     // Kick off an asynchronous capability scan so startup stays responsive;
     // the codec lists only offer encoders this build ships (AI_PLAN §42).
@@ -89,7 +114,84 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     QSettings settings(AppSettings::organization(), AppSettings::application());
     settings.setValue(QStringLiteral("window/geometry"), saveGeometry());
+
+    const bool minimizeToTray = settings.value(QStringLiteral("app/minimizeToTray"), true).toBool();
+    if (minimizeToTray && m_trayIcon && m_trayIcon->isVisible()) {
+        hide();
+        if (m_jobQueue && m_jobQueue->hasRunningJobs()) {
+            showNotification(trId("app.title"), trId("tray.runningInBackground"), false);
+        }
+        event->ignore();
+        return;
+    }
+
     ElaWindow::closeEvent(event);
+}
+
+void MainWindow::initTrayIcon()
+{
+    m_trayIcon = new QSystemTrayIcon(this);
+    m_trayIcon->setIcon(windowIcon());
+    m_trayIcon->setToolTip(trId("app.title"));
+
+    m_trayMenu = new QMenu(this);
+    m_showAction = m_trayMenu->addAction(trId("tray.show"));
+    connect(m_showAction, &QAction::triggered, this, [this]() {
+        show();
+        raise();
+        activateWindow();
+    });
+
+    m_queueAction = m_trayMenu->addAction(trId("nav.queue"));
+    connect(m_queueAction, &QAction::triggered, this, [this]() {
+        show();
+        raise();
+        activateWindow();
+        if (m_queuePage) {
+            const QString key = m_queuePage->property("ElaPageKey").toString();
+            if (!key.isEmpty()) navigation(key);
+        }
+    });
+
+    m_trayMenu->addSeparator();
+
+    m_quitAction = m_trayMenu->addAction(trId("tray.quit"));
+    connect(m_quitAction, &QAction::triggered, qApp, &QApplication::quit);
+
+    m_trayIcon->setContextMenu(m_trayMenu);
+
+    connect(m_trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
+            if (isVisible() && !isMinimized()) {
+                hide();
+            } else {
+                show();
+                raise();
+                activateWindow();
+            }
+        }
+    });
+
+    connect(m_trayIcon, &QSystemTrayIcon::messageClicked, this, [this]() {
+        show();
+        raise();
+        activateWindow();
+        if (m_queuePage) {
+            const QString key = m_queuePage->property("ElaPageKey").toString();
+            if (!key.isEmpty()) navigation(key);
+        }
+    });
+
+    m_trayIcon->show();
+}
+
+void MainWindow::showNotification(const QString &title, const QString &message, bool isError)
+{
+    if (m_trayIcon && m_trayIcon->isVisible()) {
+        m_trayIcon->showMessage(title, message,
+                                isError ? QSystemTrayIcon::Warning : QSystemTrayIcon::Information,
+                                4000);
+    }
 }
 
 void MainWindow::initPages()
@@ -157,4 +259,17 @@ void MainWindow::retranslateUi()
     m_batchPage->retranslateUi();
     m_queuePage->retranslateUi();
     m_settingsPage->retranslateUi();
+
+    if (m_trayIcon) {
+        m_trayIcon->setToolTip(trId("app.title"));
+    }
+    if (m_showAction) {
+        m_showAction->setText(trId("tray.show"));
+    }
+    if (m_queueAction) {
+        m_queueAction->setText(trId("nav.queue"));
+    }
+    if (m_quitAction) {
+        m_quitAction->setText(trId("tray.quit"));
+    }
 }

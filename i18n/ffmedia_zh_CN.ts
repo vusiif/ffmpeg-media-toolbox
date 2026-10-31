@@ -315,6 +315,50 @@
         <source>settings.concurrency</source>
         <translation>并发任务数</translation>
     </message>
+    <message id="settings.notify">
+        <source>settings.notify</source>
+        <translation>桌面通知</translation>
+    </message>
+    <message id="settings.notify.desc">
+        <source>settings.notify.desc</source>
+        <translation>任务完成或异常时发送系统通知</translation>
+    </message>
+    <message id="settings.minimizeToTray">
+        <source>settings.minimizeToTray</source>
+        <translation>系统托盘</translation>
+    </message>
+    <message id="settings.minimizeToTray.desc">
+        <source>settings.minimizeToTray.desc</source>
+        <translation>关闭窗口时最小化到系统托盘继续运行</translation>
+    </message>
+    <message id="tray.show">
+        <source>tray.show</source>
+        <translation>显示主窗口</translation>
+    </message>
+    <message id="tray.quit">
+        <source>tray.quit</source>
+        <translation>退出程序</translation>
+    </message>
+    <message id="tray.allFinished.title">
+        <source>tray.allFinished.title</source>
+        <translation>全部任务完成</translation>
+    </message>
+    <message id="tray.allFinished.msg">
+        <source>tray.allFinished.msg</source>
+        <translation>队列中的所有媒体处理任务已顺利完成</translation>
+    </message>
+    <message id="tray.jobFailed.title">
+        <source>tray.jobFailed.title</source>
+        <translation>任务执行失败</translation>
+    </message>
+    <message id="tray.jobFailed.msg">
+        <source>tray.jobFailed.msg</source>
+        <translation>任务 "%1" 执行遇到错误</translation>
+    </message>
+    <message id="tray.runningInBackground">
+        <source>tray.runningInBackground</source>
+        <translation>任务正在后台继续运行，可通过托盘图标唤回主界面</translation>
+    </message>
     <message id="metadata.title">
         <source>metadata.title</source>
         <translation>元数据</translation>

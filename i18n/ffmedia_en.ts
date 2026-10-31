@@ -315,6 +315,50 @@
         <source>settings.concurrency</source>
         <translation>Concurrent jobs</translation>
     </message>
+    <message id="settings.notify">
+        <source>settings.notify</source>
+        <translation>Desktop Notifications</translation>
+    </message>
+    <message id="settings.notify.desc">
+        <source>settings.notify.desc</source>
+        <translation>Show desktop notifications when tasks complete or fail</translation>
+    </message>
+    <message id="settings.minimizeToTray">
+        <source>settings.minimizeToTray</source>
+        <translation>System Tray</translation>
+    </message>
+    <message id="settings.minimizeToTray.desc">
+        <source>settings.minimizeToTray.desc</source>
+        <translation>Minimize to system tray on close</translation>
+    </message>
+    <message id="tray.show">
+        <source>tray.show</source>
+        <translation>Show Main Window</translation>
+    </message>
+    <message id="tray.quit">
+        <source>tray.quit</source>
+        <translation>Quit</translation>
+    </message>
+    <message id="tray.allFinished.title">
+        <source>tray.allFinished.title</source>
+        <translation>All Tasks Completed</translation>
+    </message>
+    <message id="tray.allFinished.msg">
+        <source>tray.allFinished.msg</source>
+        <translation>All media processing tasks in the queue have completed</translation>
+    </message>
+    <message id="tray.jobFailed.title">
+        <source>tray.jobFailed.title</source>
+        <translation>Task Execution Failed</translation>
+    </message>
+    <message id="tray.jobFailed.msg">
+        <source>tray.jobFailed.msg</source>
+        <translation>Task "%1" encountered an error</translation>
+    </message>
+    <message id="tray.runningInBackground">
+        <source>tray.runningInBackground</source>
+        <translation>Tasks are still running in the background. Click tray icon to restore.</translation>
+    </message>
     <message id="metadata.title">
         <source>metadata.title</source>
         <translation>Metadata</translation>

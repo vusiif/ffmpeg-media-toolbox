@@ -108,6 +108,7 @@ void JobQueueTest::shortJobCompletesAndSignalsAllFinished()
 
     JobQueue queue(&locator, nullptr);
     QSignalSpy allFinishedSpy(&queue, &JobQueue::allJobsFinished);
+    QSignalSpy jobFinishedSpy(&queue, &JobQueue::jobFinished);
 
     Job *job = makeTestsrcJob(queue, locator.ffmpegPath(), 0.2);
     queue.addJob(job);
@@ -115,6 +116,8 @@ void JobQueueTest::shortJobCompletesAndSignalsAllFinished()
     QTRY_VERIFY_WITH_TIMEOUT(job->status() == JobStatus::Completed, 30000);
     QCOMPARE(job->progress(), 1.0);
     QTRY_COMPARE_WITH_TIMEOUT(allFinishedSpy.count(), 1, 30000);
+    QTRY_COMPARE_WITH_TIMEOUT(jobFinishedSpy.count(), 1, 30000);
+    QCOMPARE(jobFinishedSpy.first().at(1).toBool(), true);
     QTest::qWait(200);
     QCOMPARE(allFinishedSpy.count(), 1);
 }

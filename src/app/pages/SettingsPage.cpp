@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include "ElaCheckBox.h"
 #include "ElaComboBox.h"
 #include "ElaPushButton.h"
 #include "ElaScrollArea.h"
@@ -150,6 +151,23 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
         settings.setValue(QStringLiteral("jobs/maxConcurrent"), value);
     });
 
+    m_notifyCaption = new ElaText(QString(), 13, m_prefsCard);
+    m_notifyCheck = new ElaCheckBox(m_prefsCard);
+    QSettings settings(AppSettings::organization(), AppSettings::application());
+    m_notifyCheck->setChecked(settings.value(QStringLiteral("app/notifyOnFinish"), true).toBool());
+    connect(m_notifyCheck, &ElaCheckBox::toggled, this, [](bool checked) {
+        QSettings s(AppSettings::organization(), AppSettings::application());
+        s.setValue(QStringLiteral("app/notifyOnFinish"), checked);
+    });
+
+    m_minimizeToTrayCaption = new ElaText(QString(), 13, m_prefsCard);
+    m_minimizeToTrayCheck = new ElaCheckBox(m_prefsCard);
+    m_minimizeToTrayCheck->setChecked(settings.value(QStringLiteral("app/minimizeToTray"), true).toBool());
+    connect(m_minimizeToTrayCheck, &ElaCheckBox::toggled, this, [](bool checked) {
+        QSettings s(AppSettings::organization(), AppSettings::application());
+        s.setValue(QStringLiteral("app/minimizeToTray"), checked);
+    });
+
     m_historyCaption = new ElaText(QString(), 13, m_prefsCard);
     m_clearHistoryButton = new ElaPushButton(m_prefsCard);
     m_clearHistoryButton->setFixedHeight(32);
@@ -162,6 +180,8 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
 
     prefsForm->addRow(m_languageCaption, m_languageCombo);
     prefsForm->addRow(m_concurrencyCaption, m_concurrencyCombo);
+    prefsForm->addRow(m_notifyCaption, m_notifyCheck);
+    prefsForm->addRow(m_minimizeToTrayCaption, m_minimizeToTrayCheck);
     prefsForm->addRow(m_historyCaption, m_clearHistoryButton);
     prefsLayout->addLayout(prefsForm);
 
@@ -203,6 +223,10 @@ void SettingsPage::retranslateUi()
     m_capsCaption->setText(trId("media.title") + QStringLiteral(":"));
     m_languageCaption->setText(trId("settings.language") + QStringLiteral(":"));
     m_concurrencyCaption->setText(trId("settings.concurrency") + QStringLiteral(":"));
+    m_notifyCaption->setText(trId("settings.notify") + QStringLiteral(":"));
+    m_notifyCheck->setText(trId("settings.notify.desc"));
+    m_minimizeToTrayCaption->setText(trId("settings.minimizeToTray") + QStringLiteral(":"));
+    m_minimizeToTrayCheck->setText(trId("settings.minimizeToTray.desc"));
     m_historyCaption->setText(trId("common.recent") + QStringLiteral(":"));
     m_rescanButton->setText(trId("ffmpeg.rescan"));
     m_clearHistoryButton->setText(trId("settings.clearHistory"));

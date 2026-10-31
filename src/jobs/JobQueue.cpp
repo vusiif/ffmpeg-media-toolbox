@@ -199,10 +199,12 @@ void JobQueue::onJobFinished(bool success)
         }
     }
 
+    const QString jobName = job ? job->name() : QString();
     m_processes.remove(jobId);
     process->deleteLater();
 
     emit runningCountChanged();
+    emit jobFinished(jobName, success);
 
     bool anyActive = m_processes.isEmpty();
     for (int i = 0; i < m_model->count(); ++i) {

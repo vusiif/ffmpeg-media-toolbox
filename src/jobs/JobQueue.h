@@ -37,6 +37,7 @@ signals:
     void maxConcurrentChanged();
     void runningCountChanged();
     void allJobsFinished();
+    void jobFinished(const QString &jobName, bool success);
 
 private slots:
     void onJobFinished(bool success);

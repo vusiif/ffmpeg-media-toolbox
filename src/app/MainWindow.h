@@ -9,6 +9,9 @@ class MediaProbeService;
 class RecentFiles;
 class JobQueue;
 class QCloseEvent;
+class QSystemTrayIcon;
+class QMenu;
+class QAction;
 class LanguageManager;
 class HomePage;
 class ConvertPage;
@@ -32,7 +35,9 @@ public:
 
 private:
     void initPages();
+    void initTrayIcon();
     void retranslateUi();
+    void showNotification(const QString &title, const QString &message, bool isError = false);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -56,6 +61,12 @@ protected:
     VideoPage *m_videoPage = nullptr;
     AudioPage *m_audioPage = nullptr;
     RepairPage *m_repairPage = nullptr;
+
+    QSystemTrayIcon *m_trayIcon = nullptr;
+    QMenu *m_trayMenu = nullptr;
+    QAction *m_showAction = nullptr;
+    QAction *m_queueAction = nullptr;
+    QAction *m_quitAction = nullptr;
 
     QString m_settingsKey;
 };

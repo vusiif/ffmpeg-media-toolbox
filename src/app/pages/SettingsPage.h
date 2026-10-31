@@ -10,6 +10,7 @@ class LanguageManager;
 class ElaText;
 class ElaPushButton;
 class ElaComboBox;
+class ElaCheckBox;
 class ElaScrollPageArea;
 
 class SettingsPage : public QWidget
@@ -57,6 +58,10 @@ private:
     ElaComboBox *m_languageCombo = nullptr;
     ElaText *m_concurrencyCaption = nullptr;
     ElaComboBox *m_concurrencyCombo = nullptr;
+    ElaText *m_notifyCaption = nullptr;
+    ElaCheckBox *m_notifyCheck = nullptr;
+    ElaText *m_minimizeToTrayCaption = nullptr;
+    ElaCheckBox *m_minimizeToTrayCheck = nullptr;
     ElaText *m_historyCaption = nullptr;
     ElaPushButton *m_clearHistoryButton = nullptr;
 };
