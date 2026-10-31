@@ -363,6 +363,106 @@
         <source>nav.video</source>
         <translation>视频</translation>
     </message>
+    <message id="nav.audio">
+        <source>nav.audio</source>
+        <translation>音频</translation>
+    </message>
+    <message id="audio.title">
+        <source>audio.title</source>
+        <translation>音频工具箱</translation>
+    </message>
+    <message id="audio.tab.format">
+        <source>audio.tab.format</source>
+        <translation>格式转码</translation>
+    </message>
+    <message id="audio.tab.denoise">
+        <source>audio.tab.denoise</source>
+        <translation>降噪与滤波</translation>
+    </message>
+    <message id="audio.tab.loudness">
+        <source>audio.tab.loudness</source>
+        <translation>响度与音量</translation>
+    </message>
+    <message id="audio.tab.tempo">
+        <source>audio.tab.tempo</source>
+        <translation>变速与效果</translation>
+    </message>
+    <message id="audio.card.format">
+        <source>audio.card.format</source>
+        <translation>音频提取与格式转码</translation>
+    </message>
+    <message id="audio.card.denoise">
+        <source>audio.card.denoise</source>
+        <translation>智能降噪与频段滤波</translation>
+    </message>
+    <message id="audio.denoise.enable">
+        <source>audio.denoise.enable</source>
+        <translation>开启智能降噪 (afftdn)</translation>
+    </message>
+    <message id="audio.denoise.strength">
+        <source>audio.denoise.strength</source>
+        <translation>降噪强度</translation>
+    </message>
+    <message id="audio.highpass.enable">
+        <source>audio.highpass.enable</source>
+        <translation>低切高通滤波 (去除喷麦与低频轰鸣)</translation>
+    </message>
+    <message id="audio.highpass.freq">
+        <source>audio.highpass.freq</source>
+        <translation>低切截止频率</translation>
+    </message>
+    <message id="audio.lowpass.enable">
+        <source>audio.lowpass.enable</source>
+        <translation>高切低通滤波 (消除尖锐高频电流声)</translation>
+    </message>
+    <message id="audio.lowpass.freq">
+        <source>audio.lowpass.freq</source>
+        <translation>高切截止频率</translation>
+    </message>
+    <message id="audio.card.loudness">
+        <source>audio.card.loudness</source>
+        <translation>响度标准化与静音处理</translation>
+    </message>
+    <message id="audio.loudnorm.enable">
+        <source>audio.loudnorm.enable</source>
+        <translation>EBU R128 响度标准化 (自媒体/播客推荐 -16 LUFS)</translation>
+    </message>
+    <message id="audio.silence.enable">
+        <source>audio.silence.enable</source>
+        <translation>自动裁剪首尾及停顿静音片段</translation>
+    </message>
+    <message id="audio.volume.gain">
+        <source>audio.volume.gain</source>
+        <translation>音量增益倍数</translation>
+    </message>
+    <message id="audio.card.tempo">
+        <source>audio.card.tempo</source>
+        <translation>变速播放与音效</translation>
+    </message>
+    <message id="audio.tempo.speed">
+        <source>audio.tempo.speed</source>
+        <translation>播放速度</translation>
+    </message>
+    <message id="audio.reverse.enable">
+        <source>audio.reverse.enable</source>
+        <translation>音频倒放 (areverse)</translation>
+    </message>
+    <message id="audio.job.format">
+        <source>audio.job.format</source>
+        <translation>提取并转码: %1 -&gt; %2</translation>
+    </message>
+    <message id="audio.job.denoise">
+        <source>audio.job.denoise</source>
+        <translation>音频降噪: %1</translation>
+    </message>
+    <message id="audio.job.loudness">
+        <source>audio.job.loudness</source>
+        <translation>响度优化: %1</translation>
+    </message>
+    <message id="audio.job.tempo">
+        <source>audio.job.tempo</source>
+        <translation>音频变速: %1</translation>
+    </message>
     <message id="video.title">
         <source>video.title</source>
         <translation>视频工具</translation>

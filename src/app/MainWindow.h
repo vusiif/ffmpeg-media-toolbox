@@ -18,6 +18,7 @@ class BatchPage;
 class QueuePage;
 class SettingsPage;
 class VideoPage;
+class AudioPage;
 class RepairPage;
 class UntruncLocator;
 
@@ -53,6 +54,7 @@ protected:
     QueuePage *m_queuePage = nullptr;
     SettingsPage *m_settingsPage = nullptr;
     VideoPage *m_videoPage = nullptr;
+    AudioPage *m_audioPage = nullptr;
     RepairPage *m_repairPage = nullptr;
 
     QString m_settingsKey;

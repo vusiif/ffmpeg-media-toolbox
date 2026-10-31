@@ -106,6 +106,8 @@ set(APP_SOURCES
     src/app/pages/SettingsPage.cpp
     src/app/pages/VideoPage.h
     src/app/pages/VideoPage.cpp
+    src/app/pages/AudioPage.h
+    src/app/pages/AudioPage.cpp
 )
 
 set(TS_FILES

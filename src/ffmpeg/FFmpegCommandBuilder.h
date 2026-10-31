@@ -123,6 +123,34 @@ public:
         int bitrateKbps = -1
     ) const;
 
+    struct AudioProcessOptions
+    {
+        QString inputPath;
+        QString outputPath;
+        QString format;           // mp3, aac, flac, wav, opus, ogg, m4a
+        QString audioCodec;       // libmp3lame, aac, flac, pcm_s16le, libopus...
+        int bitrateKbps = -1;     // e.g. 128, 192, 256, 320
+        int sampleRate = -1;      // e.g. 44100, 48000
+        int channels = -1;        // e.g. 1, 2
+
+        // Denoise & filters
+        bool denoise = false;
+        double denoiseNoiseReduction = 12.0; // dB (6.0 - 25.0)
+        int highpassFreq = -1;               // Hz (e.g. 80)
+        int lowpassFreq = -1;                // Hz (e.g. 12000)
+
+        // Loudness & Volume & Silence
+        bool loudnorm = false;               // EBU R128 (-16 LUFS)
+        double volumeFactor = 1.0;           // Multiplier (e.g. 1.5)
+        bool removeSilence = false;          // silenceremove
+
+        // Tempo & Effects
+        double tempo = 1.0;                  // 0.5 - 2.0
+        bool reverse = false;                // areverse
+    };
+
+    QStringList buildAudioProcess(const AudioProcessOptions &options) const;
+
     QStringList buildMute(
         const QString &inputPath,
         const QString &outputPath,

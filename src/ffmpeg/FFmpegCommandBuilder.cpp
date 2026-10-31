@@ -356,6 +356,70 @@ QStringList FFmpegCommandBuilder::buildExtractAudio(
     return args;
 }
 
+QStringList FFmpegCommandBuilder::buildAudioProcess(const AudioProcessOptions &options) const
+{
+    QStringList args;
+    if (options.inputPath.isEmpty() || options.outputPath.isEmpty()) {
+        return args;
+    }
+
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << options.inputPath;
+    args << QStringLiteral("-vn");
+
+    if (!options.audioCodec.isEmpty()) {
+        args << QStringLiteral("-c:a") << options.audioCodec;
+    }
+    if (options.bitrateKbps > 0) {
+        args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(options.bitrateKbps);
+    }
+    if (options.sampleRate > 0) {
+        args << QStringLiteral("-ar") << QString::number(options.sampleRate);
+    }
+    if (options.channels > 0) {
+        args << QStringLiteral("-ac") << QString::number(options.channels);
+    }
+
+    QStringList filters;
+    if (options.denoise) {
+        const double nr = qBound(6.0, options.denoiseNoiseReduction, 25.0);
+        filters << QStringLiteral("afftdn=nr=%1").arg(nr);
+    }
+    if (options.highpassFreq > 0) {
+        filters << QStringLiteral("highpass=f=%1").arg(options.highpassFreq);
+    }
+    if (options.lowpassFreq > 0) {
+        filters << QStringLiteral("lowpass=f=%1").arg(options.lowpassFreq);
+    }
+    if (options.removeSilence) {
+        filters << QStringLiteral("silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:detection=peak");
+    }
+    if (qAbs(options.volumeFactor - 1.0) > 0.01) {
+        filters << QStringLiteral("volume=%1").arg(options.volumeFactor);
+    }
+    if (options.loudnorm) {
+        filters << QStringLiteral("loudnorm=I=-16:TP=-1.5:LRA=11");
+    }
+    if (qAbs(options.tempo - 1.0) > 0.01) {
+        const double t = qBound(0.5, options.tempo, 2.0);
+        filters << QStringLiteral("atempo=%1").arg(t);
+    }
+    if (options.reverse) {
+        filters << QStringLiteral("areverse");
+    }
+
+    if (!filters.isEmpty()) {
+        args << QStringLiteral("-af") << filters.join(QLatin1Char(','));
+    }
+
+    if (!options.format.isEmpty()) {
+        args << QStringLiteral("-f") << options.format;
+    }
+
+    args << options.outputPath;
+    return args;
+}
+
 QStringList FFmpegCommandBuilder::buildMute(
     const QString &inputPath,
     const QString &outputPath,

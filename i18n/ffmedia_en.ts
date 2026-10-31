@@ -363,6 +363,106 @@
         <source>nav.video</source>
         <translation>Video</translation>
     </message>
+    <message id="nav.audio">
+        <source>nav.audio</source>
+        <translation>Audio</translation>
+    </message>
+    <message id="audio.title">
+        <source>audio.title</source>
+        <translation>Audio Toolbox</translation>
+    </message>
+    <message id="audio.tab.format">
+        <source>audio.tab.format</source>
+        <translation>Format</translation>
+    </message>
+    <message id="audio.tab.denoise">
+        <source>audio.tab.denoise</source>
+        <translation>Denoise &amp; Filter</translation>
+    </message>
+    <message id="audio.tab.loudness">
+        <source>audio.tab.loudness</source>
+        <translation>Loudness &amp; Volume</translation>
+    </message>
+    <message id="audio.tab.tempo">
+        <source>audio.tab.tempo</source>
+        <translation>Tempo &amp; Effects</translation>
+    </message>
+    <message id="audio.card.format">
+        <source>audio.card.format</source>
+        <translation>Audio Extraction &amp; Format Conversion</translation>
+    </message>
+    <message id="audio.card.denoise">
+        <source>audio.card.denoise</source>
+        <translation>Denoise &amp; Frequency Filtering</translation>
+    </message>
+    <message id="audio.denoise.enable">
+        <source>audio.denoise.enable</source>
+        <translation>Enable Denoise (afftdn)</translation>
+    </message>
+    <message id="audio.denoise.strength">
+        <source>audio.denoise.strength</source>
+        <translation>Denoise Strength</translation>
+    </message>
+    <message id="audio.highpass.enable">
+        <source>audio.highpass.enable</source>
+        <translation>Highpass Filter (Cut low rumble)</translation>
+    </message>
+    <message id="audio.highpass.freq">
+        <source>audio.highpass.freq</source>
+        <translation>Cutoff Frequency</translation>
+    </message>
+    <message id="audio.lowpass.enable">
+        <source>audio.lowpass.enable</source>
+        <translation>Lowpass Filter (Cut high hiss)</translation>
+    </message>
+    <message id="audio.lowpass.freq">
+        <source>audio.lowpass.freq</source>
+        <translation>Cutoff Frequency</translation>
+    </message>
+    <message id="audio.card.loudness">
+        <source>audio.card.loudness</source>
+        <translation>Loudness Normalization &amp; Silence</translation>
+    </message>
+    <message id="audio.loudnorm.enable">
+        <source>audio.loudnorm.enable</source>
+        <translation>EBU R128 Normalization (-16 LUFS)</translation>
+    </message>
+    <message id="audio.silence.enable">
+        <source>audio.silence.enable</source>
+        <translation>Auto Remove Silence</translation>
+    </message>
+    <message id="audio.volume.gain">
+        <source>audio.volume.gain</source>
+        <translation>Volume Multiplier</translation>
+    </message>
+    <message id="audio.card.tempo">
+        <source>audio.card.tempo</source>
+        <translation>Playback Speed &amp; Effects</translation>
+    </message>
+    <message id="audio.tempo.speed">
+        <source>audio.tempo.speed</source>
+        <translation>Playback Speed</translation>
+    </message>
+    <message id="audio.reverse.enable">
+        <source>audio.reverse.enable</source>
+        <translation>Reverse Audio (areverse)</translation>
+    </message>
+    <message id="audio.job.format">
+        <source>audio.job.format</source>
+        <translation>Extract &amp; Transcode: %1 -&gt; %2</translation>
+    </message>
+    <message id="audio.job.denoise">
+        <source>audio.job.denoise</source>
+        <translation>Denoise &amp; Filter: %1</translation>
+    </message>
+    <message id="audio.job.loudness">
+        <source>audio.job.loudness</source>
+        <translation>Loudness Optimize: %1</translation>
+    </message>
+    <message id="audio.job.tempo">
+        <source>audio.job.tempo</source>
+        <translation>Tempo Adjust: %1</translation>
+    </message>
     <message id="video.title">
         <source>video.title</source>
         <translation>Video Tools</translation>

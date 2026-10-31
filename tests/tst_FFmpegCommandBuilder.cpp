@@ -42,6 +42,8 @@ private slots:
     void trimCopyWithFormat();
     void extractAudioWithBitrate();
     void extractAudioWithCodecOnly();
+    void audioProcessFormatAndCodec();
+    void audioProcessFiltersChain();
     void muteWithCopy();
     void muteWithCrf();
     void screenshotSeeksAndGrabsOneFrame();
@@ -572,6 +574,60 @@ void FFmpegCommandBuilderTest::extractAudioWithCodecOnly()
                           QStringLiteral("-vn"),
                           QStringLiteral("-c:a"), QStringLiteral("copy"),
                           QStringLiteral("out.m4a")}));
+}
+
+void FFmpegCommandBuilderTest::audioProcessFormatAndCodec()
+{
+    FFmpegCommandBuilder::AudioProcessOptions opts;
+    opts.inputPath = QStringLiteral("input.m4a");
+    opts.outputPath = QStringLiteral("output.mp3");
+    opts.format = QStringLiteral("mp3");
+    opts.audioCodec = QStringLiteral("libmp3lame");
+    opts.bitrateKbps = 256;
+    opts.sampleRate = 48000;
+    opts.channels = 2;
+
+    const QStringList args = m_builder.buildAudioProcess(opts);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"),
+        QStringLiteral("-i"), QStringLiteral("input.m4a"),
+        QStringLiteral("-vn"),
+        QStringLiteral("-c:a"), QStringLiteral("libmp3lame"),
+        QStringLiteral("-b:a"), QStringLiteral("256k"),
+        QStringLiteral("-ar"), QStringLiteral("48000"),
+        QStringLiteral("-ac"), QStringLiteral("2"),
+        QStringLiteral("-f"), QStringLiteral("mp3"),
+        QStringLiteral("output.mp3")
+    }));
+}
+
+void FFmpegCommandBuilderTest::audioProcessFiltersChain()
+{
+    FFmpegCommandBuilder::AudioProcessOptions opts;
+    opts.inputPath = QStringLiteral("input.wav");
+    opts.outputPath = QStringLiteral("output.wav");
+    opts.denoise = true;
+    opts.denoiseNoiseReduction = 14.0;
+    opts.highpassFreq = 80;
+    opts.lowpassFreq = 12000;
+    opts.removeSilence = true;
+    opts.volumeFactor = 1.5;
+    opts.loudnorm = true;
+    opts.tempo = 1.25;
+    opts.reverse = true;
+
+    const QStringList args = m_builder.buildAudioProcess(opts);
+    QVERIFY(args.contains(QStringLiteral("-af")));
+    const int afIdx = args.indexOf(QStringLiteral("-af"));
+    const QString af = args.value(afIdx + 1);
+    QVERIFY(af.contains(QStringLiteral("afftdn=nr=14")));
+    QVERIFY(af.contains(QStringLiteral("highpass=f=80")));
+    QVERIFY(af.contains(QStringLiteral("lowpass=f=12000")));
+    QVERIFY(af.contains(QStringLiteral("silenceremove=")));
+    QVERIFY(af.contains(QStringLiteral("volume=1.5")));
+    QVERIFY(af.contains(QStringLiteral("loudnorm=I=-16")));
+    QVERIFY(af.contains(QStringLiteral("atempo=1.25")));
+    QVERIFY(af.contains(QStringLiteral("areverse")));
 }
 
 void FFmpegCommandBuilderTest::muteWithCopy()

@@ -16,6 +16,7 @@
 #include "pages/RepairPage.h"
 #include "pages/SettingsPage.h"
 #include "pages/VideoPage.h"
+#include "pages/AudioPage.h"
 #include "repair/UntruncLocator.h"
 #include "ffmpeg/FFmpegCapabilities.h"
 #include "ffmpeg/FFmpegCommandBuilder.h"
@@ -99,6 +100,7 @@ void MainWindow::initPages()
     m_imagePage = new ImagePage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_joinPage = new JoinPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
+    m_audioPage = new AudioPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_repairPage = new RepairPage(m_ffmpegLocator, m_mediaProbe, m_untruncLocator, this);
     m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
                                 this);
@@ -118,9 +120,10 @@ void MainWindow::initPages()
 
     addPageNode(trId("nav.home"), m_homePage, ElaIconType::House);
     addPageNode(trId("nav.convert"), m_convertPage, ElaIconType::ArrowsRotate);
+    addPageNode(trId("nav.video"), m_videoPage, ElaIconType::Video);
+    addPageNode(trId("nav.audio"), m_audioPage, ElaIconType::Music);
     addPageNode(trId("nav.image"), m_imagePage, ElaIconType::Image);
     addPageNode(trId("image.join"), m_joinPage, ElaIconType::Link);
-    addPageNode(trId("nav.video"), m_videoPage, ElaIconType::Video);
     addPageNode(trId("nav.repair"), m_repairPage, ElaIconType::Wrench);
     addPageNode(trId("nav.batch"), m_batchPage, ElaIconType::Box);
     addPageNode(trId("nav.queue"), m_queuePage, ElaIconType::List);
@@ -135,9 +138,10 @@ void MainWindow::retranslateUi()
 
     setNavigationNodeTitle(m_homePage->property("ElaPageKey").toString(), trId("nav.home"));
     setNavigationNodeTitle(m_convertPage->property("ElaPageKey").toString(), trId("nav.convert"));
+    setNavigationNodeTitle(m_videoPage->property("ElaPageKey").toString(), trId("nav.video"));
+    setNavigationNodeTitle(m_audioPage->property("ElaPageKey").toString(), trId("nav.audio"));
     setNavigationNodeTitle(m_imagePage->property("ElaPageKey").toString(), trId("nav.image"));
     setNavigationNodeTitle(m_joinPage->property("ElaPageKey").toString(), trId("image.join"));
-    setNavigationNodeTitle(m_videoPage->property("ElaPageKey").toString(), trId("nav.video"));
     setNavigationNodeTitle(m_repairPage->property("ElaPageKey").toString(), trId("nav.repair"));
     setNavigationNodeTitle(m_batchPage->property("ElaPageKey").toString(), trId("nav.batch"));
     setNavigationNodeTitle(m_queuePage->property("ElaPageKey").toString(), trId("nav.queue"));
@@ -145,9 +149,10 @@ void MainWindow::retranslateUi()
 
     m_homePage->retranslateUi();
     m_convertPage->retranslateUi();
+    m_videoPage->retranslateUi();
+    m_audioPage->retranslateUi();
     m_imagePage->retranslateUi();
     m_joinPage->retranslateUi();
-    m_videoPage->retranslateUi();
     m_repairPage->retranslateUi();
     m_batchPage->retranslateUi();
     m_queuePage->retranslateUi();
