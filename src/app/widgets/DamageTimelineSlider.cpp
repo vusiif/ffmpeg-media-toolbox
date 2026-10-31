@@ -44,16 +44,27 @@ void DamageTimelineSlider::clearSegments()
     update();
 }
 
+void DamageTimelineSlider::setMarkRange(double inSec, double outSec)
+{
+    m_markIn = qMax(0.0, inSec);
+    m_markOut = qMax(0.0, outSec);
+    update();
+}
+
+void DamageTimelineSlider::clearMarkRange()
+{
+    m_markIn = 0.0;
+    m_markOut = 0.0;
+    update();
+}
+
 void DamageTimelineSlider::paintEvent(QPaintEvent *event)
 {
     ElaSlider::paintEvent(event);
 
-    if (m_segments.isEmpty() || m_duration <= 0.0) {
+    if (m_duration <= 0.0) {
         return;
     }
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
 
     const int margin = 10;
     const int trackWidth = width() - (margin * 2);
@@ -63,18 +74,42 @@ void DamageTimelineSlider::paintEvent(QPaintEvent *event)
     const int barHeight = 8;
     const int barY = cy - (barHeight / 2);
 
-    painter.setPen(QPen(QColor(255, 60, 60, 220), 1));
-    painter.setBrush(QColor(235, 60, 60, 180));
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
 
-    for (const auto &seg : m_segments) {
-        const double startFrac = qBound(0.0, seg.start / m_duration, 1.0);
-        const double endFrac = qBound(0.0, seg.end / m_duration, 1.0);
+    // 1. Paint Trim Selected Range (if any)
+    if (m_markOut > m_markIn) {
+        const double inFrac = qBound(0.0, m_markIn / m_duration, 1.0);
+        const double outFrac = qBound(0.0, m_markOut / m_duration, 1.0);
 
-        const int x1 = margin + static_cast<int>(startFrac * trackWidth);
-        const int x2 = margin + static_cast<int>(endFrac * trackWidth);
-        const int w = qMax(4, x2 - x1);
+        const int x1 = margin + static_cast<int>(inFrac * trackWidth);
+        const int x2 = margin + static_cast<int>(outFrac * trackWidth);
+        const int w = qMax(2, x2 - x1);
 
-        painter.drawRoundedRect(QRect(x1, barY, w, barHeight), 2, 2);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 120, 212, 100));
+        painter.drawRoundedRect(QRect(x1, barY - 1, w, barHeight + 2), 3, 3);
+
+        painter.setPen(QPen(QColor(0, 120, 212, 230), 2));
+        painter.drawLine(x1, barY - 3, x1, barY + barHeight + 3);
+        painter.drawLine(x2, barY - 3, x2, barY + barHeight + 3);
+    }
+
+    // 2. Paint Corrupted Segments (if any)
+    if (!m_segments.isEmpty()) {
+        painter.setPen(QPen(QColor(255, 60, 60, 220), 1));
+        painter.setBrush(QColor(235, 60, 60, 180));
+
+        for (const auto &seg : m_segments) {
+            const double startFrac = qBound(0.0, seg.start / m_duration, 1.0);
+            const double endFrac = qBound(0.0, seg.end / m_duration, 1.0);
+
+            const int x1 = margin + static_cast<int>(startFrac * trackWidth);
+            const int x2 = margin + static_cast<int>(endFrac * trackWidth);
+            const int w = qMax(4, x2 - x1);
+
+            painter.drawRoundedRect(QRect(x1, barY, w, barHeight), 2, 2);
+        }
     }
 }
 

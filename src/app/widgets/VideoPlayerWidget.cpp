@@ -134,6 +134,39 @@ void VideoPlayerWidget::clearSegments()
     m_skipStatusLabel->clear();
 }
 
+void VideoPlayerWidget::setMarkRange(double inSec, double outSec)
+{
+    m_timeline->setMarkRange(inSec, outSec);
+}
+
+void VideoPlayerWidget::clearMarkRange()
+{
+    m_timeline->clearMarkRange();
+}
+
+double VideoPlayerWidget::currentPositionSec() const
+{
+    return m_player->position() / 1000.0;
+}
+
+double VideoPlayerWidget::durationSec() const
+{
+    return m_durationMs / 1000.0;
+}
+
+void VideoPlayerWidget::seekToSec(double sec)
+{
+    const qint64 ms = static_cast<qint64>(sec * 1000.0);
+    m_player->setPosition(ms);
+    m_timeline->setValue(static_cast<int>(ms));
+}
+
+void VideoPlayerWidget::setAutoSkipVisible(bool visible)
+{
+    m_autoSkipCheck->setVisible(visible);
+    m_skipStatusLabel->setVisible(visible);
+}
+
 bool VideoPlayerWidget::isAutoSkipEnabled() const
 {
     return m_autoSkipCheck->isChecked();

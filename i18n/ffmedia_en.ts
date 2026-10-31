@@ -485,7 +485,19 @@
     </message>
     <message id="video.trim">
         <source>video.trim</source>
-        <translation>Trim</translation>
+        <translation>Trim &amp; Clip</translation>
+    </message>
+    <message id="video.trim.setIn">
+        <source>video.trim.setIn</source>
+        <translation>Set Mark In (A)</translation>
+    </message>
+    <message id="video.trim.setOut">
+        <source>video.trim.setOut</source>
+        <translation>Set Mark Out (B)</translation>
+    </message>
+    <message id="video.trim.preview">
+        <source>video.trim.preview</source>
+        <translation>Preview Segment</translation>
     </message>
     <message id="video.trim.copy">
         <source>video.trim.copy</source>

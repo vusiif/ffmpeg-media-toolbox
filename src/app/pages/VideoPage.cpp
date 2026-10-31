@@ -34,6 +34,7 @@
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
 #include "output/OutputNaming.h"
+#include "app/widgets/VideoPlayerWidget.h"
 
 VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                      JobQueue *queue, QWidget *parent)
@@ -70,6 +71,9 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         if (!path.isEmpty()) {
             m_inputFile = path;
             m_inputEdit->setText(path);
+            if (m_trimPlayer) {
+                m_trimPlayer->loadMedia(path);
+            }
         }
     });
     inputCardLayout->addWidget(m_inputCaption);
@@ -149,6 +153,26 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     // Trim Card
     m_trimCard = createCard(bodyClip, m_trimTitleLabel);
+    auto *trimCardLayout = qobject_cast<QVBoxLayout *>(m_trimCard->layout());
+
+    m_trimPlayer = new VideoPlayerWidget(m_trimCard);
+    m_trimPlayer->setAutoSkipVisible(false);
+    trimCardLayout->addWidget(m_trimPlayer);
+
+    auto *markerRow = new QHBoxLayout();
+    markerRow->setSpacing(8);
+    m_setInButton = new ElaPushButton(m_trimCard);
+    m_setInButton->setFixedHeight(32);
+    m_setOutButton = new ElaPushButton(m_trimCard);
+    m_setOutButton->setFixedHeight(32);
+    m_previewTrimButton = new ElaPushButton(m_trimCard);
+    m_previewTrimButton->setFixedHeight(32);
+    markerRow->addWidget(m_setInButton);
+    markerRow->addWidget(m_setOutButton);
+    markerRow->addWidget(m_previewTrimButton);
+    markerRow->addStretch();
+    trimCardLayout->addLayout(markerRow);
+
     auto *trimForm = new QFormLayout();
     trimForm->setSpacing(8);
     m_trimStartCaption = makeCaption(m_trimCard);
@@ -169,7 +193,36 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     trimForm->addRow(m_trimEndCaption, m_trimEnd);
     trimForm->addRow(m_trimFormatCaption, m_trimFormat);
     trimForm->addRow(m_trimCopyCaption, m_trimCopy);
-    qobject_cast<QVBoxLayout *>(m_trimCard->layout())->addLayout(trimForm);
+    trimCardLayout->addLayout(trimForm);
+
+    connect(m_setInButton, &ElaPushButton::clicked, this, [this]() {
+        const double pos = m_trimPlayer->currentPositionSec();
+        m_trimStart->setValue(pos);
+        if (m_trimEnd->value() <= pos && m_trimPlayer->durationSec() > pos) {
+            m_trimEnd->setValue(m_trimPlayer->durationSec());
+        }
+        m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+    });
+
+    connect(m_setOutButton, &ElaPushButton::clicked, this, [this]() {
+        const double pos = m_trimPlayer->currentPositionSec();
+        m_trimEnd->setValue(pos);
+        m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+    });
+
+    connect(m_previewTrimButton, &ElaPushButton::clicked, this, [this]() {
+        m_trimPlayer->seekToSec(m_trimStart->value());
+        m_trimPlayer->play();
+    });
+
+    connect(m_trimStart, &ElaDoubleSpinBox::valueChanged, this, [this](double val) {
+        m_trimPlayer->setMarkRange(val, m_trimEnd->value());
+        m_trimPlayer->seekToSec(val);
+    });
+    connect(m_trimEnd, &ElaDoubleSpinBox::valueChanged, this, [this](double val) {
+        m_trimPlayer->setMarkRange(m_trimStart->value(), val);
+    });
+
     m_trimButton = createCardButton(m_trimCard);
     connect(m_trimButton, &ElaPushButton::clicked, this, &VideoPage::trim);
     bodyClipLayout->addWidget(m_trimCard);
@@ -568,6 +621,9 @@ void VideoPage::dropEvent(QDropEvent *event)
     if (urls.isEmpty()) return;
     m_inputFile = urls.first().toLocalFile();
     m_inputEdit->setText(m_inputFile);
+    if (m_trimPlayer && !m_inputFile.isEmpty()) {
+        m_trimPlayer->loadMedia(m_inputFile);
+    }
     event->acceptProposedAction();
 }
 
@@ -812,6 +868,10 @@ void VideoPage::retranslateUi()
     m_browseButton->setText(trId("common.browse"));
 
     m_trimTitleLabel->setText(trId("video.trim"));
+    m_trimPlayer->retranslateUi();
+    m_setInButton->setText(trId("video.trim.setIn"));
+    m_setOutButton->setText(trId("video.trim.setOut"));
+    m_previewTrimButton->setText(trId("video.trim.preview"));
     m_trimStartCaption->setText(trId("common.start") + QStringLiteral(":"));
     m_trimEndCaption->setText(trId("common.end") + QStringLiteral(":"));
     m_trimFormatCaption->setText(trId("common.format") + QStringLiteral(":"));

@@ -485,7 +485,19 @@
     </message>
     <message id="video.trim">
         <source>video.trim</source>
-        <translation>剪辑</translation>
+        <translation>截取与剪辑</translation>
+    </message>
+    <message id="video.trim.setIn">
+        <source>video.trim.setIn</source>
+        <translation>设为起点 (A)</translation>
+    </message>
+    <message id="video.trim.setOut">
+        <source>video.trim.setOut</source>
+        <translation>设为终点 (B)</translation>
+    </message>
+    <message id="video.trim.preview">
+        <source>video.trim.preview</source>
+        <translation>预览选段</translation>
     </message>
     <message id="video.trim.copy">
         <source>video.trim.copy</source>

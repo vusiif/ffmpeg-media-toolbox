@@ -24,6 +24,13 @@ public:
     void setCorruptedSegments(const QVector<CorruptedSegment> &segments);
     void clearSegments();
 
+    void setMarkRange(double inSec, double outSec);
+    void clearMarkRange();
+    double currentPositionSec() const;
+    double durationSec() const;
+    void seekToSec(double sec);
+    void setAutoSkipVisible(bool visible);
+
     bool isAutoSkipEnabled() const;
     void setAutoSkipEnabled(bool enabled);
 

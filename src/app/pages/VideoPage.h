@@ -17,6 +17,7 @@ class ElaComboBox;
 class ElaSpinBox;
 class ElaDoubleSpinBox;
 class ElaCheckBox;
+class VideoPlayerWidget;
 
 class VideoPage : public QWidget
 {
@@ -70,6 +71,10 @@ private:
     // Tab 1: Clip & Adjust
     ElaScrollPageArea *m_trimCard = nullptr;
     ElaText *m_trimTitleLabel = nullptr;
+    VideoPlayerWidget *m_trimPlayer = nullptr;
+    ElaPushButton *m_setInButton = nullptr;
+    ElaPushButton *m_setOutButton = nullptr;
+    ElaPushButton *m_previewTrimButton = nullptr;
     ElaText *m_trimStartCaption = nullptr;
     ElaDoubleSpinBox *m_trimStart = nullptr;
     ElaText *m_trimEndCaption = nullptr;
