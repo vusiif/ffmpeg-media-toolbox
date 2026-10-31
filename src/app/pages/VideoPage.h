@@ -46,6 +46,7 @@ private:
     void watermark();
     void subtitleMux();
     void adjust();
+    void detectAutoCrop();
     void pip();
 
     FFmpegLocator *m_locator;
@@ -86,6 +87,8 @@ private:
     ElaSpinBox *m_adjCropY = nullptr;
     ElaSpinBox *m_adjCropW = nullptr;
     ElaSpinBox *m_adjCropH = nullptr;
+    ElaPushButton *m_autoCropButton = nullptr;
+    ElaText *m_autoCropStatus = nullptr;
     ElaText *m_adjResizeCaption = nullptr;
     ElaSpinBox *m_adjResizeW = nullptr;
     ElaSpinBox *m_adjResizeH = nullptr;

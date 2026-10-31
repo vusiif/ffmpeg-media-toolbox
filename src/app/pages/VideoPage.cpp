@@ -6,12 +6,15 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
+#include <QFutureWatcher>
 #include <QListWidget>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QProcess>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
@@ -186,6 +189,16 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         cropRow->addWidget(spin);
     }
     adjForm->addRow(m_adjCropCaption, cropRow);
+
+    auto *cropActionRow = new QHBoxLayout();
+    m_autoCropButton = new ElaPushButton(m_adjCard);
+    m_autoCropStatus = new ElaText(QString(), 12, m_adjCard);
+    m_autoCropStatus->setStyleSheet(QStringLiteral("color: #0078d4;"));
+    cropActionRow->addWidget(m_autoCropButton);
+    cropActionRow->addWidget(m_autoCropStatus);
+    cropActionRow->addStretch();
+    adjForm->addRow(new ElaText(QString(), 13, m_adjCard), cropActionRow);
+    connect(m_autoCropButton, &ElaPushButton::clicked, this, &VideoPage::detectAutoCrop);
     m_adjResizeCaption = makeCaption(m_adjCard);
     auto *resizeRow = new QHBoxLayout();
     m_adjResizeW = new ElaSpinBox(m_adjCard);
@@ -710,6 +723,55 @@ void VideoPage::adjust()
                 m_adjQualitySpin->value()));
 }
 
+void VideoPage::detectAutoCrop()
+{
+    if (m_inputFile.isEmpty()) {
+        m_autoCropStatus->setText(trId("video.autoCrop.noInput"));
+        return;
+    }
+
+    m_autoCropButton->setEnabled(false);
+    m_autoCropStatus->setText(trId("video.autoCrop.detecting"));
+
+    const QString inputPath = m_inputFile;
+    const QString ffmpegPath = m_locator->ffmpegPath();
+    const QStringList args = m_builder->buildCropdetect(inputPath, 10.0, 25);
+
+    auto *watcher = new QFutureWatcher<QString>(this);
+    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
+        const QString output = watcher->result();
+        watcher->deleteLater();
+        m_autoCropButton->setEnabled(true);
+
+        const FFmpegCommandBuilder::CropArea crop = FFmpegCommandBuilder::parseCropdetectOutput(output);
+        if (crop.isValid()) {
+            m_adjCropX->setValue(crop.x);
+            m_adjCropY->setValue(crop.y);
+            m_adjCropW->setValue(crop.w);
+            m_adjCropH->setValue(crop.h);
+            m_autoCropStatus->setText(QStringLiteral("%1: %2x%3 (+%4,+%5)")
+                                          .arg(trId("video.autoCrop.found"))
+                                          .arg(crop.w)
+                                          .arg(crop.h)
+                                          .arg(crop.x)
+                                          .arg(crop.y));
+        } else {
+            m_autoCropStatus->setText(trId("video.autoCrop.none"));
+        }
+    });
+
+    QFuture<QString> future = QtConcurrent::run([ffmpegPath, args]() -> QString {
+        QProcess proc;
+        proc.start(ffmpegPath, args);
+        if (!proc.waitForStarted(3000)) {
+            return {};
+        }
+        proc.waitForFinished(10000);
+        return QString::fromUtf8(proc.readAllStandardError());
+    });
+    watcher->setFuture(future);
+}
+
 void VideoPage::pip()
 {
     if (m_inputFile.isEmpty() || m_pipFile.isEmpty()) return;
@@ -811,6 +873,7 @@ void VideoPage::retranslateUi()
 
     m_adjTitleLabel->setText(trId("video.adjust"));
     m_adjCropCaption->setText(trId("image.crop") + QStringLiteral(":"));
+    m_autoCropButton->setText(trId("video.autoCrop"));
     m_adjResizeCaption->setText(trId("image.resize") + QStringLiteral(":"));
     m_adjRotateCaption->setText(trId("image.rotate") + QStringLiteral(":"));
     m_adjQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));

@@ -175,6 +175,22 @@
         <source>convert.quality</source>
         <translation>Quality</translation>
     </message>
+    <message id="convert.rateControl">
+        <source>convert.rateControl</source>
+        <translation>Rate Control</translation>
+    </message>
+    <message id="convert.rateControl.crf">
+        <source>convert.rateControl.crf</source>
+        <translation>CRF (Constant Quality)</translation>
+    </message>
+    <message id="convert.rateControl.targetSize">
+        <source>convert.rateControl.targetSize</source>
+        <translation>Target File Size</translation>
+    </message>
+    <message id="convert.targetSize">
+        <source>convert.targetSize</source>
+        <translation>Target Size</translation>
+    </message>
     <message id="convert.start">
         <source>convert.start</source>
         <translation>Start Conversion</translation>
@@ -506,6 +522,26 @@
     <message id="video.adjust">
         <source>video.adjust</source>
         <translation>Adjust</translation>
+    </message>
+    <message id="video.autoCrop">
+        <source>video.autoCrop</source>
+        <translation>Auto Detect Crop</translation>
+    </message>
+    <message id="video.autoCrop.detecting">
+        <source>video.autoCrop.detecting</source>
+        <translation>Analyzing black bars...</translation>
+    </message>
+    <message id="video.autoCrop.noInput">
+        <source>video.autoCrop.noInput</source>
+        <translation>Please select or drop a video file first</translation>
+    </message>
+    <message id="video.autoCrop.found">
+        <source>video.autoCrop.found</source>
+        <translation>Detected Crop</translation>
+    </message>
+    <message id="video.autoCrop.none">
+        <source>video.autoCrop.none</source>
+        <translation>No black bars detected</translation>
     </message>
     <message id="video.job.adjust">
         <source>video.job.adjust</source>

@@ -175,6 +175,22 @@
         <source>convert.quality</source>
         <translation>质量</translation>
     </message>
+    <message id="convert.rateControl">
+        <source>convert.rateControl</source>
+        <translation>码率控制</translation>
+    </message>
+    <message id="convert.rateControl.crf">
+        <source>convert.rateControl.crf</source>
+        <translation>CRF 恒定质量</translation>
+    </message>
+    <message id="convert.rateControl.targetSize">
+        <source>convert.rateControl.targetSize</source>
+        <translation>定向目标体积</translation>
+    </message>
+    <message id="convert.targetSize">
+        <source>convert.targetSize</source>
+        <translation>目标体积</translation>
+    </message>
     <message id="convert.start">
         <source>convert.start</source>
         <translation>开始转换</translation>
@@ -506,6 +522,26 @@
     <message id="video.adjust">
         <source>video.adjust</source>
         <translation>调整</translation>
+    </message>
+    <message id="video.autoCrop">
+        <source>video.autoCrop</source>
+        <translation>智能黑边检测</translation>
+    </message>
+    <message id="video.autoCrop.detecting">
+        <source>video.autoCrop.detecting</source>
+        <translation>正在分析黑边...</translation>
+    </message>
+    <message id="video.autoCrop.noInput">
+        <source>video.autoCrop.noInput</source>
+        <translation>请先选择或拖入视频文件</translation>
+    </message>
+    <message id="video.autoCrop.found">
+        <source>video.autoCrop.found</source>
+        <translation>识别裁切</translation>
+    </message>
+    <message id="video.autoCrop.none">
+        <source>video.autoCrop.none</source>
+        <translation>未检测到黑边</translation>
     </message>
     <message id="video.job.adjust">
         <source>video.job.adjust</source>

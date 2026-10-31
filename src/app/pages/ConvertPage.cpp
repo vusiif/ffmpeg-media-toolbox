@@ -16,6 +16,7 @@
 
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
+#include "ElaDoubleSpinBox.h"
 #include "ElaLineEdit.h"
 #include "ElaPushButton.h"
 #include "ElaScrollArea.h"
@@ -173,10 +174,54 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_audioCodecCaption = new ElaText(QString(), 13, m_codecCard);
     m_audioCodecCombo = new ElaComboBox(m_codecCard);
 
+    m_rateControlCaption = new ElaText(QString(), 13, m_codecCard);
+    m_rateControlCombo = new ElaComboBox(m_codecCard);
+    m_rateControlCombo->addItem(QStringLiteral("CRF (质量优先)"));
+    m_rateControlCombo->addItem(QStringLiteral("Target Size (定向体积)"));
+
     m_qualityCaption = new ElaText(QString(), 13, m_codecCard);
     m_qualitySpin = new ElaSpinBox(m_codecCard);
     m_qualitySpin->setRange(0, 51);
     m_qualitySpin->setValue(23);
+
+    m_targetSizeCaption = new ElaText(QString(), 13, m_codecCard);
+    m_targetSizeWidget = new QWidget(m_codecCard);
+    auto *targetSizeLayout = new QHBoxLayout(m_targetSizeWidget);
+    targetSizeLayout->setContentsMargins(0, 0, 0, 0);
+    targetSizeLayout->setSpacing(6);
+    m_targetSizeSpin = new ElaDoubleSpinBox(m_targetSizeWidget);
+    m_targetSizeSpin->setRange(1.0, 10240.0);
+    m_targetSizeSpin->setSingleStep(5.0);
+    m_targetSizeSpin->setValue(25.0);
+    m_targetSizeSpin->setDecimals(1);
+    m_targetSizeSpin->setSuffix(QStringLiteral(" MB"));
+
+    m_preset25Btn = new ElaPushButton(QStringLiteral("25MB"), m_targetSizeWidget);
+    m_preset50Btn = new ElaPushButton(QStringLiteral("50MB"), m_targetSizeWidget);
+    m_preset100Btn = new ElaPushButton(QStringLiteral("100MB"), m_targetSizeWidget);
+    m_preset25Btn->setMaximumWidth(60);
+    m_preset50Btn->setMaximumWidth(60);
+    m_preset100Btn->setMaximumWidth(60);
+    connect(m_preset25Btn, &ElaPushButton::clicked, this, [this]() { m_targetSizeSpin->setValue(25.0); });
+    connect(m_preset50Btn, &ElaPushButton::clicked, this, [this]() { m_targetSizeSpin->setValue(50.0); });
+    connect(m_preset100Btn, &ElaPushButton::clicked, this, [this]() { m_targetSizeSpin->setValue(100.0); });
+
+    targetSizeLayout->addWidget(m_targetSizeSpin, 1);
+    targetSizeLayout->addWidget(m_preset25Btn);
+    targetSizeLayout->addWidget(m_preset50Btn);
+    targetSizeLayout->addWidget(m_preset100Btn);
+
+    m_targetSizeCaption->setVisible(false);
+    m_targetSizeWidget->setVisible(false);
+
+    connect(m_rateControlCombo, QOverload<int>::of(&ElaComboBox::currentIndexChanged), this, [this](int idx) {
+        const bool isTarget = (idx == 1);
+        m_qualityCaption->setVisible(!isTarget);
+        m_qualitySpin->setVisible(!isTarget);
+        m_targetSizeCaption->setVisible(isTarget);
+        m_targetSizeWidget->setVisible(isTarget);
+        updateCommandPreview();
+    });
 
     m_smartCopyCheck = new ElaCheckBox(m_codecCard);
     m_stripMetaCheck = new ElaCheckBox(m_codecCard);
@@ -217,7 +262,9 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_formatCaption, m_formatCombo);
     form->addRow(m_codecCaption, m_codecCombo);
     form->addRow(m_audioCodecCaption, m_audioCodecCombo);
+    form->addRow(m_rateControlCaption, m_rateControlCombo);
     form->addRow(m_qualityCaption, m_qualitySpin);
+    form->addRow(m_targetSizeCaption, m_targetSizeWidget);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_smartCopyCheck);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_stripMetaCheck);
     form->addRow(new ElaText(QString(), 13, m_codecCard), hwRow);
@@ -386,6 +433,7 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_codecCombo, &ElaComboBox::currentTextChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_audioCodecCombo, &ElaComboBox::currentTextChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
+    connect(m_targetSizeSpin, &ElaDoubleSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_stripMetaCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_audioBitrateCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
@@ -505,7 +553,14 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
     opts.outputPath = outputPath;
     opts.videoCodec = m_codecCombo->currentText();
     opts.audioCodec = m_audioCodecCombo->currentText();
-    opts.crf = m_qualitySpin->value();
+    if (m_rateControlCombo && m_rateControlCombo->currentIndex() == 1) {
+        opts.targetSizeMB = m_targetSizeSpin->value();
+        opts.durationSeconds = m_probeInfo.duration;
+        opts.crf = -1;
+    } else {
+        opts.crf = m_qualitySpin->value();
+        opts.targetSizeMB = -1.0;
+    }
     opts.copyStreams = copy;
     opts.stripMetadata = m_stripMetaCheck->isChecked();
     if (m_hwAccelCheck->isChecked()) {
@@ -609,16 +664,23 @@ void ConvertPage::updateCommandPreview()
     const QStringList args = m_builder->buildConversion(currentOptions(outputPath, copy));
     m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ") + args.join(QLatin1Char(' ')));
 
-    const qint64 estimate = OutputEstimate::estimateBytes(
-        m_probeInfo, m_codecCombo->currentText(), m_audioCodecCombo->currentText(),
-        m_qualitySpin->value(), copy);
-    if (estimate > 0) {
+    if (m_rateControlCombo && m_rateControlCombo->currentIndex() == 1) {
+        const qint64 estimate = static_cast<qint64>(m_targetSizeSpin->value() * 1024.0 * 1024.0);
         m_estLabel->setText(trId("convert.estimate") + QStringLiteral(": ≈")
                             + OutputEstimate::humanizeBytes(estimate));
         m_estLabel->setVisible(true);
     } else {
-        m_estLabel->clear();
-        m_estLabel->setVisible(false);
+        const qint64 estimate = OutputEstimate::estimateBytes(
+            m_probeInfo, m_codecCombo->currentText(), m_audioCodecCombo->currentText(),
+            m_qualitySpin->value(), copy);
+        if (estimate > 0) {
+            m_estLabel->setText(trId("convert.estimate") + QStringLiteral(": ≈")
+                                + OutputEstimate::humanizeBytes(estimate));
+            m_estLabel->setVisible(true);
+        } else {
+            m_estLabel->clear();
+            m_estLabel->setVisible(false);
+        }
     }
 }
 
@@ -706,6 +768,8 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("format"), m_formatCombo->currentText());
     values.insert(QStringLiteral("videoCodec"), m_codecCombo->currentText());
     values.insert(QStringLiteral("audioCodec"), m_audioCodecCombo->currentText());
+    values.insert(QStringLiteral("rateControl"), m_rateControlCombo->currentIndex());
+    values.insert(QStringLiteral("targetSizeMB"), m_targetSizeSpin->value());
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
     values.insert(QStringLiteral("smartCopy"), m_smartCopyCheck->isChecked());
     values.insert(QStringLiteral("stripMetadata"), m_stripMetaCheck->isChecked());
@@ -742,6 +806,9 @@ void ConvertPage::loadPreset(const QString &name)
     setCombo(m_formatCombo, values.value(QStringLiteral("format")).toString());
     setCombo(m_codecCombo, values.value(QStringLiteral("videoCodec")).toString());
     setCombo(m_audioCodecCombo, values.value(QStringLiteral("audioCodec")).toString());
+    const int rcIdx = values.value(QStringLiteral("rateControl"), 0).toInt();
+    m_rateControlCombo->setCurrentIndex(rcIdx);
+    m_targetSizeSpin->setValue(values.value(QStringLiteral("targetSizeMB"), 25.0).toDouble());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
     m_stripMetaCheck->setChecked(values.value(QStringLiteral("stripMetadata"), false).toBool());
@@ -801,7 +868,11 @@ void ConvertPage::retranslateUi()
     m_formatCaption->setText(trId("convert.outputFormat") + QStringLiteral(":"));
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
+    m_rateControlCaption->setText(trId("convert.rateControl") + QStringLiteral(":"));
+    m_rateControlCombo->setItemText(0, trId("convert.rateControl.crf"));
+    m_rateControlCombo->setItemText(1, trId("convert.rateControl.targetSize"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_targetSizeCaption->setText(trId("convert.targetSize") + QStringLiteral(":"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
     m_stripMetaCheck->setText(trId("metadata.remove"));
     m_hwAccelCheck->setText(trId("convert.hwAccel"));

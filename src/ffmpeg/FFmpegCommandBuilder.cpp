@@ -1,5 +1,6 @@
 #include "FFmpegCommandBuilder.h"
 #include "FFmpegCapabilities.h"
+#include <QRegularExpression>
 
 FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
     : QObject(parent)
@@ -80,7 +81,20 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         if (!options.audioCodec.isEmpty()) {
             args << QStringLiteral("-c:a") << options.audioCodec;
         }
-        if (options.crf >= 0) {
+
+        // Determine effective video bitrate (explicit or derived from target file size)
+        int effVideoBitrateKbps = options.videoBitrateKbps;
+        if (effVideoBitrateKbps <= 0 && options.targetSizeMB > 0.0 && options.durationSeconds > 0.0) {
+            const double totalKbps = (options.targetSizeMB * 8192.0) / options.durationSeconds;
+            const int aKbps = (options.audioBitrateKbps > 0) ? options.audioBitrateKbps : 128;
+            effVideoBitrateKbps = qMax(50, static_cast<int>(totalKbps - aKbps));
+        }
+
+        if (effVideoBitrateKbps > 0) {
+            args << QStringLiteral("-b:v") << QStringLiteral("%1k").arg(effVideoBitrateKbps);
+            args << QStringLiteral("-maxrate") << QStringLiteral("%1k").arg(static_cast<int>(effVideoBitrateKbps * 1.5));
+            args << QStringLiteral("-bufsize") << QStringLiteral("%1k").arg(effVideoBitrateKbps * 2);
+        } else if (options.crf >= 0) {
             args << QStringLiteral("-crf") << QString::number(options.crf);
         }
         if (!options.preset.isEmpty()) {
@@ -112,8 +126,12 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         }
 
         // Advanced audio options
-        if (options.audioBitrateKbps > 0) {
-            args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(options.audioBitrateKbps);
+        int audioBitrate = options.audioBitrateKbps;
+        if (audioBitrate <= 0 && effVideoBitrateKbps > 0) {
+            audioBitrate = 128; // Default 128k audio when targeting specific file size/bitrate
+        }
+        if (audioBitrate > 0) {
+            args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(audioBitrate);
         }
         if (options.audioSampleRate > 0) {
             args << QStringLiteral("-ar") << QString::number(options.audioSampleRate);
@@ -721,5 +739,38 @@ QString FFmpegCommandBuilder::escapeFilterValue(const QString &value)
     result.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
     result.replace(QLatin1Char('\''), QStringLiteral("\\'"));
     result.replace(QLatin1Char(';'), QStringLiteral("\\;"));
+    return result;
+}
+
+QStringList FFmpegCommandBuilder::buildCropdetect(const QString &inputPath, double seekSec, int frames) const
+{
+    QStringList args;
+    if (inputPath.isEmpty()) {
+        return args;
+    }
+    args << QStringLiteral("-y");
+    if (seekSec > 0.0) {
+        args << QStringLiteral("-ss") << formatTime(seekSec);
+    }
+    args << QStringLiteral("-i") << inputPath;
+    args << QStringLiteral("-vf") << QStringLiteral("cropdetect=24:16:0");
+    args << QStringLiteral("-vframes") << QString::number(frames > 0 ? frames : 20);
+    args << QStringLiteral("-f") << QStringLiteral("null") << QStringLiteral("-");
+    return args;
+}
+
+FFmpegCommandBuilder::CropArea FFmpegCommandBuilder::parseCropdetectOutput(const QString &ffmpegOutput)
+{
+    CropArea result;
+    // Format: crop=W:H:X:Y
+    static const QRegularExpression re(QStringLiteral(R"(crop=(\d+):(\d+):(\d+):(\d+))"));
+    auto it = re.globalMatch(ffmpegOutput);
+    while (it.hasNext()) {
+        const auto match = it.next();
+        result.w = match.captured(1).toInt();
+        result.h = match.captured(2).toInt();
+        result.x = match.captured(3).toInt();
+        result.y = match.captured(4).toInt();
+    }
     return result;
 }

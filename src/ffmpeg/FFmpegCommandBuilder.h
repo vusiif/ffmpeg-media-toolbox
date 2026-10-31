@@ -43,6 +43,20 @@ public:
 
         // Hardware Acceleration
         QString hwAccel;             // -hwaccel <auto|cuda|qsv|d3d11va|vaapi>
+
+        // Target File Size Compression
+        double targetSizeMB = -1.0;  // Target output size in Megabytes (e.g. 25.0, 50.0)
+        double durationSeconds = 0.0;// Duration in seconds (required for target size calculation)
+        int videoBitrateKbps = -1;   // Explicit video bitrate (or calculated from targetSizeMB)
+    };
+
+    struct CropArea
+    {
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+        bool isValid() const { return w > 0 && h > 0; }
     };
 
     QStringList buildConversion(const ConversionOptions &options) const;
@@ -211,4 +225,8 @@ public:
     // expects on Windows).
     static QString escapeFilterPath(const QString &path);
     static QString formatTime(double seconds);
+
+    // Auto Crop Detection
+    QStringList buildCropdetect(const QString &inputPath, double seekSec = 10.0, int frames = 20) const;
+    static CropArea parseCropdetectOutput(const QString &ffmpegOutput);
 };

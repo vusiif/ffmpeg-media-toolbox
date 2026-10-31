@@ -20,6 +20,8 @@ private slots:
     void conversionHdrTonemapChainsWithVideoFilter();
     void conversionHdrTonemapAlone();
     void conversionHwAccelPrependedBeforeInput();
+    void conversionTargetFileSizeCalculatesBitrate();
+    void cropdetectCommandAndParser();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
     void subtitleMuxRejectsEmptyPaths();
@@ -267,6 +269,57 @@ void FFmpegCommandBuilderTest::conversionHwAccelPrependedBeforeInput()
                           QStringLiteral("-c:v"), QStringLiteral("h264_nvenc"),
                           QStringLiteral("-crf"), QStringLiteral("23"),
                           QStringLiteral("out.mp4")}));
+}
+
+void FFmpegCommandBuilderTest::conversionTargetFileSizeCalculatesBitrate()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.targetSizeMB = 25.0;
+    opts.durationSeconds = 100.0;
+    // 25 * 8192 / 100 = 2048 kbps total. Default 128 kbps audio -> 1920 kbps video.
+    // maxrate = 1920 * 1.5 = 2880k, bufsize = 1920 * 2 = 3840k.
+    const QStringList args = m_builder.buildConversion(opts);
+    QVERIFY(!args.contains(QStringLiteral("-crf")));
+    QVERIFY(args.contains(QStringLiteral("-b:v")));
+    const int bIdx = args.indexOf(QStringLiteral("-b:v"));
+    QCOMPARE(args.value(bIdx + 1), QStringLiteral("1920k"));
+    QVERIFY(args.contains(QStringLiteral("-maxrate")));
+    const int maxIdx = args.indexOf(QStringLiteral("-maxrate"));
+    QCOMPARE(args.value(maxIdx + 1), QStringLiteral("2880k"));
+    QVERIFY(args.contains(QStringLiteral("-bufsize")));
+    const int bufIdx = args.indexOf(QStringLiteral("-bufsize"));
+    QCOMPARE(args.value(bufIdx + 1), QStringLiteral("3840k"));
+    QVERIFY(args.contains(QStringLiteral("-b:a")));
+    const int aIdx = args.indexOf(QStringLiteral("-b:a"));
+    QCOMPARE(args.value(aIdx + 1), QStringLiteral("128k"));
+}
+
+void FFmpegCommandBuilderTest::cropdetectCommandAndParser()
+{
+    const QStringList args = m_builder.buildCropdetect(QStringLiteral("input.mp4"), 15.0, 30);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"),
+        QStringLiteral("-ss"), QStringLiteral("00:00:15"),
+        QStringLiteral("-i"), QStringLiteral("input.mp4"),
+        QStringLiteral("-vf"), QStringLiteral("cropdetect=24:16:0"),
+        QStringLiteral("-vframes"), QStringLiteral("30"),
+        QStringLiteral("-f"), QStringLiteral("null"),
+        QStringLiteral("-")
+    }));
+
+    const QString log = QStringLiteral(
+        "[Parsed_cropdetect_0 @ 000001a] x1:0 x2:1919 y1:140 y2:939 w:1920 h:800 x:0 y:140 pts:1200 t:1.200 crop=1920:800:0:140\n"
+        "[Parsed_cropdetect_0 @ 000001a] x1:0 x2:1919 y1:140 y2:939 w:1920 h:800 x:0 y:140 pts:1240 t:1.240 crop=1920:800:0:140\n"
+    );
+    const FFmpegCommandBuilder::CropArea crop = FFmpegCommandBuilder::parseCropdetectOutput(log);
+    QVERIFY(crop.isValid());
+    QCOMPARE(crop.w, 1920);
+    QCOMPARE(crop.h, 800);
+    QCOMPARE(crop.x, 0);
+    QCOMPARE(crop.y, 140);
 }
 
 void FFmpegCommandBuilderTest::subtitleMuxConvertsForMp4()
