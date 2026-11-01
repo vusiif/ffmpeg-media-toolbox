@@ -153,11 +153,19 @@ add_custom_command(TARGET ffmedia-toolbox POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:ElaWidgetTools>"
         "$<TARGET_FILE_DIR:ffmedia-toolbox>"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/Others/untrunc/untrunc_x64"
-        "$<TARGET_FILE_DIR:ffmedia-toolbox>/untrunc_x64"
-    COMMENT "Deploying Qt runtime, ElaWidgetTools, and untrunc..."
+    COMMENT "Deploying Qt runtime and ElaWidgetTools..."
 )
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Others/untrunc/untrunc_x64")
+    add_custom_command(TARGET ffmedia-toolbox POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/Others/untrunc/untrunc_x64"
+            "$<TARGET_FILE_DIR:ffmedia-toolbox>/untrunc_x64"
+        COMMENT "Deploying untrunc..."
+    )
+else()
+    message(STATUS "Others/untrunc/untrunc_x64 not found; clean build will continue without bundled untrunc.")
+endif()
 
 enable_testing()
 

@@ -21,6 +21,8 @@ private slots:
     void nameWithoutExtensionGetsSuffixAtEnd();
     void stampIsUnconditional();
     void defaultStampIsGenerated();
+    void ensureUniquePathReturnsSameWhenFileDoesNotExist();
+    void ensureUniquePathAppendsIndexWhenFileExists();
 };
 
 void OutputNamingTest::emptyTemplateUsesDefault()
@@ -97,6 +99,35 @@ void OutputNamingTest::defaultStampIsGenerated()
         QStringLiteral("^C:/media/clip-out-\\d{8}-\\d{6}\\.mp4$"));
     const QRegularExpressionMatch match = re.match(path);
     QVERIFY2(match.hasMatch(), qPrintable(path));
+}
+
+void OutputNamingTest::ensureUniquePathReturnsSameWhenFileDoesNotExist()
+{
+    const QString nonExistent = QDir::tempPath() + QStringLiteral("/ffmedia_test_unique_nonexistent_xyz123.mp4");
+    QCOMPARE(OutputNaming::ensureUniquePath(nonExistent), nonExistent);
+}
+
+void OutputNamingTest::ensureUniquePathAppendsIndexWhenFileExists()
+{
+    const QString base = QDir::tempPath() + QStringLiteral("/ffmedia_collision_test.mp4");
+    QFile f1(base);
+    QVERIFY(f1.open(QIODevice::WriteOnly));
+    f1.write("test1");
+    f1.close();
+
+    const QString unique1 = OutputNaming::ensureUniquePath(base);
+    QCOMPARE(unique1, QDir::tempPath() + QStringLiteral("/ffmedia_collision_test_1.mp4"));
+
+    QFile f2(unique1);
+    QVERIFY(f2.open(QIODevice::WriteOnly));
+    f2.write("test2");
+    f2.close();
+
+    const QString unique2 = OutputNaming::ensureUniquePath(base);
+    QCOMPARE(unique2, QDir::tempPath() + QStringLiteral("/ffmedia_collision_test_2.mp4"));
+
+    f1.remove();
+    f2.remove();
 }
 
 QTEST_GUILESS_MAIN(OutputNamingTest)

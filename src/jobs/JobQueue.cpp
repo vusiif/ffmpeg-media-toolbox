@@ -27,6 +27,7 @@ void JobQueue::setMaxConcurrent(int max)
     if (m_maxConcurrent == max) return;
     m_maxConcurrent = max;
     emit maxConcurrentChanged();
+    startNext();
 }
 
 void JobQueue::addJob(Job *job)

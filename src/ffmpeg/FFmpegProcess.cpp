@@ -72,7 +72,7 @@ bool FFmpegProcess::start(const QString &program, const QStringList &arguments, 
     setState(State::Running);
     m_process->start(program, buildInvocationArguments(arguments));
 
-    if (!m_process->waitForStarted(5000)) {
+    if (!m_process->waitForStarted(2000)) {
         setState(State::Failed);
         emitFinishedOnce(false);
         return false;
@@ -131,11 +131,20 @@ void FFmpegProcess::onReadyReadStdout()
             emit logMessage(line);
         }
     }
+
+    if (m_progressBuffer.size() > 65536) {
+        m_progressBuffer = m_progressBuffer.right(32768);
+    }
 }
 
 void FFmpegProcess::onReadyReadStderr()
 {
     m_stderrOutput.append(QString::fromUtf8(m_process->readAllStandardError()));
+    // Retain the most recent ~64KB of stderr to prevent unbounded memory growth during long transcodes
+    constexpr int kMaxStderrChars = 65536;
+    if (m_stderrOutput.size() > kMaxStderrChars * 2) {
+        m_stderrOutput = m_stderrOutput.right(kMaxStderrChars);
+    }
 }
 
 void FFmpegProcess::onFinished(int exitCode, QProcess::ExitStatus exitStatus)

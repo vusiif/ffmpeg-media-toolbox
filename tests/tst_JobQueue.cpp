@@ -15,6 +15,7 @@ private slots:
     void cancelWhileRunningLeavesJobCancelledAndFreesSlot();
     void shortJobCompletesAndSignalsAllFinished();
     void hardwareAccelerationFailureFallsBackToSoftware();
+    void increasingMaxConcurrentImmediatelyStartsPendingJobs();
 };
 
 namespace {
@@ -153,6 +154,35 @@ void JobQueueTest::hardwareAccelerationFailureFallsBackToSoftware()
     QCOMPARE(job->progress(), 1.0);
     QVERIFY(job->commandArguments().contains(QStringLiteral("libx264")));
     QVERIFY(!job->commandArguments().contains(QStringLiteral("-hwaccel")));
+}
+
+void JobQueueTest::increasingMaxConcurrentImmediatelyStartsPendingJobs()
+{
+    FFmpegLocator locator;
+    locator.waitForDetection();
+    if (!locator.isValid()) {
+        QSKIP("ffmpeg/ffprobe not available");
+    }
+
+    JobQueue queue(&locator, nullptr);
+    queue.setMaxConcurrent(1);
+
+    Job *first = makeTestsrcJob(queue, locator.ffmpegPath(), 60);
+    Job *second = makeTestsrcJob(queue, locator.ffmpegPath(), 60);
+
+    queue.addJob(first);
+    queue.addJob(second);
+
+    QCOMPARE(first->status(), JobStatus::Running);
+    QCOMPARE(second->status(), JobStatus::Pending);
+
+    // Raising concurrency limit must immediately schedule the waiting job
+    queue.setMaxConcurrent(2);
+    QCOMPARE(second->status(), JobStatus::Running);
+
+    queue.cancelJob(first->id().toString());
+    queue.cancelJob(second->id().toString());
+    QTRY_VERIFY_WITH_TIMEOUT(!queue.hasRunningJobs(), 20000);
 }
 
 QTEST_GUILESS_MAIN(JobQueueTest)

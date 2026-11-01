@@ -31,8 +31,36 @@ QString OutputNaming::build(const QString &inputPath,
         name.append(suffix);
     }
 
+    QString targetPath;
     if (outputDir.isEmpty()) {
-        return QDir(info.absolutePath()).filePath(name);
+        targetPath = QDir(info.absolutePath()).filePath(name);
+    } else {
+        targetPath = QDir(outputDir).filePath(name);
     }
-    return QDir(outputDir).filePath(name);
+    return ensureUniquePath(targetPath);
+}
+
+QString OutputNaming::ensureUniquePath(const QString &targetPath)
+{
+    if (targetPath.isEmpty() || !QFileInfo::exists(targetPath)) {
+        return targetPath;
+    }
+
+    const QFileInfo fi(targetPath);
+    const QString dir = fi.absolutePath();
+    const QString base = fi.completeBaseName();
+    const QString ext = fi.suffix();
+
+    int count = 1;
+    while (count < 10000) {
+        QString candidateName = ext.isEmpty()
+            ? QStringLiteral("%1_%2").arg(base).arg(count)
+            : QStringLiteral("%1_%2.%3").arg(base).arg(count).arg(ext);
+        QString candidate = QDir(dir).filePath(candidateName);
+        if (!QFileInfo::exists(candidate)) {
+            return candidate;
+        }
+        ++count;
+    }
+    return targetPath;
 }
