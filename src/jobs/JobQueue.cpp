@@ -4,22 +4,121 @@
 #include "ffmpeg/FFmpegProcess.h"
 #include "media/MediaProbeService.h"
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QPointer>
+#include <QSaveFile>
+#include <QStandardPaths>
 
 #include <algorithm>
 
+QString JobQueue::defaultStoragePath()
+{
+    const QString appName = QCoreApplication::applicationName();
+    if (appName.contains(QLatin1String("test"), Qt::CaseInsensitive) ||
+        appName.contains(QLatin1String("tst_"), Qt::CaseInsensitive)) {
+        return QString();
+    }
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (base.isEmpty()) {
+        return QString();
+    }
+    QDir().mkpath(base);
+    return QDir(base).filePath(QStringLiteral("jobs.json"));
+}
+
 JobQueue::JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService, QObject *parent)
+    : JobQueue(locator, probeService, parent, defaultStoragePath())
+{
+}
+
+JobQueue::JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService,
+                   QObject *parent, const QString &storagePath)
     : QObject(parent)
     , m_locator(locator)
     , m_probeService(probeService)
     , m_commandBuilder(new FFmpegCommandBuilder(this))
     , m_model(new JobListModel(this))
+    , m_storagePath(storagePath)
 {
+    connect(m_model, &QAbstractItemModel::rowsRemoved, this, [this]() {
+        savePersistence();
+    });
+
+    if (!m_storagePath.isEmpty()) {
+        loadPersistence();
+    }
+}
+
+JobQueue::~JobQueue()
+{
+    savePersistence();
 }
 
 JobListModel* JobQueue::model() const { return m_model; }
 int JobQueue::maxConcurrent() const { return m_maxConcurrent; }
 bool JobQueue::hasRunningJobs() const { return runningJobCount() > 0; }
+
+QString JobQueue::storagePath() const { return m_storagePath; }
+void JobQueue::setStoragePath(const QString &path) { m_storagePath = path; }
+
+bool JobQueue::loadPersistence()
+{
+    if (m_storagePath.isEmpty() || !QFile::exists(m_storagePath)) {
+        return false;
+    }
+    QFile file(m_storagePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    const QByteArray data = file.readAll();
+    const QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isArray()) {
+        return false;
+    }
+
+    const QJsonArray array = doc.array();
+    for (const QJsonValue &val : array) {
+        if (!val.isObject()) continue;
+        Job *job = Job::fromJson(val.toObject(), this);
+        if (job) {
+            connect(job, &Job::statusChanged, this, [this]() {
+                savePersistence();
+            });
+            m_model->addJob(job);
+        }
+    }
+    return true;
+}
+
+bool JobQueue::savePersistence() const
+{
+    if (m_storagePath.isEmpty()) {
+        return false;
+    }
+
+    QFileInfo fi(m_storagePath);
+    fi.dir().mkpath(QStringLiteral("."));
+
+    QJsonArray array;
+    for (int i = 0; i < m_model->count(); ++i) {
+        if (Job *job = m_model->getJob(i)) {
+            array.append(job->toJson());
+        }
+    }
+
+    QJsonDocument doc(array);
+    QSaveFile file(m_storagePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+    file.write(doc.toJson(QJsonDocument::Indented));
+    return file.commit();
+}
 
 void JobQueue::setMaxConcurrent(int max)
 {
@@ -33,6 +132,10 @@ void JobQueue::setMaxConcurrent(int max)
 void JobQueue::addJob(Job *job)
 {
     m_model->addJob(job);
+    connect(job, &Job::statusChanged, this, [this]() {
+        savePersistence();
+    });
+    savePersistence();
     startNext();
 }
 
@@ -76,6 +179,7 @@ void JobQueue::cancelJob(const QString &jobId)
     }
 
     job->setStatus(JobStatus::Cancelled);
+    savePersistence();
     startNext();
 }
 
@@ -92,12 +196,14 @@ void JobQueue::retryJob(const QString &jobId)
     job->setProgress(0);
     job->setErrorMessage({});
     job->setFallbackAttempted(false);
+    savePersistence();
     startNext();
 }
 
 void JobQueue::clearCompleted()
 {
     m_model->clearCompleted();
+    savePersistence();
 }
 
 void JobQueue::startJob(Job *job)
@@ -189,6 +295,7 @@ void JobQueue::onJobFinished(bool success)
                     m_processes.remove(jobId);
                     process->deleteLater();
                     emit runningCountChanged();
+                    savePersistence();
                     startNext();
                     return;
                 }
@@ -221,6 +328,7 @@ void JobQueue::onJobFinished(bool success)
         emit allJobsFinished();
     }
 
+    savePersistence();
     startNext();
 }
 

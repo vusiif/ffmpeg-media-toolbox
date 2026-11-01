@@ -1115,5 +1115,37 @@
         <source>settings.prefsCard</source>
         <translation>常规偏好设置</translation>
     </message>
+    <message id="preset.scenario.wechat">
+        <source>preset.scenario.wechat</source>
+        <translation>微信分享 (≤25MB)</translation>
+    </message>
+    <message id="preset.scenario.discord">
+        <source>preset.scenario.discord</source>
+        <translation>Discord 限制 (≤10MB)</translation>
+    </message>
+    <message id="preset.scenario.bilibili">
+        <source>preset.scenario.bilibili</source>
+        <translation>B站投稿高画质 (HEVC)</translation>
+    </message>
+    <message id="preset.scenario.mobile">
+        <source>preset.scenario.mobile</source>
+        <translation>移动端极限省空间 (HEVC)</translation>
+    </message>
+    <message id="preset.scenario.web">
+        <source>preset.scenario.web</source>
+        <translation>Web 快速加载 (H.264)</translation>
+    </message>
+    <message id="preset.scenario.audioMp3">
+        <source>preset.scenario.audioMp3</source>
+        <translation>纯音频提取 (MP3 320k)</translation>
+    </message>
+    <message id="preset.scenario.audioFlac">
+        <source>preset.scenario.audioFlac</source>
+        <translation>纯音频无损 (FLAC)</translation>
+    </message>
+    <message id="queue.error.interrupted">
+        <source>queue.error.interrupted</source>
+        <translation>程序退出，任务中断</translation>
+    </message>
 </context>
 </TS>

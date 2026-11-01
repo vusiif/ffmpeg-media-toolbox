@@ -15,6 +15,8 @@ private slots:
     void nearEqualProgressIsIgnored();
     void commandDisplayQuotesArgsWithSpaces();
     void logsAreAppendedAndCapped();
+    void serializationRoundTrip();
+    void deserializationConvertsRunningToCancelled();
 };
 
 void JobTest::initialState()
@@ -116,6 +118,58 @@ void JobTest::logsAreAppendedAndCapped()
     }
     QCOMPARE(job.logs().size(), 10000);
     QCOMPARE(job.logs().first().message, QStringLiteral("msg"));
+}
+
+void JobTest::serializationRoundTrip()
+{
+    Job original;
+    original.setName(QStringLiteral("Test Task"));
+    original.setType(JobType::Conversion);
+    original.setStatus(JobStatus::Completed);
+    original.setProgress(1.0);
+    original.setTotalDuration(120.5);
+    original.setInputFiles({QStringLiteral("in1.mp4"), QStringLiteral("in2.mp4")});
+    original.setOutputFile(QStringLiteral("out.mp4"));
+    original.setCommand(QStringLiteral("ffmpeg"), {QStringLiteral("-i"), QStringLiteral("in1.mp4"), QStringLiteral("out.mp4")});
+    original.addLog(QStringLiteral("Log message 1"));
+    original.addLog(QStringLiteral("Log message 2"));
+
+    const QJsonObject json = original.toJson();
+    Job *restored = Job::fromJson(json);
+    QVERIFY(restored != nullptr);
+
+    QCOMPARE(restored->id(), original.id());
+    QCOMPARE(restored->name(), QStringLiteral("Test Task"));
+    QCOMPARE(restored->type(), JobType::Conversion);
+    QCOMPARE(restored->status(), JobStatus::Completed);
+    QCOMPARE(restored->progress(), 1.0);
+    QCOMPARE(restored->totalDuration(), 120.5);
+    QCOMPARE(restored->inputFiles(), QStringList({QStringLiteral("in1.mp4"), QStringLiteral("in2.mp4")}));
+    QCOMPARE(restored->outputFile(), QStringLiteral("out.mp4"));
+    QCOMPARE(restored->commandProgram(), QStringLiteral("ffmpeg"));
+    QCOMPARE(restored->commandArguments(), QStringList({QStringLiteral("-i"), QStringLiteral("in1.mp4"), QStringLiteral("out.mp4")}));
+    QCOMPARE(restored->logs().size(), 2);
+    QCOMPARE(restored->logs().at(0).message, QStringLiteral("Log message 1"));
+    QCOMPARE(restored->logs().at(1).message, QStringLiteral("Log message 2"));
+
+    delete restored;
+}
+
+void JobTest::deserializationConvertsRunningToCancelled()
+{
+    Job runningJob;
+    runningJob.setName(QStringLiteral("Interrupted Job"));
+    runningJob.setStatus(JobStatus::Running);
+
+    const QJsonObject json = runningJob.toJson();
+    Job *restored = Job::fromJson(json);
+    QVERIFY(restored != nullptr);
+
+    QCOMPARE(restored->name(), QStringLiteral("Interrupted Job"));
+    QCOMPARE(restored->status(), JobStatus::Cancelled);
+    QVERIFY(!restored->errorMessage().isEmpty());
+
+    delete restored;
 }
 
 QTEST_GUILESS_MAIN(JobTest)

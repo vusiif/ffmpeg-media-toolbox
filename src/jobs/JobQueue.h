@@ -1,8 +1,9 @@
 #pragma once
 
-#include <QObject>
 #include <QList>
 #include <QMap>
+#include <QObject>
+#include <QString>
 #include "Job.h"
 #include "JobListModel.h"
 
@@ -21,11 +22,21 @@ class JobQueue : public QObject
 public:
     explicit JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService,
                       QObject *parent = nullptr);
+    explicit JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService,
+                      QObject *parent, const QString &storagePath);
+    ~JobQueue() override;
 
     JobListModel* model() const;
     int maxConcurrent() const;
     void setMaxConcurrent(int max);
     bool hasRunningJobs() const;
+
+    static QString defaultStoragePath();
+    QString storagePath() const;
+    void setStoragePath(const QString &path);
+
+    bool loadPersistence();
+    bool savePersistence() const;
 
     Q_INVOKABLE void addJob(Job *job);
     Q_INVOKABLE void startNext();
@@ -52,5 +63,6 @@ private:
     JobListModel *m_model;
 
     int m_maxConcurrent = 1;
+    QString m_storagePath;
     QMap<QUuid, FFmpegProcess*> m_processes;
 };

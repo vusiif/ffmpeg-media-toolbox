@@ -601,6 +601,7 @@ void BatchPage::retranslateUi()
         m_outputDirButton->setText(trId("common.browse"));
     }
     m_presetCaption->setText(trId("convert.preset") + QStringLiteral(":"));
+    refreshPresetList();
     m_formatCaption->setText(trId("convert.outputFormat") + QStringLiteral(":"));
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));

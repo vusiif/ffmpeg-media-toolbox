@@ -1,10 +1,12 @@
 #pragma once
 
+#include <QDateTime>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QObject>
-#include <QUuid>
 #include <QString>
 #include <QStringList>
-#include <QDateTime>
+#include <QUuid>
 #include <QtQmlIntegration/qqmlintegration.h>
 
 enum class JobType {
@@ -44,6 +46,7 @@ public:
     explicit Job(QObject *parent = nullptr);
 
     QUuid id() const;
+    void setId(const QUuid &id);
     QString name() const;
     JobType type() const;
     JobStatus status() const;
@@ -72,12 +75,18 @@ public:
 
     void setInputFiles(const QStringList &files);
     void setOutputFile(const QString &file);
+    void setStartTime(const QDateTime &dt);
+    void setEndTime(const QDateTime &dt);
+    void setLogs(const QList<JobLog> &logs);
     void addLog(const QString &message);
 
     bool autoSoftwareFallback() const;
     void setAutoSoftwareFallback(bool enable);
     bool fallbackAttempted() const;
     void setFallbackAttempted(bool attempted);
+
+    QJsonObject toJson() const;
+    static Job* fromJson(const QJsonObject &obj, QObject *parent = nullptr);
 
 signals:
     void nameChanged();

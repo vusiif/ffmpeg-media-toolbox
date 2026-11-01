@@ -896,6 +896,9 @@ void ConvertPage::savePreset()
 
 void ConvertPage::loadPreset(const QString &name)
 {
+    const bool isBuiltIn = m_presets->isBuiltIn(name);
+    m_presetDeleteButton->setEnabled(!isBuiltIn && !name.isEmpty());
+
     if (name.isEmpty()) return;
     const QVariantMap values = m_presets->load(name);
     if (values.isEmpty()) return;
@@ -947,11 +950,14 @@ void ConvertPage::refreshPresetList()
     const QString current = m_presetCombo->currentText();
     m_presetCombo->blockSignals(true);
     m_presetCombo->clear();
+    m_presetCombo->addItem(QString());
     m_presetCombo->addItems(m_presets->names());
     m_presetCombo->blockSignals(false);
     if (!current.isEmpty()) {
         m_presetCombo->setCurrentText(current);
     }
+    const bool isBuiltIn = m_presets->isBuiltIn(m_presetCombo->currentText());
+    m_presetDeleteButton->setEnabled(!isBuiltIn && !m_presetCombo->currentText().isEmpty());
 }
 
 void ConvertPage::retranslateUi()
@@ -972,6 +978,7 @@ void ConvertPage::retranslateUi()
     m_presetCaption->setText(trId("convert.preset") + QStringLiteral(":"));
     m_presetSaveButton->setText(trId("common.save"));
     m_presetDeleteButton->setText(trId("common.delete"));
+    refreshPresetList();
     m_formatCaption->setText(trId("convert.outputFormat") + QStringLiteral(":"));
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));

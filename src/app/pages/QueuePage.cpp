@@ -84,6 +84,11 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
                 m_rowsLayout->invalidate();
             });
 
+    const int initialCount = m_queue->model()->count();
+    if (initialCount > 0) {
+        onRowsInserted(QModelIndex(), 0, initialCount - 1);
+    }
+
     retranslateUi();
 }
 

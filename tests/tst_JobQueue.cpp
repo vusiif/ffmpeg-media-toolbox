@@ -1,6 +1,8 @@
 #include <QtTest>
 
+#include <QFile>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 
 #include "ffmpeg/FFmpegLocator.h"
 #include "jobs/Job.h"
@@ -16,6 +18,7 @@ private slots:
     void shortJobCompletesAndSignalsAllFinished();
     void hardwareAccelerationFailureFallsBackToSoftware();
     void increasingMaxConcurrentImmediatelyStartsPendingJobs();
+    void persistenceSaveAndReload();
 };
 
 namespace {
@@ -183,6 +186,72 @@ void JobQueueTest::increasingMaxConcurrentImmediatelyStartsPendingJobs()
     queue.cancelJob(first->id().toString());
     queue.cancelJob(second->id().toString());
     QTRY_VERIFY_WITH_TIMEOUT(!queue.hasRunningJobs(), 20000);
+}
+
+void JobQueueTest::persistenceSaveAndReload()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString storePath = tempDir.filePath(QStringLiteral("jobs.json"));
+
+    {
+        JobQueue queue(nullptr, nullptr, nullptr, storePath);
+        auto *job1 = new Job(&queue);
+        job1->setName(QStringLiteral("Completed task"));
+        job1->setStatus(JobStatus::Completed);
+        job1->setProgress(1.0);
+        job1->setCommand(QStringLiteral("ffmpeg"), {QStringLiteral("-i"), QStringLiteral("a.mp4")});
+
+        auto *job2 = new Job(&queue);
+        job2->setName(QStringLiteral("Cancelled task"));
+        job2->setStatus(JobStatus::Cancelled);
+        job2->setErrorMessage(QStringLiteral("User cancelled"));
+
+        queue.addJob(job1);
+        queue.addJob(job2);
+        QVERIFY(queue.savePersistence());
+    }
+
+    QVERIFY(QFile::exists(storePath));
+
+    {
+        JobQueue queue2(nullptr, nullptr, nullptr, storePath);
+        QCOMPARE(queue2.model()->count(), 2);
+
+        Job *j1 = queue2.model()->getJob(0);
+        QVERIFY(j1 != nullptr);
+        QCOMPARE(j1->name(), QStringLiteral("Completed task"));
+        QCOMPARE(j1->status(), JobStatus::Completed);
+
+        Job *j2 = queue2.model()->getJob(1);
+        QVERIFY(j2 != nullptr);
+        QCOMPARE(j2->name(), QStringLiteral("Cancelled task"));
+        QCOMPARE(j2->status(), JobStatus::Cancelled);
+        QCOMPARE(j2->errorMessage(), QStringLiteral("User cancelled"));
+
+        // Remove the completed job and verify remaining count
+        queue2.model()->removeJob(0);
+        QCOMPARE(queue2.model()->count(), 1);
+        QCOMPARE(queue2.model()->getJob(0)->name(), QStringLiteral("Cancelled task"));
+    }
+
+    {
+        // Reload again after removing first job
+        JobQueue queue3(nullptr, nullptr, nullptr, storePath);
+        QCOMPARE(queue3.model()->count(), 1);
+        QCOMPARE(queue3.model()->getJob(0)->name(), QStringLiteral("Cancelled task"));
+        QCOMPARE(queue3.model()->getJob(0)->status(), JobStatus::Cancelled);
+
+        // Clear completed/cancelled jobs
+        queue3.clearCompleted();
+        QCOMPARE(queue3.model()->count(), 0);
+    }
+
+    {
+        // Reload again after clearCompleted
+        JobQueue queue4(nullptr, nullptr, nullptr, storePath);
+        QCOMPARE(queue4.model()->count(), 0);
+    }
 }
 
 QTEST_GUILESS_MAIN(JobQueueTest)

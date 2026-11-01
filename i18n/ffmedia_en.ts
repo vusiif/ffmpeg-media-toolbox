@@ -1115,5 +1115,37 @@
         <source>settings.prefsCard</source>
         <translation>Preferences</translation>
     </message>
+    <message id="preset.scenario.wechat">
+        <source>preset.scenario.wechat</source>
+        <translation>WeChat Share (≤25MB)</translation>
+    </message>
+    <message id="preset.scenario.discord">
+        <source>preset.scenario.discord</source>
+        <translation>Discord Clip (≤10MB)</translation>
+    </message>
+    <message id="preset.scenario.bilibili">
+        <source>preset.scenario.bilibili</source>
+        <translation>Bilibili HQ (HEVC)</translation>
+    </message>
+    <message id="preset.scenario.mobile">
+        <source>preset.scenario.mobile</source>
+        <translation>Mobile Space Saver (HEVC)</translation>
+    </message>
+    <message id="preset.scenario.web">
+        <source>preset.scenario.web</source>
+        <translation>Web Optimized (H.264)</translation>
+    </message>
+    <message id="preset.scenario.audioMp3">
+        <source>preset.scenario.audioMp3</source>
+        <translation>Audio Extract (MP3 320k)</translation>
+    </message>
+    <message id="preset.scenario.audioFlac">
+        <source>preset.scenario.audioFlac</source>
+        <translation>Audio Lossless (FLAC)</translation>
+    </message>
+    <message id="queue.error.interrupted">
+        <source>queue.error.interrupted</source>
+        <translation>Application exited, task interrupted</translation>
+    </message>
 </context>
 </TS>
