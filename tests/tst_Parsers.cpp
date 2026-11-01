@@ -17,6 +17,7 @@ private slots:
 
     void probeJsonFullFile();
     void probeJsonMultiAudioAndSubtitles();
+    void probeJsonHdrVideoDetected();
     void probeJsonAudioOnlyDetectsAudio();
     void probeJsonImageDetectsImage();
     void probeJsonInvalidReturnsEmpty();
@@ -238,6 +239,31 @@ void ParsersTest::probeJsonMultiAudioAndSubtitles()
     QCOMPARE(media.subtitleStreams[1].language, QStringLiteral("chi"));
     QCOMPARE(media.subtitleStreams[1].title, QStringLiteral("Simplified Chinese"));
     QVERIFY(!media.subtitleStreams[1].isDefault);
+}
+
+void ParsersTest::probeJsonHdrVideoDetected()
+{
+    const QString json = QStringLiteral(
+        "{"
+        "\"format\": { \"format_name\": \"mov,mp4\", \"duration\": \"60.0\","
+        "  \"size\": \"50000000\", \"bit_rate\": \"6666666\" },"
+        "\"streams\": ["
+        "  { \"index\": 0, \"codec_type\": \"video\", \"codec_name\": \"hevc\","
+        "    \"width\": 3840, \"height\": 2160, \"pix_fmt\": \"yuv420p10le\","
+        "    \"color_space\": \"bt2020nc\", \"color_transfer\": \"smpte2084\","
+        "    \"color_primaries\": \"bt2020\" }"
+        "]"
+        "}");
+
+    const MediaFile media = MediaProbeService::parseProbeJson(json, QStringLiteral("hdr_sample.mp4"));
+    QVERIFY(media.isValid());
+    QCOMPARE(media.videoStreams.size(), 1);
+    const VideoStream &v = media.primaryVideo();
+    QCOMPARE(v.codec, QStringLiteral("hevc"));
+    QCOMPARE(v.colorSpace, QStringLiteral("bt2020nc"));
+    QCOMPARE(v.colorTransfer, QStringLiteral("smpte2084"));
+    QCOMPARE(v.colorPrimaries, QStringLiteral("bt2020"));
+    QVERIFY(v.isHdr);
 }
 
 void ParsersTest::probeJsonAudioOnlyDetectsAudio()

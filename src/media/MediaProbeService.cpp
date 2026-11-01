@@ -83,6 +83,17 @@ MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &
             vs.height = stream.value(QStringLiteral("height")).toInt();
             vs.pixelFormat = stream.value(QStringLiteral("pix_fmt")).toString();
             vs.bitrate = stream.value(QStringLiteral("bit_rate")).toString().toLongLong();
+            vs.colorSpace = stream.value(QStringLiteral("color_space")).toString();
+            vs.colorTransfer = stream.value(QStringLiteral("color_transfer")).toString();
+            if (vs.colorTransfer.isEmpty()) {
+                vs.colorTransfer = stream.value(QStringLiteral("color_trc")).toString();
+            }
+            vs.colorPrimaries = stream.value(QStringLiteral("color_primaries")).toString();
+
+            const QString tr = vs.colorTransfer.toLower();
+            const QString cs = vs.colorSpace.toLower();
+            vs.isHdr = (tr == QLatin1String("smpte2084") || tr == QLatin1String("arib-std-b67") ||
+                        (vs.pixelFormat.contains(QLatin1String("10")) && cs.contains(QLatin1String("bt2020"))));
 
             QString rFrameRate = stream.value(QStringLiteral("r_frame_rate")).toString();
             auto parts = rFrameRate.split(QLatin1Char('/'));

@@ -26,6 +26,10 @@ private slots:
     void conversionExplicitStreamMappings();
     void conversionCopyStreamsPreservesAllAndAppliesSubtitleCodec();
     void conversionStripsChapters();
+    void conversionTwoPassPass1AndPass2();
+    void conversionTargetSizeAppliesHeadroom();
+    void conversionSeekAndDurationLimit();
+    void conversionSampleBuilder();
     void cropdetectCommandAndParser();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
@@ -395,6 +399,84 @@ void FFmpegCommandBuilderTest::conversionStripsChapters()
     QVERIFY(args.contains(QStringLiteral("-map_chapters")));
     const int idx = args.indexOf(QStringLiteral("-map_chapters"));
     QCOMPARE(args.value(idx + 1), QStringLiteral("-1"));
+}
+
+void FFmpegCommandBuilderTest::conversionTwoPassPass1AndPass2()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.audioCodec = QStringLiteral("aac");
+    opts.videoBitrateKbps = 2000;
+
+    const auto passPair = m_builder.buildConversionTwoPass(opts, QStringLiteral("temp_log"));
+    const QStringList &pass1 = passPair.first;
+    const QStringList &pass2 = passPair.second;
+
+    QVERIFY(pass1.contains(QStringLiteral("-pass")));
+    const int p1Idx = pass1.indexOf(QStringLiteral("-pass"));
+    QCOMPARE(pass1.value(p1Idx + 1), QStringLiteral("1"));
+    QVERIFY(pass1.contains(QStringLiteral("-passlogfile")));
+    QVERIFY(pass1.contains(QStringLiteral("-an")));
+    QVERIFY(!pass1.contains(QStringLiteral("-c:a")));
+    QVERIFY(pass1.contains(QStringLiteral("null")));
+
+    QVERIFY(pass2.contains(QStringLiteral("-pass")));
+    const int p2Idx = pass2.indexOf(QStringLiteral("-pass"));
+    QCOMPARE(pass2.value(p2Idx + 1), QStringLiteral("2"));
+    QVERIFY(pass2.contains(QStringLiteral("-c:a")));
+    QCOMPARE(pass2.last(), QStringLiteral("out.mp4"));
+}
+
+void FFmpegCommandBuilderTest::conversionTargetSizeAppliesHeadroom()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.targetSizeMB = 25.0;
+    opts.durationSeconds = 100.0;
+    opts.containerOverheadMargin = 0.02;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QVERIFY(args.contains(QStringLiteral("-b:v")));
+    const int bIdx = args.indexOf(QStringLiteral("-b:v"));
+    QCOMPARE(args.value(bIdx + 1), QStringLiteral("1879k"));
+}
+
+void FFmpegCommandBuilderTest::conversionSeekAndDurationLimit()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.seekSeconds = 15.5;
+    opts.durationLimit = 5.0;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QVERIFY(args.contains(QStringLiteral("-ss")));
+    const int ssIdx = args.indexOf(QStringLiteral("-ss"));
+    const int iIdx = args.indexOf(QStringLiteral("-i"));
+    QVERIFY(ssIdx < iIdx);
+    QCOMPARE(args.value(ssIdx + 1), QStringLiteral("00:00:15"));
+
+    QVERIFY(args.contains(QStringLiteral("-t")));
+    const int tIdx = args.indexOf(QStringLiteral("-t"));
+    QCOMPARE(args.value(tIdx + 1), QStringLiteral("00:00:05"));
+}
+
+void FFmpegCommandBuilderTest::conversionSampleBuilder()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("C:/media/movie.mkv");
+    opts.outputPath = QStringLiteral("C:/media/movie.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+
+    const QStringList args = m_builder.buildConversionSample(opts, 20.0, 5.0);
+    QVERIFY(args.contains(QStringLiteral("-ss")));
+    QVERIFY(args.contains(QStringLiteral("-t")));
+    QCOMPARE(args.last(), QStringLiteral("C:/media/movie_sample.mp4"));
 }
 
 void FFmpegCommandBuilderTest::cropdetectCommandAndParser()

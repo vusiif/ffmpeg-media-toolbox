@@ -108,6 +108,8 @@ set(APP_SOURCES
     src/app/pages/VideoPage.cpp
     src/app/pages/AudioPage.h
     src/app/pages/AudioPage.cpp
+    src/app/dialogs/ABCompareDialog.h
+    src/app/dialogs/ABCompareDialog.cpp
 )
 
 set(TS_FILES

@@ -52,6 +52,16 @@ public:
         double targetSizeMB = -1.0;  // Target output size in Megabytes (e.g. 25.0, 50.0)
         double durationSeconds = 0.0;// Duration in seconds (required for target size calculation)
         int videoBitrateKbps = -1;   // Explicit video bitrate (or calculated from targetSizeMB)
+        double containerOverheadMargin = 0.0; // Margin e.g. 0.02 for 2% container muxing headroom
+
+        // Slicing & Sample preview
+        double seekSeconds = -1.0;   // Fast seek before input: -ss <time>
+        double durationLimit = -1.0; // Limit encode duration: -t <time>
+
+        // Two-Pass Encoding
+        bool twoPass = false;        // Enable 2-pass encoding
+        int pass = 0;                // 0: single-pass, 1: pass 1, 2: pass 2
+        QString passLogFile;         // Custom pass log file prefix (-passlogfile)
     };
 
     struct CropArea
@@ -64,6 +74,15 @@ public:
     };
 
     QStringList buildConversion(const ConversionOptions &options) const;
+
+    // Generates a 2-pass conversion command pair: .first is pass 1, .second is pass 2.
+    QPair<QStringList, QStringList> buildConversionTwoPass(const ConversionOptions &options,
+                                                          const QString &passLogFile = {}) const;
+
+    // Generates a sample conversion command for rapid quality and audio sync testing.
+    QStringList buildConversionSample(const ConversionOptions &options,
+                                      double startTimeSec = 0.0,
+                                      double durationSec = 5.0) const;
 
     // Detects whether hardware acceleration/encoders are present in command arguments,
     // and produces a sanitized software-encoding fallback argument list if requested.

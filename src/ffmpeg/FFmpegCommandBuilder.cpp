@@ -1,6 +1,7 @@
 #include "FFmpegCommandBuilder.h"
 #include "FFmpegCapabilities.h"
 #include "conversion/RemuxPolicy.h"
+#include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 
@@ -72,7 +73,13 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
     if (!options.hwAccel.trimmed().isEmpty()) {
         args << QStringLiteral("-hwaccel") << options.hwAccel.trimmed();
     }
+    if (options.seekSeconds > 0.0) {
+        args << QStringLiteral("-ss") << formatTime(options.seekSeconds);
+    }
     args << QStringLiteral("-i") << options.inputPath;
+    if (options.durationLimit > 0.0) {
+        args << QStringLiteral("-t") << formatTime(options.durationLimit);
+    }
 
     // Stream mappings: explicit list takes precedence over preserveAllStreams.
     if (!options.streamMappings.isEmpty()) {
@@ -101,7 +108,7 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         if (!options.videoCodec.isEmpty()) {
             args << QStringLiteral("-c:v") << options.videoCodec;
         }
-        if (!options.audioCodec.isEmpty()) {
+        if (!options.audioCodec.isEmpty() && !(options.twoPass && options.pass == 1)) {
             args << QStringLiteral("-c:a") << options.audioCodec;
         }
         if (!options.subtitleCodec.isEmpty()) {
@@ -111,7 +118,9 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         // Determine effective video bitrate (explicit or derived from target file size)
         int effVideoBitrateKbps = options.videoBitrateKbps;
         if (effVideoBitrateKbps <= 0 && options.targetSizeMB > 0.0 && options.durationSeconds > 0.0) {
-            const double totalKbps = (options.targetSizeMB * 8192.0) / options.durationSeconds;
+            const double margin = (options.containerOverheadMargin > 0.0) ? options.containerOverheadMargin : 0.0;
+            const double usableMB = options.targetSizeMB * (1.0 - margin);
+            const double totalKbps = (usableMB * 8192.0) / options.durationSeconds;
             const int aKbps = (options.audioBitrateKbps > 0) ? options.audioBitrateKbps : 128;
             effVideoBitrateKbps = qMax(50, static_cast<int>(totalKbps - aKbps));
         }
@@ -123,6 +132,14 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         } else if (options.crf >= 0) {
             args << QStringLiteral("-crf") << QString::number(options.crf);
         }
+
+        if (options.twoPass && (options.pass == 1 || options.pass == 2)) {
+            args << QStringLiteral("-pass") << QString::number(options.pass);
+            if (!options.passLogFile.trimmed().isEmpty()) {
+                args << QStringLiteral("-passlogfile") << options.passLogFile.trimmed();
+            }
+        }
+
         if (!options.preset.isEmpty()) {
             args << QStringLiteral("-preset") << options.preset;
         }
@@ -151,30 +168,34 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
             args << QStringLiteral("-color_trc") << options.colorTrc;
         }
 
-        // Advanced audio options
-        int audioBitrate = options.audioBitrateKbps;
-        if (audioBitrate <= 0 && effVideoBitrateKbps > 0) {
-            audioBitrate = 128; // Default 128k audio when targeting specific file size/bitrate
-        }
-        if (audioBitrate > 0) {
-            args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(audioBitrate);
-        }
-        if (options.audioSampleRate > 0) {
-            args << QStringLiteral("-ar") << QString::number(options.audioSampleRate);
-        }
-        if (options.audioChannels > 0) {
-            args << QStringLiteral("-ac") << QString::number(options.audioChannels);
-        }
+        // Advanced audio options (pass 1 of 2-pass omits audio)
+        if (options.twoPass && options.pass == 1) {
+            args << QStringLiteral("-an");
+        } else {
+            int audioBitrate = options.audioBitrateKbps;
+            if (audioBitrate <= 0 && effVideoBitrateKbps > 0) {
+                audioBitrate = 128; // Default 128k audio when targeting specific file size/bitrate
+            }
+            if (audioBitrate > 0) {
+                args << QStringLiteral("-b:a") << QStringLiteral("%1k").arg(audioBitrate);
+            }
+            if (options.audioSampleRate > 0) {
+                args << QStringLiteral("-ar") << QString::number(options.audioSampleRate);
+            }
+            if (options.audioChannels > 0) {
+                args << QStringLiteral("-ac") << QString::number(options.audioChannels);
+            }
 
-        QStringList aFilters;
-        if (options.audioNormalize) {
-            aFilters << QStringLiteral("loudnorm");
-        }
-        if (!options.audioFilter.trimmed().isEmpty()) {
-            aFilters << options.audioFilter.trimmed();
-        }
-        if (!aFilters.isEmpty()) {
-            args << QStringLiteral("-af") << aFilters.join(QLatin1Char(','));
+            QStringList aFilters;
+            if (options.audioNormalize) {
+                aFilters << QStringLiteral("loudnorm");
+            }
+            if (!options.audioFilter.trimmed().isEmpty()) {
+                aFilters << options.audioFilter.trimmed();
+            }
+            if (!aFilters.isEmpty()) {
+                args << QStringLiteral("-af") << aFilters.join(QLatin1Char(','));
+            }
         }
     }
 
@@ -185,7 +206,15 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
         args << QStringLiteral("-map_chapters") << QStringLiteral("-1");
     }
 
-    args << options.outputPath;
+    if (options.twoPass && options.pass == 1) {
+#ifdef Q_OS_WIN
+        args << QStringLiteral("-f") << QStringLiteral("null") << QStringLiteral("NUL");
+#else
+        args << QStringLiteral("-f") << QStringLiteral("null") << QStringLiteral("/dev/null");
+#endif
+    } else {
+        args << options.outputPath;
+    }
 
     return args;
 }
@@ -209,6 +238,40 @@ QStringList FFmpegCommandBuilder::buildConversion(
     opts.copyStreams = copyStreams;
     opts.stripMetadata = stripMetadata;
     return buildConversion(opts);
+}
+
+QPair<QStringList, QStringList> FFmpegCommandBuilder::buildConversionTwoPass(
+    const ConversionOptions &options, const QString &passLogFile) const
+{
+    ConversionOptions pass1Opts = options;
+    pass1Opts.twoPass = true;
+    pass1Opts.pass = 1;
+    if (!passLogFile.isEmpty()) {
+        pass1Opts.passLogFile = passLogFile;
+    }
+
+    ConversionOptions pass2Opts = options;
+    pass2Opts.twoPass = true;
+    pass2Opts.pass = 2;
+    if (!passLogFile.isEmpty()) {
+        pass2Opts.passLogFile = passLogFile;
+    }
+
+    return qMakePair(buildConversion(pass1Opts), buildConversion(pass2Opts));
+}
+
+QStringList FFmpegCommandBuilder::buildConversionSample(
+    const ConversionOptions &options, double startTimeSec, double durationSec) const
+{
+    ConversionOptions sampleOpts = options;
+    sampleOpts.seekSeconds = qMax(0.0, startTimeSec);
+    sampleOpts.durationLimit = durationSec > 0.0 ? durationSec : 5.0;
+
+    const QFileInfo fi(options.outputPath);
+    const QString sampleName = QStringLiteral("%1_sample.%2").arg(fi.completeBaseName(), fi.suffix());
+    sampleOpts.outputPath = fi.dir().filePath(sampleName);
+
+    return buildConversion(sampleOpts);
 }
 
 QStringList FFmpegCommandBuilder::buildImageOperation(

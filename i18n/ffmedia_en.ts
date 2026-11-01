@@ -371,6 +371,58 @@
         <source>convert.preserveAllStreams</source>
         <translation>Preserve all audio &amp; subtitle streams</translation>
     </message>
+    <message id="convert.twoPass">
+        <source>convert.twoPass</source>
+        <translation>2-Pass Encoding</translation>
+    </message>
+    <message id="convert.sampleClip">
+        <source>convert.sampleClip</source>
+        <translation>5s Sample Clip</translation>
+    </message>
+    <message id="convert.abCompare">
+        <source>convert.abCompare</source>
+        <translation>A/B Compare</translation>
+    </message>
+    <message id="abcompare.title">
+        <source>abcompare.title</source>
+        <translation>A/B Quality Comparison</translation>
+    </message>
+    <message id="abcompare.timestamp">
+        <source>abcompare.timestamp</source>
+        <translation>Timestamp</translation>
+    </message>
+    <message id="abcompare.refresh">
+        <source>abcompare.refresh</source>
+        <translation>Refresh Frame</translation>
+    </message>
+    <message id="abcompare.original">
+        <source>abcompare.original</source>
+        <translation>Original Frame</translation>
+    </message>
+    <message id="abcompare.preview">
+        <source>abcompare.preview</source>
+        <translation>Preview / Encoded</translation>
+    </message>
+    <message id="abcompare.notAvailable">
+        <source>abcompare.notAvailable</source>
+        <translation>Sample Not Available</translation>
+    </message>
+    <message id="abcompare.capturing">
+        <source>abcompare.capturing</source>
+        <translation>Extracting frames...</translation>
+    </message>
+    <message id="abcompare.ready">
+        <source>abcompare.ready</source>
+        <translation>Comparison ready</translation>
+    </message>
+    <message id="abcompare.failed">
+        <source>abcompare.failed</source>
+        <translation>Frame extraction failed</translation>
+    </message>
+    <message id="abcompare.noSampleHint">
+        <source>abcompare.noSampleHint</source>
+        <translation>No sample yet. Click "5s Sample Clip" first.</translation>
+    </message>
     <message id="convert.estimate">
         <source>convert.estimate</source>
         <translation>Estimated output</translation>

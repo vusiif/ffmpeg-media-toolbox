@@ -44,6 +44,8 @@ private:
     void startProbe(bool enqueueAfter);
     void onProbeFinished();
     void enqueueJob(const MediaFile &info);
+    void enqueueSample();
+    void openABCompare();
     void addToQueue();
     void updateCommandPreview();
     void rebuildCodecLists();
@@ -107,6 +109,7 @@ private:
     ElaPushButton *m_preset25Btn = nullptr;
     ElaPushButton *m_preset50Btn = nullptr;
     ElaPushButton *m_preset100Btn = nullptr;
+    ElaCheckBox *m_twoPassCheck = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
     ElaCheckBox *m_preserveAllStreamsCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
@@ -147,5 +150,8 @@ private:
     ElaLineEdit *m_previewEdit = nullptr;
 
     // Bottom Action Row
+    ElaPushButton *m_sampleButton = nullptr;
+    ElaPushButton *m_abCompareButton = nullptr;
     ElaPushButton *m_addButton = nullptr;
+    QString m_lastSamplePath;
 };

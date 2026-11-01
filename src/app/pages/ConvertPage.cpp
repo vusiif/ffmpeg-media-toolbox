@@ -1,7 +1,9 @@
 #include "ConvertPage.h"
+#include "app/dialogs/ABCompareDialog.h"
 
 #include <QtConcurrent/QtConcurrentRun>
 
+#include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFileDialog>
@@ -11,6 +13,7 @@
 #include <QInputDialog>
 #include <QMimeData>
 #include <QSettings>
+#include <QUuid>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -210,6 +213,10 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     targetSizeLayout->addWidget(m_preset25Btn);
     targetSizeLayout->addWidget(m_preset50Btn);
     targetSizeLayout->addWidget(m_preset100Btn);
+
+    m_twoPassCheck = new ElaCheckBox(m_targetSizeWidget);
+    targetSizeLayout->addWidget(m_twoPassCheck);
+    connect(m_twoPassCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
 
     m_targetSizeCaption->setVisible(false);
     m_targetSizeWidget->setVisible(false);
@@ -418,6 +425,18 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     // Pinned Bottom Action Row
     auto *buttonRow = new QHBoxLayout();
+    m_sampleButton = new ElaPushButton(this);
+    m_sampleButton->setFixedHeight(38);
+    m_sampleButton->setMinimumWidth(120);
+    connect(m_sampleButton, &ElaPushButton::clicked, this, &ConvertPage::enqueueSample);
+    buttonRow->addWidget(m_sampleButton);
+
+    m_abCompareButton = new ElaPushButton(this);
+    m_abCompareButton->setFixedHeight(38);
+    m_abCompareButton->setMinimumWidth(120);
+    connect(m_abCompareButton, &ElaPushButton::clicked, this, &ConvertPage::openABCompare);
+    buttonRow->addWidget(m_abCompareButton);
+
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
     m_addButton->setFixedHeight(38);
@@ -541,6 +560,12 @@ void ConvertPage::onProbeFinished()
         const VideoStream &video = info.primaryVideo();
         parts << QStringLiteral("%1x%2").arg(video.width).arg(video.height);
         parts << video.codec;
+        if (video.isHdr) {
+            parts << QStringLiteral("HDR (%1)").arg(video.colorTransfer.isEmpty() ? QStringLiteral("BT.2020") : video.colorTransfer);
+            if (m_hdrTonemapCombo->currentIndex() == 0) {
+                m_hdrTonemapCombo->setCurrentIndex(1);
+            }
+        }
         if (info.videoStreams.size() > 1) {
             parts << QStringLiteral("(+%1 video)").arg(info.videoStreams.size() - 1);
         }
@@ -571,6 +596,8 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
         opts.targetSizeMB = m_targetSizeSpin->value();
         opts.durationSeconds = m_probeInfo.duration;
         opts.crf = -1;
+        opts.containerOverheadMargin = 0.02;
+        opts.twoPass = m_twoPassCheck->isChecked();
     } else {
         opts.crf = m_qualitySpin->value();
         opts.targetSizeMB = -1.0;
@@ -629,6 +656,11 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
     }
 
     opts.hdrTonemap = m_hdrTonemapCombo->currentData().toString();
+    if (!opts.hdrTonemap.isEmpty() && opts.colorSpace.isEmpty()) {
+        opts.colorSpace = QStringLiteral("bt709");
+        opts.colorPrimaries = QStringLiteral("bt709");
+        opts.colorTrc = QStringLiteral("bt709");
+    }
 
     opts.videoFilter = m_vfEdit->text().trimmed();
     opts.audioFilter = m_afEdit->text().trimmed();
@@ -646,18 +678,70 @@ void ConvertPage::enqueueJob(const MediaFile &info)
 
     const bool copy = m_smartCopyCheck->isChecked() &&
                       RemuxPolicy::canCopyAllStreams(info, format);
-    const QStringList args = m_builder->buildConversion(currentOptions(outputPath, copy));
+    const auto opts = currentOptions(outputPath, copy);
+
+    if (opts.twoPass) {
+        const QString passLog = QDir::temp().filePath(QStringLiteral("ff_pass_%1").arg(QUuid::createUuid().toString(QUuid::Id128).left(8)));
+        const auto passPair = m_builder->buildConversionTwoPass(opts, passLog);
+
+        auto *job1 = new Job();
+        job1->setName(QFileInfo(m_inputFile).fileName() + QStringLiteral(" [Pass 1/2]"));
+        job1->setCommand(m_locator->ffmpegPath(), passPair.first);
+        job1->setTotalDuration(info.duration);
+        m_queue->addJob(job1);
+
+        auto *job2 = new Job();
+        job2->setName(QFileInfo(m_inputFile).fileName() + QStringLiteral(" [Pass 2/2]"));
+        job2->setCommand(m_locator->ffmpegPath(), passPair.second);
+        job2->setTotalDuration(info.duration);
+        m_queue->addJob(job2);
+
+        m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ")
+                               + passPair.second.join(QLatin1Char(' ')));
+    } else {
+        const QStringList args = m_builder->buildConversion(opts);
+
+        auto *job = new Job();
+        job->setName(QFileInfo(m_inputFile).fileName());
+        job->setCommand(m_locator->ffmpegPath(), args);
+        job->setTotalDuration(info.duration);
+        m_queue->addJob(job);
+
+        m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ")
+                               + args.join(QLatin1Char(' ')));
+    }
+}
+
+void ConvertPage::enqueueSample()
+{
+    if (m_inputFile.isEmpty()) return;
+    if (!m_probeInfo.isValid()) return;
+
+    const QString format = m_formatCombo->currentText();
+    const QString outputPath = OutputNaming::build(m_inputFile, defaultNamingTemplate(),
+                                                   format, defaultOutputDirectory());
+    const bool copy = m_smartCopyCheck->isChecked() &&
+                      RemuxPolicy::canCopyAllStreams(m_probeInfo, format);
+    auto opts = currentOptions(outputPath, copy);
+
+    const double startTime = m_probeInfo.duration > 15.0 ? qMin(30.0, m_probeInfo.duration * 0.25) : 0.0;
+    const QStringList args = m_builder->buildConversionSample(opts, startTime, 5.0);
+
+    const QFileInfo fi(outputPath);
+    m_lastSamplePath = fi.dir().filePath(QStringLiteral("%1_sample.%2").arg(fi.completeBaseName(), fi.suffix()));
 
     auto *job = new Job();
-    job->setName(QFileInfo(m_inputFile).fileName());
+    job->setName(QFileInfo(m_inputFile).fileName() + QStringLiteral(" [5s Sample]"));
     job->setCommand(m_locator->ffmpegPath(), args);
-    job->setTotalDuration(info.duration);
+    job->setTotalDuration(5.0);
     m_queue->addJob(job);
+}
 
-    // The stamp is generated per call, so sync the preview to the command
-    // that was actually queued instead of a stale one.
-    m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ")
-                           + args.join(QLatin1Char(' ')));
+void ConvertPage::openABCompare()
+{
+    if (m_inputFile.isEmpty()) return;
+    ABCompareDialog dlg(m_inputFile, m_lastSamplePath, m_probeInfo.duration, m_locator, this);
+    dlg.exec();
 }
 
 void ConvertPage::addToQueue()
@@ -789,6 +873,7 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("audioCodec"), m_audioCodecCombo->currentText());
     values.insert(QStringLiteral("rateControl"), m_rateControlCombo->currentIndex());
     values.insert(QStringLiteral("targetSizeMB"), m_targetSizeSpin->value());
+    values.insert(QStringLiteral("twoPass"), m_twoPassCheck->isChecked());
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
     values.insert(QStringLiteral("smartCopy"), m_smartCopyCheck->isChecked());
     values.insert(QStringLiteral("preserveAllStreams"), m_preserveAllStreamsCheck->isChecked());
@@ -829,6 +914,7 @@ void ConvertPage::loadPreset(const QString &name)
     const int rcIdx = values.value(QStringLiteral("rateControl"), 0).toInt();
     m_rateControlCombo->setCurrentIndex(rcIdx);
     m_targetSizeSpin->setValue(values.value(QStringLiteral("targetSizeMB"), 25.0).toDouble());
+    m_twoPassCheck->setChecked(values.value(QStringLiteral("twoPass"), false).toBool());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
     m_preserveAllStreamsCheck->setChecked(values.value(QStringLiteral("preserveAllStreams"), true).toBool());
@@ -894,6 +980,7 @@ void ConvertPage::retranslateUi()
     m_rateControlCombo->setItemText(1, trId("convert.rateControl.targetSize"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_targetSizeCaption->setText(trId("convert.targetSize") + QStringLiteral(":"));
+    m_twoPassCheck->setText(trId("convert.twoPass"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
     m_preserveAllStreamsCheck->setText(trId("convert.preserveAllStreams"));
     m_stripMetaCheck->setText(trId("metadata.remove"));
@@ -930,6 +1017,8 @@ void ConvertPage::retranslateUi()
     m_afCaption->setText(trId("convert.adv.af") + QStringLiteral(":"));
 
     m_previewCaption->setText(trId("convert.preview") + QStringLiteral(":"));
+    m_sampleButton->setText(trId("convert.sampleClip"));
+    m_abCompareButton->setText(trId("convert.abCompare"));
     m_addButton->setText(trId("convert.addToQueue"));
     updateCommandPreview();
 }

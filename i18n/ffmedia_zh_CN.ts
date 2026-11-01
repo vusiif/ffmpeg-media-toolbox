@@ -371,6 +371,58 @@
         <source>convert.preserveAllStreams</source>
         <translation>保留全部音轨与字幕 (多流映射)</translation>
     </message>
+    <message id="convert.twoPass">
+        <source>convert.twoPass</source>
+        <translation>2-Pass 双遍精准编码</translation>
+    </message>
+    <message id="convert.sampleClip">
+        <source>convert.sampleClip</source>
+        <translation>试压 5s 样片</translation>
+    </message>
+    <message id="convert.abCompare">
+        <source>convert.abCompare</source>
+        <translation>A/B 画面对比</translation>
+    </message>
+    <message id="abcompare.title">
+        <source>abcompare.title</source>
+        <translation>转码前后 A/B 画面质量对比</translation>
+    </message>
+    <message id="abcompare.timestamp">
+        <source>abcompare.timestamp</source>
+        <translation>对比时间点</translation>
+    </message>
+    <message id="abcompare.refresh">
+        <source>abcompare.refresh</source>
+        <translation>刷新抓取</translation>
+    </message>
+    <message id="abcompare.original">
+        <source>abcompare.original</source>
+        <translation>原片画面</translation>
+    </message>
+    <message id="abcompare.preview">
+        <source>abcompare.preview</source>
+        <translation>对比 / 转码样片</translation>
+    </message>
+    <message id="abcompare.notAvailable">
+        <source>abcompare.notAvailable</source>
+        <translation>未生成样片</translation>
+    </message>
+    <message id="abcompare.capturing">
+        <source>abcompare.capturing</source>
+        <translation>正在提取帧...</translation>
+    </message>
+    <message id="abcompare.ready">
+        <source>abcompare.ready</source>
+        <translation>对比帧就绪</translation>
+    </message>
+    <message id="abcompare.failed">
+        <source>abcompare.failed</source>
+        <translation>帧提取失败</translation>
+    </message>
+    <message id="abcompare.noSampleHint">
+        <source>abcompare.noSampleHint</source>
+        <translation>暂无样片，请先点击“试压 5s 样片”</translation>
+    </message>
     <message id="convert.estimate">
         <source>convert.estimate</source>
         <translation>预计输出</translation>

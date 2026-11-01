@@ -20,6 +20,10 @@ struct VideoStream {
     double frameRate = 0;
     QString pixelFormat;
     qint64 bitrate = 0;
+    QString colorSpace;
+    QString colorTransfer;
+    QString colorPrimaries;
+    bool isHdr = false;
     QVariantMap metadata;
 };
 
