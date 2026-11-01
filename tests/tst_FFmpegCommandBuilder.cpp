@@ -21,6 +21,11 @@ private slots:
     void conversionHdrTonemapAlone();
     void conversionHwAccelPrependedBeforeInput();
     void conversionTargetFileSizeCalculatesBitrate();
+    void conversionPreserveAllStreamsForVideo();
+    void conversionPreserveAllStreamsForAudioOnly();
+    void conversionExplicitStreamMappings();
+    void conversionCopyStreamsPreservesAllAndAppliesSubtitleCodec();
+    void conversionStripsChapters();
     void cropdetectCommandAndParser();
     void subtitleMuxConvertsForMp4();
     void subtitleMuxCopiesWhenCodecIsEmpty();
@@ -298,6 +303,98 @@ void FFmpegCommandBuilderTest::conversionTargetFileSizeCalculatesBitrate()
     QVERIFY(args.contains(QStringLiteral("-b:a")));
     const int aIdx = args.indexOf(QStringLiteral("-b:a"));
     QCOMPARE(args.value(aIdx + 1), QStringLiteral("128k"));
+}
+
+void FFmpegCommandBuilderTest::conversionPreserveAllStreamsForVideo()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mkv");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.audioCodec = QStringLiteral("aac");
+    opts.preserveAllStreams = true;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mkv"),
+        QStringLiteral("-map"), QStringLiteral("0:v?"),
+        QStringLiteral("-map"), QStringLiteral("0:a?"),
+        QStringLiteral("-map"), QStringLiteral("0:s?"),
+        QStringLiteral("-c:v"), QStringLiteral("libx264"),
+        QStringLiteral("-c:a"), QStringLiteral("aac"),
+        QStringLiteral("out.mp4")
+    }));
+}
+
+void FFmpegCommandBuilderTest::conversionPreserveAllStreamsForAudioOnly()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mkv");
+    opts.outputPath = QStringLiteral("out.mp3");
+    opts.audioCodec = QStringLiteral("mp3");
+    opts.preserveAllStreams = true;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mkv"),
+        QStringLiteral("-map"), QStringLiteral("0:a?"),
+        QStringLiteral("-c:a"), QStringLiteral("mp3"),
+        QStringLiteral("out.mp3")
+    }));
+}
+
+void FFmpegCommandBuilderTest::conversionExplicitStreamMappings()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mkv");
+    opts.outputPath = QStringLiteral("out.mkv");
+    opts.streamMappings = {QStringLiteral("0:v:0"), QStringLiteral("0:a:0"), QStringLiteral("0:a:1")};
+    opts.copyStreams = true;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mkv"),
+        QStringLiteral("-map"), QStringLiteral("0:v:0"),
+        QStringLiteral("-map"), QStringLiteral("0:a:0"),
+        QStringLiteral("-map"), QStringLiteral("0:a:1"),
+        QStringLiteral("-c"), QStringLiteral("copy"),
+        QStringLiteral("out.mkv")
+    }));
+}
+
+void FFmpegCommandBuilderTest::conversionCopyStreamsPreservesAllAndAppliesSubtitleCodec()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mkv");
+    opts.outputPath = QStringLiteral("out.mp4");
+    opts.copyStreams = true;
+    opts.preserveAllStreams = true;
+    opts.subtitleCodec = QStringLiteral("mov_text");
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QCOMPARE(args, QStringList({
+        QStringLiteral("-y"), QStringLiteral("-i"), QStringLiteral("in.mkv"),
+        QStringLiteral("-map"), QStringLiteral("0:v?"),
+        QStringLiteral("-map"), QStringLiteral("0:a?"),
+        QStringLiteral("-map"), QStringLiteral("0:s?"),
+        QStringLiteral("-c"), QStringLiteral("copy"),
+        QStringLiteral("-c:s"), QStringLiteral("mov_text"),
+        QStringLiteral("out.mp4")
+    }));
+}
+
+void FFmpegCommandBuilderTest::conversionStripsChapters()
+{
+    FFmpegCommandBuilder::ConversionOptions opts;
+    opts.inputPath = QStringLiteral("in.mp4");
+    opts.outputPath = QStringLiteral("out.mkv");
+    opts.videoCodec = QStringLiteral("libx264");
+    opts.stripChapters = true;
+
+    const QStringList args = m_builder.buildConversion(opts);
+    QVERIFY(args.contains(QStringLiteral("-map_chapters")));
+    const int idx = args.indexOf(QStringLiteral("-map_chapters"));
+    QCOMPARE(args.value(idx + 1), QStringLiteral("-1"));
 }
 
 void FFmpegCommandBuilderTest::cropdetectCommandAndParser()

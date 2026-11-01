@@ -367,6 +367,10 @@
         <source>metadata.remove</source>
         <translation>Remove metadata</translation>
     </message>
+    <message id="convert.preserveAllStreams">
+        <source>convert.preserveAllStreams</source>
+        <translation>Preserve all audio &amp; subtitle streams</translation>
+    </message>
     <message id="convert.estimate">
         <source>convert.estimate</source>
         <translation>Estimated output</translation>

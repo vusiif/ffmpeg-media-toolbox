@@ -19,9 +19,13 @@ public:
         QString outputPath;
         QString videoCodec;
         QString audioCodec;
+        QString subtitleCodec;       // -c:s <codec>
         int crf = -1;
         bool copyStreams = false;
         bool stripMetadata = false;
+        bool stripChapters = false;  // -map_chapters -1
+        bool preserveAllStreams = false; // Maps all streams: -map 0:v? -map 0:a? -map 0:s?
+        QStringList streamMappings;  // Explicit list of streams: -map <s1> -map <s2> ...
 
         // Advanced Audio Settings
         int audioBitrateKbps = -1;   // e.g. 192 -> -b:a 192k

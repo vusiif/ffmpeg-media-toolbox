@@ -415,6 +415,9 @@ FFmpegCommandBuilder::ConversionOptions BatchPage::currentOptions(
     opts.audioCodec = m_audioCodecCombo->currentText();
     opts.crf = m_qualitySpin->value();
     opts.copyStreams = copy;
+    if (copy) {
+        opts.preserveAllStreams = true;
+    }
     opts.stripMetadata = m_stripMetaCheck->isChecked();
     if (m_hwAccelCheck->isChecked()) {
         opts.hwAccel = m_caps->recommendedHwAccelForEncoder(opts.videoCodec);

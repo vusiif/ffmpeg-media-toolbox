@@ -111,6 +111,8 @@ MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &
             as.bitrate = stream.value(QStringLiteral("bit_rate")).toString().toLongLong();
 
             QJsonObject tags = stream.value(QStringLiteral("tags")).toObject();
+            as.language = tags.value(QStringLiteral("language")).toString();
+            as.title = tags.value(QStringLiteral("title")).toString();
             for (auto it = tags.begin(); it != tags.end(); ++it) {
                 as.metadata[it.key()] = it.value().toVariant();
             }
@@ -124,10 +126,15 @@ MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &
 
             QJsonObject tags = stream.value(QStringLiteral("tags")).toObject();
             ss.language = tags.value(QStringLiteral("language")).toString();
+            ss.title = tags.value(QStringLiteral("title")).toString();
 
             for (auto it = tags.begin(); it != tags.end(); ++it) {
                 ss.metadata[it.key()] = it.value().toVariant();
             }
+
+            QJsonObject disposition = stream.value(QStringLiteral("disposition")).toObject();
+            ss.isDefault = disposition.value(QStringLiteral("default")).toInt() != 0;
+            ss.isForced = disposition.value(QStringLiteral("forced")).toInt() != 0;
 
             media.subtitleStreams.append(ss);
         }

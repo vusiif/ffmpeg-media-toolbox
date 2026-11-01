@@ -30,6 +30,8 @@ struct AudioStream {
     int channels = 0;
     QString channelLayout;
     qint64 bitrate = 0;
+    QString language;
+    QString title;
     QVariantMap metadata;
 };
 
@@ -37,6 +39,9 @@ struct SubtitleStream {
     int index = -1;
     QString codec;
     QString language;
+    QString title;
+    bool isDefault = false;
+    bool isForced = false;
     QVariantMap metadata;
 };
 

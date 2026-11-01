@@ -367,6 +367,10 @@
         <source>metadata.remove</source>
         <translation>移除元数据</translation>
     </message>
+    <message id="convert.preserveAllStreams">
+        <source>convert.preserveAllStreams</source>
+        <translation>保留全部音轨与字幕 (多流映射)</translation>
+    </message>
     <message id="convert.estimate">
         <source>convert.estimate</source>
         <translation>预计输出</translation>

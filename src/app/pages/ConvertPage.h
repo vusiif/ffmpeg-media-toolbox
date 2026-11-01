@@ -108,6 +108,7 @@ private:
     ElaPushButton *m_preset50Btn = nullptr;
     ElaPushButton *m_preset100Btn = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
+    ElaCheckBox *m_preserveAllStreamsCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
     ElaCheckBox *m_hwAccelCheck = nullptr;
     ElaText *m_hwDeviceLabel = nullptr;

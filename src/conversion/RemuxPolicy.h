@@ -8,10 +8,14 @@ struct MediaFile;
 
 namespace RemuxPolicy {
 
+// Audio-only container check (e.g. mp3, aac, flac, wav).
+bool isAudioContainer(const QString &format);
+
 // Conservative container support checks for stream copying. Unknown formats
 // or codecs return false so callers fall back to re-encoding.
 bool containerSupportsVideoCodec(const QString &format, const QString &codec);
 bool containerSupportsAudioCodec(const QString &format, const QString &codec);
+bool containerSupportsSubtitleCodec(const QString &format, const QString &codec);
 
 // True when every present stream of the input fits the target container and
 // can therefore be copied (remux) instead of re-encoded.

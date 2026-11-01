@@ -36,10 +36,14 @@ private slots:
     void webmRejectsH264();
     void audioOnlyContainerRejectsVideo();
     void canCopyAllStreamsRequiresEveryStream();
+    void canCopyAllStreamsChecksMultiAudio();
+    void canCopyAllStreamsChecksSubtitles();
     void canCopyAllStreamsRejectsEmptyMedia();
     void canCopyByExtensionOnlyWithinSameContainer();
     void canCopyByExtensionRejectsMissingSuffix();
     void subtitleCodecPerContainer();
+    void containerSupportsSubtitleCodec();
+    void isAudioContainerChecks();
 };
 
 void RemuxPolicyTest::unknownFormatCopiesNothing()
@@ -108,6 +112,59 @@ void RemuxPolicyTest::canCopyAllStreamsRequiresEveryStream()
                                             QStringLiteral("mp4")));
 }
 
+void RemuxPolicyTest::canCopyAllStreamsChecksMultiAudio()
+{
+    MediaFile multiAudio;
+    multiAudio.path = QStringLiteral("C:/in.mkv");
+    VideoStream v;
+    v.codec = QStringLiteral("h264");
+    multiAudio.videoStreams.append(v);
+
+    AudioStream a1;
+    a1.codec = QStringLiteral("aac");
+    multiAudio.audioStreams.append(a1);
+
+    AudioStream a2;
+    a2.codec = QStringLiteral("dts");
+    multiAudio.audioStreams.append(a2);
+
+    // MP4 does not support copying DTS, so canCopyAllStreams must return false!
+    QVERIFY(!RemuxPolicy::canCopyAllStreams(multiAudio, QStringLiteral("mp4")));
+
+    // MKV supports copying both AAC and DTS!
+    QVERIFY(RemuxPolicy::canCopyAllStreams(multiAudio, QStringLiteral("mkv")));
+
+    // When both tracks are MP4-compatible (e.g. AAC and AC3), MP4 accepts:
+    multiAudio.audioStreams[1].codec = QStringLiteral("ac3");
+    QVERIFY(RemuxPolicy::canCopyAllStreams(multiAudio, QStringLiteral("mp4")));
+}
+
+void RemuxPolicyTest::canCopyAllStreamsChecksSubtitles()
+{
+    MediaFile withSubs;
+    withSubs.path = QStringLiteral("C:/in.mkv");
+    VideoStream v;
+    v.codec = QStringLiteral("h264");
+    withSubs.videoStreams.append(v);
+    AudioStream a;
+    a.codec = QStringLiteral("aac");
+    withSubs.audioStreams.append(a);
+
+    SubtitleStream s;
+    s.codec = QStringLiteral("ass");
+    withSubs.subtitleStreams.append(s);
+
+    // MP4 cannot stream-copy ASS subtitles directly without re-encoding!
+    QVERIFY(!RemuxPolicy::canCopyAllStreams(withSubs, QStringLiteral("mp4")));
+
+    // MKV supports stream-copying ASS subtitles!
+    QVERIFY(RemuxPolicy::canCopyAllStreams(withSubs, QStringLiteral("mkv")));
+
+    // If subtitle is mov_text, MP4 supports direct copying!
+    withSubs.subtitleStreams[0].codec = QStringLiteral("mov_text");
+    QVERIFY(RemuxPolicy::canCopyAllStreams(withSubs, QStringLiteral("mp4")));
+}
+
 void RemuxPolicyTest::canCopyAllStreamsRejectsEmptyMedia()
 {
     QVERIFY(!RemuxPolicy::canCopyAllStreams(MediaFile(), QStringLiteral("mp4")));
@@ -161,6 +218,30 @@ void RemuxPolicyTest::subtitleCodecPerContainer()
     QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QStringLiteral("avi")).has_value());
     QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QStringLiteral("mp3")).has_value());
     QVERIFY(!RemuxPolicy::subtitleCodecForContainer(QString()).has_value());
+}
+
+void RemuxPolicyTest::containerSupportsSubtitleCodec()
+{
+    QVERIFY(RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mkv"), QStringLiteral("subrip")));
+    QVERIFY(RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mkv"), QStringLiteral("ass")));
+    QVERIFY(RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mkv"), QStringLiteral("mov_text")));
+    QVERIFY(RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mp4"), QStringLiteral("mov_text")));
+    QVERIFY(!RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mp4"), QStringLiteral("ass")));
+    QVERIFY(!RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("mp4"), QStringLiteral("subrip")));
+    QVERIFY(RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("webm"), QStringLiteral("webvtt")));
+    QVERIFY(!RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("webm"), QStringLiteral("ass")));
+    QVERIFY(!RemuxPolicy::containerSupportsSubtitleCodec(QStringLiteral("avi"), QStringLiteral("subrip")));
+}
+
+void RemuxPolicyTest::isAudioContainerChecks()
+{
+    QVERIFY(RemuxPolicy::isAudioContainer(QStringLiteral("mp3")));
+    QVERIFY(RemuxPolicy::isAudioContainer(QStringLiteral("aac")));
+    QVERIFY(RemuxPolicy::isAudioContainer(QStringLiteral("flac")));
+    QVERIFY(RemuxPolicy::isAudioContainer(QStringLiteral("wav")));
+    QVERIFY(!RemuxPolicy::isAudioContainer(QStringLiteral("mp4")));
+    QVERIFY(!RemuxPolicy::isAudioContainer(QStringLiteral("mkv")));
+    QVERIFY(!RemuxPolicy::isAudioContainer(QStringLiteral("webm")));
 }
 
 QTEST_GUILESS_MAIN(RemuxPolicyTest)

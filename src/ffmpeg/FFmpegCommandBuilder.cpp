@@ -1,5 +1,7 @@
 #include "FFmpegCommandBuilder.h"
 #include "FFmpegCapabilities.h"
+#include "conversion/RemuxPolicy.h"
+#include <QFileInfo>
 #include <QRegularExpression>
 
 FFmpegCommandBuilder::FFmpegCommandBuilder(QObject *parent)
@@ -72,14 +74,38 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
     }
     args << QStringLiteral("-i") << options.inputPath;
 
+    // Stream mappings: explicit list takes precedence over preserveAllStreams.
+    if (!options.streamMappings.isEmpty()) {
+        for (const QString &m : options.streamMappings) {
+            args << QStringLiteral("-map") << m;
+        }
+    } else if (options.preserveAllStreams) {
+        const QString outExt = QFileInfo(options.outputPath).suffix().toLower();
+        if (RemuxPolicy::isAudioContainer(outExt)) {
+            args << QStringLiteral("-map") << QStringLiteral("0:a?");
+        } else {
+            args << QStringLiteral("-map") << QStringLiteral("0:v?")
+                 << QStringLiteral("-map") << QStringLiteral("0:a?");
+            if (RemuxPolicy::subtitleCodecForContainer(outExt).has_value()) {
+                args << QStringLiteral("-map") << QStringLiteral("0:s?");
+            }
+        }
+    }
+
     if (options.copyStreams) {
         args << QStringLiteral("-c") << QStringLiteral("copy");
+        if (!options.subtitleCodec.isEmpty()) {
+            args << QStringLiteral("-c:s") << options.subtitleCodec;
+        }
     } else {
         if (!options.videoCodec.isEmpty()) {
             args << QStringLiteral("-c:v") << options.videoCodec;
         }
         if (!options.audioCodec.isEmpty()) {
             args << QStringLiteral("-c:a") << options.audioCodec;
+        }
+        if (!options.subtitleCodec.isEmpty()) {
+            args << QStringLiteral("-c:s") << options.subtitleCodec;
         }
 
         // Determine effective video bitrate (explicit or derived from target file size)
@@ -154,6 +180,9 @@ QStringList FFmpegCommandBuilder::buildConversion(const ConversionOptions &optio
 
     if (options.stripMetadata) {
         args << QStringLiteral("-map_metadata") << QStringLiteral("-1");
+    }
+    if (options.stripChapters) {
+        args << QStringLiteral("-map_chapters") << QStringLiteral("-1");
     }
 
     args << options.outputPath;

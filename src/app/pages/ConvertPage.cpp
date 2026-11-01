@@ -224,6 +224,8 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     });
 
     m_smartCopyCheck = new ElaCheckBox(m_codecCard);
+    m_preserveAllStreamsCheck = new ElaCheckBox(m_codecCard);
+    m_preserveAllStreamsCheck->setChecked(true);
     m_stripMetaCheck = new ElaCheckBox(m_codecCard);
 
     m_hwAccelCheck = new ElaCheckBox(m_codecCard);
@@ -266,6 +268,7 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_qualityCaption, m_qualitySpin);
     form->addRow(m_targetSizeCaption, m_targetSizeWidget);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_smartCopyCheck);
+    form->addRow(new ElaText(QString(), 13, m_codecCard), m_preserveAllStreamsCheck);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_stripMetaCheck);
     form->addRow(new ElaText(QString(), 13, m_codecCard), hwRow);
     codecLayout->addLayout(form);
@@ -435,6 +438,7 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_targetSizeSpin, &ElaDoubleSpinBox::valueChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_preserveAllStreamsCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_stripMetaCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
     connect(m_audioBitrateCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
     connect(m_audioSamplerateCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
@@ -537,9 +541,19 @@ void ConvertPage::onProbeFinished()
         const VideoStream &video = info.primaryVideo();
         parts << QStringLiteral("%1x%2").arg(video.width).arg(video.height);
         parts << video.codec;
+        if (info.videoStreams.size() > 1) {
+            parts << QStringLiteral("(+%1 video)").arg(info.videoStreams.size() - 1);
+        }
     }
     if (info.hasAudio()) {
-        parts << info.primaryAudio().codec;
+        if (info.audioStreams.size() > 1) {
+            parts << QStringLiteral("%1 audios (%2)").arg(info.audioStreams.size()).arg(info.primaryAudio().codec);
+        } else {
+            parts << info.primaryAudio().codec;
+        }
+    }
+    if (!info.subtitleStreams.isEmpty()) {
+        parts << QStringLiteral("%1 subs").arg(info.subtitleStreams.size());
     }
     m_infoLabel->setText(parts.join(QStringLiteral(" | ")));
     showMetadata(info.formatMetadata);
@@ -562,7 +576,12 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
         opts.targetSizeMB = -1.0;
     }
     opts.copyStreams = copy;
+    opts.preserveAllStreams = copy || m_preserveAllStreamsCheck->isChecked();
     opts.stripMetadata = m_stripMetaCheck->isChecked();
+    const auto subCodec = RemuxPolicy::subtitleCodecForContainer(m_formatCombo->currentText());
+    if (subCodec.has_value() && !subCodec->isEmpty()) {
+        opts.subtitleCodec = *subCodec;
+    }
     if (m_hwAccelCheck->isChecked()) {
         opts.hwAccel = m_caps->recommendedHwAccelForEncoder(opts.videoCodec);
     }
@@ -772,6 +791,7 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("targetSizeMB"), m_targetSizeSpin->value());
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
     values.insert(QStringLiteral("smartCopy"), m_smartCopyCheck->isChecked());
+    values.insert(QStringLiteral("preserveAllStreams"), m_preserveAllStreamsCheck->isChecked());
     values.insert(QStringLiteral("stripMetadata"), m_stripMetaCheck->isChecked());
     values.insert(QStringLiteral("hwAccel"), m_hwAccelCheck->isChecked());
     values.insert(QStringLiteral("audioBitrate"), m_audioBitrateCombo->currentData().toString());
@@ -811,6 +831,7 @@ void ConvertPage::loadPreset(const QString &name)
     m_targetSizeSpin->setValue(values.value(QStringLiteral("targetSizeMB"), 25.0).toDouble());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
     m_smartCopyCheck->setChecked(values.value(QStringLiteral("smartCopy"), false).toBool());
+    m_preserveAllStreamsCheck->setChecked(values.value(QStringLiteral("preserveAllStreams"), true).toBool());
     m_stripMetaCheck->setChecked(values.value(QStringLiteral("stripMetadata"), false).toBool());
     if (m_hwAccelCheck->isEnabled()) {
         m_hwAccelCheck->setChecked(values.value(QStringLiteral("hwAccel"), false).toBool());
@@ -874,6 +895,7 @@ void ConvertPage::retranslateUi()
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_targetSizeCaption->setText(trId("convert.targetSize") + QStringLiteral(":"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
+    m_preserveAllStreamsCheck->setText(trId("convert.preserveAllStreams"));
     m_stripMetaCheck->setText(trId("metadata.remove"));
     m_hwAccelCheck->setText(trId("convert.hwAccel"));
     if (m_caps->hasHwAcceleration()) {

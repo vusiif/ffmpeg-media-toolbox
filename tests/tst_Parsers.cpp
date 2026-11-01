@@ -16,6 +16,7 @@ private slots:
     void capabilitiesEmptyOutput();
 
     void probeJsonFullFile();
+    void probeJsonMultiAudioAndSubtitles();
     void probeJsonAudioOnlyDetectsAudio();
     void probeJsonImageDetectsImage();
     void probeJsonInvalidReturnsEmpty();
@@ -177,6 +178,66 @@ void ParsersTest::probeJsonFullFile()
     QCOMPARE(media.subtitleStreams.size(), 1);
     QCOMPARE(media.subtitleStreams.first().codec, QStringLiteral("mov_text"));
     QCOMPARE(media.subtitleStreams.first().language, QStringLiteral("eng"));
+}
+
+void ParsersTest::probeJsonMultiAudioAndSubtitles()
+{
+    const QString json = QStringLiteral(
+        "{"
+        "\"format\": { \"format_name\": \"matroska,webm\", \"duration\": \"120.0\","
+        "  \"size\": \"104857600\", \"bit_rate\": \"6990506\" },"
+        "\"streams\": ["
+        "  { \"index\": 0, \"codec_type\": \"video\", \"codec_name\": \"h264\","
+        "    \"width\": 1920, \"height\": 1080, \"pix_fmt\": \"yuv420p\","
+        "    \"r_frame_rate\": \"24/1\" },"
+        "  { \"index\": 1, \"codec_type\": \"audio\", \"codec_name\": \"aac\","
+        "    \"sample_rate\": \"48000\", \"channels\": 2, \"channel_layout\": \"stereo\","
+        "    \"tags\": { \"language\": \"jpn\", \"title\": \"Original Audio\" } },"
+        "  { \"index\": 2, \"codec_type\": \"audio\", \"codec_name\": \"ac3\","
+        "    \"sample_rate\": \"48000\", \"channels\": 6, \"channel_layout\": \"5.1(side)\","
+        "    \"tags\": { \"language\": \"eng\", \"title\": \"English Dub\" } },"
+        "  { \"index\": 3, \"codec_type\": \"subtitle\", \"codec_name\": \"ass\","
+        "    \"tags\": { \"language\": \"eng\", \"title\": \"English Signs\" },"
+        "    \"disposition\": { \"default\": 1, \"forced\": 0 } },"
+        "  { \"index\": 4, \"codec_type\": \"subtitle\", \"codec_name\": \"subrip\","
+        "    \"tags\": { \"language\": \"chi\", \"title\": \"Simplified Chinese\" },"
+        "    \"disposition\": { \"default\": 0, \"forced\": 0 } }"
+        "]"
+        "}");
+
+    const MediaFile media = MediaProbeService::parseProbeJson(json, QStringLiteral("anime.mkv"));
+    QVERIFY(media.isValid());
+    QCOMPARE(media.videoStreams.size(), 1);
+    QCOMPARE(media.audioStreams.size(), 2);
+    QCOMPARE(media.subtitleStreams.size(), 2);
+
+    // Audio stream 0 (Japanese AAC)
+    QCOMPARE(media.audioStreams[0].index, 1);
+    QCOMPARE(media.audioStreams[0].codec, QStringLiteral("aac"));
+    QCOMPARE(media.audioStreams[0].language, QStringLiteral("jpn"));
+    QCOMPARE(media.audioStreams[0].title, QStringLiteral("Original Audio"));
+
+    // Audio stream 1 (English AC3)
+    QCOMPARE(media.audioStreams[1].index, 2);
+    QCOMPARE(media.audioStreams[1].codec, QStringLiteral("ac3"));
+    QCOMPARE(media.audioStreams[1].channels, 6);
+    QCOMPARE(media.audioStreams[1].language, QStringLiteral("eng"));
+    QCOMPARE(media.audioStreams[1].title, QStringLiteral("English Dub"));
+
+    // Subtitle stream 0 (ASS English, default)
+    QCOMPARE(media.subtitleStreams[0].index, 3);
+    QCOMPARE(media.subtitleStreams[0].codec, QStringLiteral("ass"));
+    QCOMPARE(media.subtitleStreams[0].language, QStringLiteral("eng"));
+    QCOMPARE(media.subtitleStreams[0].title, QStringLiteral("English Signs"));
+    QVERIFY(media.subtitleStreams[0].isDefault);
+    QVERIFY(!media.subtitleStreams[0].isForced);
+
+    // Subtitle stream 1 (SRT Chinese, non-default)
+    QCOMPARE(media.subtitleStreams[1].index, 4);
+    QCOMPARE(media.subtitleStreams[1].codec, QStringLiteral("subrip"));
+    QCOMPARE(media.subtitleStreams[1].language, QStringLiteral("chi"));
+    QCOMPARE(media.subtitleStreams[1].title, QStringLiteral("Simplified Chinese"));
+    QVERIFY(!media.subtitleStreams[1].isDefault);
 }
 
 void ParsersTest::probeJsonAudioOnlyDetectsAudio()
