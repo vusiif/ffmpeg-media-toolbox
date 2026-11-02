@@ -35,13 +35,16 @@
 #include "jobs/JobQueue.h"
 #include "output/OutputNaming.h"
 #include "app/widgets/VideoPlayerWidget.h"
+#include "app/dialogs/LosslessCutDialog.h"
+#include "media/MediaProbeService.h"
 
 VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                     JobQueue *queue, QWidget *parent)
+                     JobQueue *queue, MediaProbeService *probeService, QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_builder(builder)
     , m_queue(queue)
+    , m_probeService(probeService)
 {
     setAcceptDrops(true);
 
@@ -74,6 +77,7 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
             if (m_trimPlayer) {
                 m_trimPlayer->loadMedia(path);
             }
+            detectKeyframes();
         }
     });
     inputCardLayout->addWidget(m_inputCaption);
@@ -159,6 +163,33 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_trimPlayer->setAutoSkipVisible(false);
     trimCardLayout->addWidget(m_trimPlayer);
 
+    auto *kfRow = new QHBoxLayout();
+    kfRow->setSpacing(8);
+    m_prevKeyframeBtn = new ElaPushButton(QStringLiteral("⏮"), m_trimCard);
+    m_prevKeyframeBtn->setFixedSize(36, 30);
+    m_prevKeyframeBtn->setEnabled(false);
+    m_nextKeyframeBtn = new ElaPushButton(QStringLiteral("⏭"), m_trimCard);
+    m_nextKeyframeBtn->setFixedSize(36, 30);
+    m_nextKeyframeBtn->setEnabled(false);
+    m_snapInButton = new ElaPushButton(m_trimCard);
+    m_snapInButton->setFixedHeight(30);
+    m_snapInButton->setEnabled(false);
+    m_snapOutButton = new ElaPushButton(m_trimCard);
+    m_snapOutButton->setFixedHeight(30);
+    m_snapOutButton->setEnabled(false);
+    m_keyframeStatusLabel = new ElaText(QString(), 12, m_trimCard);
+    m_openStudioButton = new ElaPushButton(m_trimCard);
+    m_openStudioButton->setFixedHeight(30);
+    m_openStudioButton->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
+
+    kfRow->addWidget(m_prevKeyframeBtn);
+    kfRow->addWidget(m_nextKeyframeBtn);
+    kfRow->addWidget(m_snapInButton);
+    kfRow->addWidget(m_snapOutButton);
+    kfRow->addWidget(m_keyframeStatusLabel, 1);
+    kfRow->addWidget(m_openStudioButton);
+    trimCardLayout->addLayout(kfRow);
+
     auto *markerRow = new QHBoxLayout();
     markerRow->setSpacing(8);
     m_setInButton = new ElaPushButton(m_trimCard);
@@ -187,10 +218,16 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_trimFormat = new ElaComboBox(m_trimCard);
     m_trimFormat->addItems({QStringLiteral(""), QStringLiteral("mp4"), QStringLiteral("mkv"),
                             QStringLiteral("mov"), QStringLiteral("webm")});
+    m_trimModeCaption = makeCaption(m_trimCard);
+    m_trimMode = new ElaComboBox(m_trimCard);
+    m_trimMode->addItem(QString(), static_cast<int>(CutMode::KeyframeLossless));
+    m_trimMode->addItem(QString(), static_cast<int>(CutMode::SmartCut));
+    m_trimMode->addItem(QString(), static_cast<int>(CutMode::AccurateReencode));
     m_trimCopyCaption = makeCaption(m_trimCard);
     m_trimCopy = new ElaCheckBox(m_trimCard);
     trimForm->addRow(m_trimStartCaption, m_trimStart);
     trimForm->addRow(m_trimEndCaption, m_trimEnd);
+    trimForm->addRow(m_trimModeCaption, m_trimMode);
     trimForm->addRow(m_trimFormatCaption, m_trimFormat);
     trimForm->addRow(m_trimCopyCaption, m_trimCopy);
     trimCardLayout->addLayout(trimForm);
@@ -221,7 +258,35 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     });
     connect(m_trimEnd, &ElaDoubleSpinBox::valueChanged, this, [this](double val) {
         m_trimPlayer->setMarkRange(m_trimStart->value(), val);
+        updateKeyframeStatus();
     });
+    connect(m_trimStart, &ElaDoubleSpinBox::valueChanged, this, [this](double) {
+        updateKeyframeStatus();
+    });
+    connect(m_prevKeyframeBtn, &ElaPushButton::clicked, this, [this]() {
+        if (m_keyframes.isEmpty()) return;
+        const double cur = m_trimPlayer->currentPositionSec();
+        const double target = SmartCutEngine::findPrevKeyframe(cur - 0.05, m_keyframes);
+        m_trimPlayer->seekToSec(target);
+    });
+    connect(m_nextKeyframeBtn, &ElaPushButton::clicked, this, [this]() {
+        if (m_keyframes.isEmpty()) return;
+        const double cur = m_trimPlayer->currentPositionSec();
+        const double target = SmartCutEngine::findNextKeyframe(cur + 0.05, m_keyframes);
+        m_trimPlayer->seekToSec(target);
+    });
+    connect(m_snapInButton, &ElaPushButton::clicked, this, [this]() {
+        if (m_keyframes.isEmpty()) return;
+        const double snapped = SmartCutEngine::findNearestKeyframe(m_trimStart->value(), m_keyframes);
+        m_trimStart->setValue(snapped);
+        m_trimPlayer->seekToSec(snapped);
+    });
+    connect(m_snapOutButton, &ElaPushButton::clicked, this, [this]() {
+        if (m_keyframes.isEmpty()) return;
+        const double snapped = SmartCutEngine::findNearestKeyframe(m_trimEnd->value(), m_keyframes);
+        m_trimEnd->setValue(snapped);
+    });
+    connect(m_openStudioButton, &ElaPushButton::clicked, this, &VideoPage::openLosslessCutStudio);
 
     m_trimButton = createCardButton(m_trimCard);
     connect(m_trimButton, &ElaPushButton::clicked, this, &VideoPage::trim);
@@ -594,6 +659,83 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     retranslateUi();
 }
 
+VideoPage::~VideoPage()
+{
+    if (m_probeProcess && m_probeProcess->state() != QProcess::NotRunning) {
+        m_probeProcess->kill();
+        m_probeProcess->waitForFinished(500);
+    }
+}
+
+void VideoPage::openLosslessCutStudio()
+{
+    auto *dlg = new LosslessCutDialog(m_locator, m_probeService, m_queue, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->loadFile(m_inputFile);
+    }
+    dlg->exec();
+}
+
+void VideoPage::detectKeyframes()
+{
+    if (m_inputFile.isEmpty()) return;
+    if (m_probeProcess && m_probeProcess->state() != QProcess::NotRunning) {
+        m_probeProcess->kill();
+        m_probeProcess->waitForFinished(500);
+    }
+    if (!m_probeProcess) {
+        m_probeProcess = new QProcess(this);
+        connect(m_probeProcess, &QProcess::finished, this, &VideoPage::onKeyframeProbeFinished);
+    }
+    const QString ffprobe = m_locator ? m_locator->ffprobePath() : QStringLiteral("ffprobe");
+    const QStringList args = SmartCutEngine::buildKeyframeProbeCommand(ffprobe, m_inputFile);
+    m_probeProcess->start(args.first(), args.mid(1));
+}
+
+void VideoPage::onKeyframeProbeFinished(int exitCode)
+{
+    if (exitCode != 0 || !m_probeProcess) return;
+    const QString output = QString::fromUtf8(m_probeProcess->readAllStandardOutput());
+    m_keyframes = SmartCutEngine::parseKeyframeOutput(output);
+    if (m_trimPlayer) {
+        m_trimPlayer->setKeyframes(m_keyframes);
+    }
+    const bool hasKeyframes = !m_keyframes.isEmpty();
+    if (m_prevKeyframeBtn) m_prevKeyframeBtn->setEnabled(hasKeyframes);
+    if (m_nextKeyframeBtn) m_nextKeyframeBtn->setEnabled(hasKeyframes);
+    if (m_snapInButton) m_snapInButton->setEnabled(hasKeyframes);
+    if (m_snapOutButton) m_snapOutButton->setEnabled(hasKeyframes);
+    updateKeyframeStatus();
+}
+
+void VideoPage::updateKeyframeStatus()
+{
+    if (!m_keyframeStatusLabel) return;
+    if (m_keyframes.isEmpty()) {
+        m_keyframeStatusLabel->clear();
+        return;
+    }
+    const double inVal = m_trimStart ? m_trimStart->value() : 0.0;
+    const double outVal = m_trimEnd ? m_trimEnd->value() : 0.0;
+    const bool inAligned = SmartCutEngine::isKeyframeAligned(inVal, m_keyframes);
+    const bool outAligned = SmartCutEngine::isKeyframeAligned(outVal, m_keyframes);
+
+    if (inAligned && outAligned) {
+        m_keyframeStatusLabel->setText(trId("cut.keyframe.bothAligned").arg(m_keyframes.size()));
+        m_keyframeStatusLabel->setStyleSheet(QStringLiteral("color: #107c41; font-weight: bold;"));
+    } else if (inAligned) {
+        m_keyframeStatusLabel->setText(trId("cut.keyframe.inAlignedOnly").arg(QString::number(SmartCutEngine::findNearestKeyframe(outVal, m_keyframes), 'f', 2)));
+        m_keyframeStatusLabel->setStyleSheet(QStringLiteral("color: #ff9800;"));
+    } else if (outAligned) {
+        m_keyframeStatusLabel->setText(trId("cut.keyframe.outAlignedOnly").arg(QString::number(SmartCutEngine::findNearestKeyframe(inVal, m_keyframes), 'f', 2)));
+        m_keyframeStatusLabel->setStyleSheet(QStringLiteral("color: #ff9800;"));
+    } else {
+        m_keyframeStatusLabel->setText(trId("cut.keyframe.neitherAligned").arg(m_keyframes.size()));
+        m_keyframeStatusLabel->setStyleSheet(QStringLiteral("color: #d83b01;"));
+    }
+}
+
 QString VideoPage::browseFile(const QString &title, const QString &filters)
 {
     return QFileDialog::getOpenFileName(this, title, QString(), filters);
@@ -624,6 +766,7 @@ void VideoPage::dropEvent(QDropEvent *event)
     if (m_trimPlayer && !m_inputFile.isEmpty()) {
         m_trimPlayer->loadMedia(m_inputFile);
     }
+    detectKeyframes();
     event->acceptProposedAction();
 }
 
@@ -635,12 +778,31 @@ void VideoPage::trim()
         : m_trimFormat->currentText();
     const QString output = OutputNaming::build(m_inputFile,
                                                QStringLiteral("{name}_trim.{format}"), ext);
-    enqueue(trId("video.job.trim").arg(QFileInfo(m_inputFile).fileName()),
-            m_builder->buildTrim(m_inputFile, output,
-                                 m_trimStart->value(), m_trimEnd->value(),
-                                 m_trimFormat->currentText(),
-                                 QString(), QString(), -1,
-                                 m_trimCopy->isChecked()));
+    const auto mode = static_cast<CutMode>(m_trimMode->currentData().toInt());
+
+    QStringList args;
+    if (mode == CutMode::KeyframeLossless || m_trimCopy->isChecked()) {
+        args = SmartCutEngine::buildLosslessCut(m_inputFile, output,
+                                                m_trimStart->value(), m_trimEnd->value(),
+                                                m_trimFormat->currentText());
+    } else if (mode == CutMode::SmartCut) {
+        SmartCutPlan plan = SmartCutEngine::planSmartCut(m_inputFile, output,
+                                                         m_trimStart->value(), m_trimEnd->value(),
+                                                         m_keyframes);
+        if (plan.isValid && !plan.needsConcat) {
+            args = SmartCutEngine::buildChunkCommand(m_inputFile, plan.chunks.first());
+        } else {
+            args = SmartCutEngine::buildLosslessCut(m_inputFile, output,
+                                                    m_trimStart->value(), m_trimEnd->value(),
+                                                    m_trimFormat->currentText());
+        }
+    } else {
+        args = SmartCutEngine::buildAccurateReencode(m_inputFile, output,
+                                                    m_trimStart->value(), m_trimEnd->value(),
+                                                    QString(), 18, m_trimFormat->currentText());
+    }
+
+    enqueue(trId("video.job.trim").arg(QFileInfo(m_inputFile).fileName()), args);
 }
 
 void VideoPage::extractAudio()
@@ -883,9 +1045,17 @@ void VideoPage::retranslateUi()
     m_previewTrimButton->setText(trId("video.trim.preview"));
     m_trimStartCaption->setText(trId("common.start") + QStringLiteral(":"));
     m_trimEndCaption->setText(trId("common.end") + QStringLiteral(":"));
+    m_trimModeCaption->setText(trId("cut.mode.caption") + QStringLiteral(":"));
+    m_trimMode->setItemText(0, trId("cut.mode.lossless"));
+    m_trimMode->setItemText(1, trId("cut.mode.smart"));
+    m_trimMode->setItemText(2, trId("cut.mode.accurate"));
+    m_snapInButton->setText(trId("cut.keyframe.snapIn"));
+    m_snapOutButton->setText(trId("cut.keyframe.snapOut"));
+    m_openStudioButton->setText(trId("cut.action.openStudio"));
     m_trimFormatCaption->setText(trId("common.format") + QStringLiteral(":"));
     m_trimCopyCaption->setText(trId("video.trim.copy") + QStringLiteral(":"));
     m_trimButton->setText(trId("convert.addToQueue"));
+    updateKeyframeStatus();
 
     m_audioTitleLabel->setText(trId("video.audio"));
     m_audioFormatCaption->setText(trId("common.format") + QStringLiteral(":"));

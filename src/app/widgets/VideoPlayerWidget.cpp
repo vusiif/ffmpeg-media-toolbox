@@ -1,130 +1,95 @@
 #include "VideoPlayerWidget.h"
 
-#include "i18n/TrId.h"
-
-#include <QAudioOutput>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QMediaPlayer>
-#include <QUrl>
-#include <QVBoxLayout>
+#include <QAudioOutput>
 #include <QVideoWidget>
+#include <QVBoxLayout>
 
 #include "ElaCheckBox.h"
 #include "ElaPushButton.h"
 #include "ElaText.h"
+#include "i18n/TrId.h"
 
 VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     : QWidget(parent)
-    , m_player(new QMediaPlayer(this))
-    , m_audioOutput(new QAudioOutput(this))
-    , m_videoWidget(new QVideoWidget(this))
-    , m_placeholderWidget(new QWidget(this))
 {
+    auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(6);
+
+    // Video display
+    m_player = new QMediaPlayer(this);
+    m_audioOutput = new QAudioOutput(this);
     m_player->setAudioOutput(m_audioOutput);
+
+    m_videoWidget = new QVideoWidget(this);
+    m_videoWidget->setMinimumHeight(240);
+    m_videoWidget->setStyleSheet(QStringLiteral("background-color: black; border-radius: 6px;"));
     m_player->setVideoOutput(m_videoWidget);
-    m_videoWidget->setMinimumSize(480, 270);
-    m_videoWidget->setStyleSheet(QStringLiteral("background-color: black; border-radius: 8px;"));
-    m_videoWidget->setVisible(false);
 
-    m_placeholderWidget->setMinimumSize(480, 270);
-    m_placeholderWidget->setStyleSheet(QStringLiteral("background-color: #121212; border: 1px dashed rgba(128, 128, 128, 0.3); border-radius: 8px;"));
+    layout->addWidget(m_videoWidget, 1);
 
-    auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(0, 0, 0, 0);
-    root->setSpacing(8);
-
-    root->addWidget(m_placeholderWidget, 1);
-    root->addWidget(m_videoWidget, 1);
-
-    m_timeline = new DamageTimelineSlider(Qt::Horizontal, this);
+    // Timeline Slider
+    m_timeline = new DamageTimelineSlider(this);
     m_timeline->setRange(0, 0);
-    root->addWidget(m_timeline);
+    connect(m_timeline, &ElaSlider::sliderMoved, this, &VideoPlayerWidget::onSliderMoved);
+    layout->addWidget(m_timeline);
 
-    auto *controls = new QHBoxLayout();
-    controls->setSpacing(10);
+    // Control bar
+    auto *ctrlLayout = new QHBoxLayout();
+    ctrlLayout->setContentsMargins(4, 0, 4, 0);
+    ctrlLayout->setSpacing(10);
 
-    m_playButton = new ElaPushButton(this);
-    m_stopButton = new ElaPushButton(this);
+    m_playButton = new ElaPushButton(QStringLiteral("▶"), this);
+    m_playButton->setFixedSize(36, 28);
+    connect(m_playButton, &ElaPushButton::clicked, this, &VideoPlayerWidget::togglePlayPause);
+    ctrlLayout->addWidget(m_playButton);
+
+    m_stopButton = new ElaPushButton(QStringLiteral("■"), this);
+    m_stopButton->setFixedSize(36, 28);
+    connect(m_stopButton, &ElaPushButton::clicked, this, &VideoPlayerWidget::stop);
+    ctrlLayout->addWidget(m_stopButton);
+
     m_timeLabel = new ElaText(QStringLiteral("00:00 / 00:00"), 12, this);
-    m_autoSkipCheck = new ElaCheckBox(this);
-    m_autoSkipCheck->setChecked(true);
+    ctrlLayout->addWidget(m_timeLabel);
+
+    ctrlLayout->addStretch();
 
     m_skipStatusLabel = new ElaText(QString(), 12, this);
-    m_skipStatusLabel->setStyleSheet(QStringLiteral("color: #eb4034; font-weight: bold;"));
+    m_skipStatusLabel->setStyleSheet(QStringLiteral("color: #ff9800; font-weight: bold;"));
+    ctrlLayout->addWidget(m_skipStatusLabel);
 
-    controls->addWidget(m_playButton);
-    controls->addWidget(m_stopButton);
-    controls->addWidget(m_timeLabel);
-    controls->addWidget(m_autoSkipCheck);
-    controls->addWidget(m_skipStatusLabel);
-    controls->addStretch();
+    m_autoSkipCheck = new ElaCheckBox(trId("player.autoSkipDamaged"), this);
+    m_autoSkipCheck->setChecked(true);
+    ctrlLayout->addWidget(m_autoSkipCheck);
 
-    root->addLayout(controls);
-
-    connect(m_playButton, &ElaPushButton::clicked, this, &VideoPlayerWidget::togglePlayPause);
-    connect(m_stopButton, &ElaPushButton::clicked, this, &VideoPlayerWidget::stop);
-    connect(m_timeline, &ElaSlider::sliderMoved, this, &VideoPlayerWidget::onSliderMoved);
-    connect(m_timeline, &ElaSlider::valueChanged, this, [this](int value) {
-        if (m_timeline->isSliderDown()) {
-            m_player->setPosition(value);
-        }
-    });
+    layout->addLayout(ctrlLayout);
 
     connect(m_player, &QMediaPlayer::positionChanged, this, &VideoPlayerWidget::onPositionChanged);
     connect(m_player, &QMediaPlayer::durationChanged, this, &VideoPlayerWidget::onDurationChanged);
     connect(m_player, &QMediaPlayer::playbackStateChanged, this, &VideoPlayerWidget::onPlaybackStateChanged);
-
-    retranslateUi();
 }
 
 VideoPlayerWidget::~VideoPlayerWidget()
 {
-    m_player->stop();
+    stop();
 }
 
 void VideoPlayerWidget::loadMedia(const QString &filePath)
 {
-    m_player->stop();
-    m_skipStatusLabel->clear();
-    m_placeholderWidget->setVisible(false);
-    m_videoWidget->setVisible(true);
+    stop();
+    clearSegments();
+    clearKeyframes();
+    clearCutSegments();
     m_player->setSource(QUrl::fromLocalFile(filePath));
 }
 
 void VideoPlayerWidget::setCorruptedSegments(const QVector<CorruptedSegment> &segments)
 {
-    if (segments.isEmpty()) {
-        m_segments.clear();
-        m_timeline->clearSegments();
-        return;
-    }
-
-    // Sort segments by start time
-    QVector<CorruptedSegment> sorted = segments;
-    std::sort(sorted.begin(), sorted.end(), [](const CorruptedSegment &a, const CorruptedSegment &b) {
-        return a.start < b.start;
-    });
-
-    // Merge overlapping or adjacent segments within 0.3s
-    QVector<CorruptedSegment> merged;
-    merged.reserve(sorted.size());
-    merged.append(sorted.first());
-
-    for (int i = 1; i < sorted.size(); ++i) {
-        const auto &curr = sorted.at(i);
-        auto &last = merged.last();
-        if (curr.start <= last.end + 0.3) {
-            last.end = qMax(last.end, curr.end);
-            if (!last.errorMsg.contains(curr.errorMsg)) {
-                last.errorMsg += QStringLiteral("; ") + curr.errorMsg;
-            }
-        } else {
-            merged.append(curr);
-        }
-    }
-
-    m_segments = merged;
-    m_timeline->setSegments(merged);
+    m_segments = segments;
+    m_timeline->setSegments(segments);
 }
 
 void VideoPlayerWidget::clearSegments()
@@ -142,6 +107,31 @@ void VideoPlayerWidget::setMarkRange(double inSec, double outSec)
 void VideoPlayerWidget::clearMarkRange()
 {
     m_timeline->clearMarkRange();
+}
+
+void VideoPlayerWidget::setKeyframes(const QVector<double> &keyframes)
+{
+    m_timeline->setKeyframes(keyframes);
+}
+
+QVector<double> VideoPlayerWidget::keyframes() const
+{
+    return m_timeline ? m_timeline->keyframes() : QVector<double>();
+}
+
+void VideoPlayerWidget::clearKeyframes()
+{
+    m_timeline->clearKeyframes();
+}
+
+void VideoPlayerWidget::setCutSegments(const QVector<QPair<double, double>> &segments)
+{
+    m_timeline->setCutSegments(segments);
+}
+
+void VideoPlayerWidget::clearCutSegments()
+{
+    m_timeline->clearCutSegments();
 }
 
 double VideoPlayerWidget::currentPositionSec() const
@@ -190,51 +180,33 @@ void VideoPlayerWidget::pause()
 void VideoPlayerWidget::stop()
 {
     m_player->stop();
+    m_player->setPosition(0);
     m_timeline->setValue(0);
-    m_timeLabel->setText(QStringLiteral("00:00 / ") + formatTime(m_durationMs));
-    m_skipStatusLabel->clear();
 }
 
-void VideoPlayerWidget::togglePlayPause()
+void VideoPlayerWidget::retranslateUi()
 {
-    if (m_player->playbackState() == QMediaPlayer::PlayingState) {
-        pause();
-    } else {
-        play();
-    }
-}
-
-void VideoPlayerWidget::onSliderMoved(int positionMs)
-{
-    m_player->setPosition(positionMs);
+    m_autoSkipCheck->setText(trId("player.autoSkipDamaged"));
 }
 
 void VideoPlayerWidget::onPositionChanged(qint64 positionMs)
 {
-    if (!m_timeline->isSliderDown()) {
+    if (!m_isSeeking) {
         m_timeline->setValue(static_cast<int>(positionMs));
     }
-
-    m_timeLabel->setText(formatTime(positionMs) + QStringLiteral(" / ") + formatTime(m_durationMs));
+    m_timeLabel->setText(QStringLiteral("%1 / %2")
+                             .arg(formatTime(positionMs))
+                             .arg(formatTime(m_durationMs)));
 
     // Auto-skip logic
-    if (m_autoSkipCheck->isChecked() && m_player->playbackState() == QMediaPlayer::PlayingState) {
-        const double currentSec = positionMs / 1000.0;
+    if (m_autoSkipCheck->isChecked() && !m_segments.isEmpty()) {
+        const double curSec = positionMs / 1000.0;
         for (const auto &seg : m_segments) {
-            if (currentSec >= seg.start && currentSec < seg.end) {
-                const double targetSec = seg.end + 0.3;
-                const qint64 targetMs = static_cast<qint64>(targetSec * 1000.0);
-                if (targetMs < m_durationMs) {
-                    m_player->setPosition(targetMs);
-                    m_skipStatusLabel->setText(
-                        QStringLiteral("⏭ Skipped: [%1s - %2s]")
-                            .arg(seg.start, 0, 'f', 1)
-                            .arg(seg.end, 0, 'f', 1));
-                    emit skippedSegment(seg.start, targetSec);
-                } else {
-                    // Reached the end of video after corruption segment
-                    stop();
-                }
+            if (curSec >= seg.start && curSec < seg.end) {
+                const qint64 targetMs = static_cast<qint64>(seg.end * 1000.0) + 100;
+                m_player->setPosition(targetMs);
+                m_skipStatusLabel->setText(trId("player.skippedMsg").arg(QString::number(seg.end - seg.start, 'f', 1)));
+                emit skippedSegment(seg.start, seg.end);
                 break;
             }
         }
@@ -246,31 +218,50 @@ void VideoPlayerWidget::onDurationChanged(qint64 durationMs)
     m_durationMs = durationMs;
     m_timeline->setRange(0, static_cast<int>(durationMs));
     m_timeline->setDuration(durationMs / 1000.0);
-    m_timeLabel->setText(formatTime(m_player->position()) + QStringLiteral(" / ") + formatTime(m_durationMs));
+    m_timeLabel->setText(QStringLiteral("%1 / %2")
+                             .arg(formatTime(m_player->position()))
+                             .arg(formatTime(m_durationMs)));
 }
 
 void VideoPlayerWidget::onPlaybackStateChanged()
 {
     if (m_player->playbackState() == QMediaPlayer::PlayingState) {
-        m_playButton->setText(QStringLiteral("⏸ ") + trId("player.pause"));
+        m_playButton->setText(QStringLiteral("⏸"));
     } else {
-        m_playButton->setText(QStringLiteral("▶ ") + trId("player.play"));
+        m_playButton->setText(QStringLiteral("▶"));
+    }
+}
+
+void VideoPlayerWidget::onSliderMoved(int positionMs)
+{
+    m_isSeeking = true;
+    m_player->setPosition(positionMs);
+    m_isSeeking = false;
+}
+
+void VideoPlayerWidget::togglePlayPause()
+{
+    if (m_player->playbackState() == QMediaPlayer::PlayingState) {
+        pause();
+    } else {
+        play();
     }
 }
 
 QString VideoPlayerWidget::formatTime(qint64 ms)
 {
-    const qint64 totalSec = ms / 1000;
-    const qint64 m = totalSec / 60;
-    const qint64 s = totalSec % 60;
-    return QStringLiteral("%1:%2")
-        .arg(m, 2, 10, QLatin1Char('0'))
-        .arg(s, 2, 10, QLatin1Char('0'));
-}
+    const int totalSeconds = static_cast<int>(ms / 1000);
+    const int seconds = totalSeconds % 60;
+    const int minutes = (totalSeconds / 60) % 60;
+    const int hours = totalSeconds / 3600;
 
-void VideoPlayerWidget::retranslateUi()
-{
-    m_stopButton->setText(trId("player.stop"));
-    m_autoSkipCheck->setText(trId("player.autoSkip"));
-    onPlaybackStateChanged();
+    if (hours > 0) {
+        return QStringLiteral("%1:%2:%3")
+            .arg(hours, 2, 10, QLatin1Char('0'))
+            .arg(minutes, 2, 10, QLatin1Char('0'))
+            .arg(seconds, 2, 10, QLatin1Char('0'));
+    }
+    return QStringLiteral("%1:%2")
+        .arg(minutes, 2, 10, QLatin1Char('0'))
+        .arg(seconds, 2, 10, QLatin1Char('0'));
 }

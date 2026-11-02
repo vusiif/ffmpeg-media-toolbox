@@ -1339,5 +1339,173 @@
         <source>quality.export</source>
         <translation>Export Report</translation>
     </message>
+    <message id="convert.losslessCut">
+        <source>convert.losslessCut</source>
+        <translation>Lossless Cut</translation>
+    </message>
+    <message id="cut.action.openStudio">
+        <source>cut.action.openStudio</source>
+        <translation>🚀 Open Cut Studio</translation>
+    </message>
+    <message id="cut.dialog.title">
+        <source>cut.dialog.title</source>
+        <translation>Lossless &amp; Smart Cut Studio</translation>
+    </message>
+    <message id="cut.dialog.subtitle">
+        <source>cut.dialog.subtitle</source>
+        <translation>Sub-frame lossless cutting, smart GOP-boundary re-encoding, and seamless multi-segment stitching.</translation>
+    </message>
+    <message id="cut.dialog.filePlaceholder">
+        <source>cut.dialog.filePlaceholder</source>
+        <translation>Select or drop a video file here...</translation>
+    </message>
+    <message id="cut.dialog.browse">
+        <source>cut.dialog.browse</source>
+        <translation>Browse</translation>
+    </message>
+    <message id="cut.keyframe.detect">
+        <source>cut.keyframe.detect</source>
+        <translation>🔍 Detect Keyframes</translation>
+    </message>
+    <message id="cut.keyframe.prev">
+        <source>cut.keyframe.prev</source>
+        <translation>⏮ Prev Keyframe</translation>
+    </message>
+    <message id="cut.keyframe.next">
+        <source>cut.keyframe.next</source>
+        <translation>⏭ Next Keyframe</translation>
+    </message>
+    <message id="cut.keyframe.snapIn">
+        <source>cut.keyframe.snapIn</source>
+        <translation>🧲 Snap In</translation>
+    </message>
+    <message id="cut.keyframe.snapOut">
+        <source>cut.keyframe.snapOut</source>
+        <translation>🧲 Snap Out</translation>
+    </message>
+    <message id="cut.keyframe.notDetected">
+        <source>cut.keyframe.notDetected</source>
+        <translation>Keyframes not detected yet (click detect button to parse)</translation>
+    </message>
+    <message id="cut.keyframe.detecting">
+        <source>cut.keyframe.detecting</source>
+        <translation>⏳ Fast probing video keyframes...</translation>
+    </message>
+    <message id="cut.keyframe.detectFailed">
+        <source>cut.keyframe.detectFailed</source>
+        <translation>⚠️ Failed to detect keyframes, fallback to standard mode</translation>
+    </message>
+    <message id="cut.keyframe.bothAligned">
+        <source>cut.keyframe.bothAligned</source>
+        <translation>✅ Both In &amp; Out are aligned to keyframes (%1 keyframes found, 100% lossless copy)</translation>
+    </message>
+    <message id="cut.keyframe.inAlignedOnly">
+        <source>cut.keyframe.inAlignedOnly</source>
+        <translation>⚠️ In point aligned; Out point is not aligned (nearest keyframe: %1s)</translation>
+    </message>
+    <message id="cut.keyframe.outAlignedOnly">
+        <source>cut.keyframe.outAlignedOnly</source>
+        <translation>⚠️ Out point aligned; In point is not aligned (nearest keyframe: %1s)</translation>
+    </message>
+    <message id="cut.keyframe.neitherAligned">
+        <source>cut.keyframe.neitherAligned</source>
+        <translation>⚠️ In and Out are not aligned to keyframes (Smart Cut or Snapping recommended)</translation>
+    </message>
+    <message id="cut.range.markIn">
+        <source>cut.range.markIn</source>
+        <translation>Set In</translation>
+    </message>
+    <message id="cut.range.markOut">
+        <source>cut.range.markOut</source>
+        <translation>Set Out</translation>
+    </message>
+    <message id="cut.range.preview">
+        <source>cut.range.preview</source>
+        <translation>Preview Clip</translation>
+    </message>
+    <message id="cut.range.addSegment">
+        <source>cut.range.addSegment</source>
+        <translation>➕ Add to Segment List</translation>
+    </message>
+    <message id="cut.table.title">
+        <source>cut.table.title</source>
+        <translation>Segments &amp; Multi-Cut Manager</translation>
+    </message>
+    <message id="cut.table.clear">
+        <source>cut.table.clear</source>
+        <translation>Clear All</translation>
+    </message>
+    <message id="cut.table.colIndex">
+        <source>cut.table.colIndex</source>
+        <translation>#</translation>
+    </message>
+    <message id="cut.table.colStart">
+        <source>cut.table.colStart</source>
+        <translation>Start</translation>
+    </message>
+    <message id="cut.table.colEnd">
+        <source>cut.table.colEnd</source>
+        <translation>End</translation>
+    </message>
+    <message id="cut.table.colDuration">
+        <source>cut.table.colDuration</source>
+        <translation>Duration</translation>
+    </message>
+    <message id="cut.table.colAction">
+        <source>cut.table.colAction</source>
+        <translation>Action</translation>
+    </message>
+    <message id="cut.table.summary">
+        <source>cut.table.summary</source>
+        <translation>%1 segments selected, total duration: %2</translation>
+    </message>
+    <message id="cut.mode.caption">
+        <source>cut.mode.caption</source>
+        <translation>Cut Mode</translation>
+    </message>
+    <message id="cut.mode.lossless">
+        <source>cut.mode.lossless</source>
+        <translation>Keyframe Lossless (-c copy, instant)</translation>
+    </message>
+    <message id="cut.mode.smart">
+        <source>cut.mode.smart</source>
+        <translation>Smart Cut (edge frames re-encode, middle lossless)</translation>
+    </message>
+    <message id="cut.mode.accurate">
+        <source>cut.mode.accurate</source>
+        <translation>Accurate Re-encode (frame-accurate)</translation>
+    </message>
+    <message id="cut.export.caption">
+        <source>cut.export.caption</source>
+        <translation>Export Action</translation>
+    </message>
+    <message id="cut.export.merge">
+        <source>cut.export.merge</source>
+        <translation>Merge all segments into one file</translation>
+    </message>
+    <message id="cut.export.separate">
+        <source>cut.export.separate</source>
+        <translation>Export each segment as a separate file</translation>
+    </message>
+    <message id="cut.format.caption">
+        <source>cut.format.caption</source>
+        <translation>Format</translation>
+    </message>
+    <message id="cut.action.export">
+        <source>cut.action.export</source>
+        <translation>🚀 Start Cut / Add to Queue</translation>
+    </message>
+    <message id="cut.error.invalidRange">
+        <source>cut.error.invalidRange</source>
+        <translation>End timestamp must be greater than start timestamp!</translation>
+    </message>
+    <message id="cut.error.noFile">
+        <source>cut.error.noFile</source>
+        <translation>Please select a valid input video file first!</translation>
+    </message>
+    <message id="cut.success.enqueued">
+        <source>cut.success.enqueued</source>
+        <translation>Successfully added %1 cut job(s) to the queue!</translation>
+    </message>
 </context>
 </TS>

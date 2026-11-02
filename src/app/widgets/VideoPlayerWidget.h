@@ -26,6 +26,12 @@ public:
 
     void setMarkRange(double inSec, double outSec);
     void clearMarkRange();
+    void setKeyframes(const QVector<double> &keyframes);
+    QVector<double> keyframes() const;
+    void clearKeyframes();
+    void setCutSegments(const QVector<QPair<double, double>> &segments);
+    void clearCutSegments();
+
     double currentPositionSec() const;
     double durationSec() const;
     void seekToSec(double sec);

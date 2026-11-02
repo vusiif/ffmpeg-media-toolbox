@@ -1339,5 +1339,173 @@
         <source>quality.export</source>
         <translation>导出评分报告</translation>
     </message>
+    <message id="convert.losslessCut">
+        <source>convert.losslessCut</source>
+        <translation>极速无损剪辑</translation>
+    </message>
+    <message id="cut.action.openStudio">
+        <source>cut.action.openStudio</source>
+        <translation>🚀 打开无损剪辑工作台</translation>
+    </message>
+    <message id="cut.dialog.title">
+        <source>cut.dialog.title</source>
+        <translation>极速无损与智能剪辑工作台</translation>
+    </message>
+    <message id="cut.dialog.subtitle">
+        <source>cut.dialog.subtitle</source>
+        <translation>基于关键帧分析的毫秒级无损裁剪、首尾帧智能微重编码与多片段无缝拼接。</translation>
+    </message>
+    <message id="cut.dialog.filePlaceholder">
+        <source>cut.dialog.filePlaceholder</source>
+        <translation>请选择或拖拽视频文件至此...</translation>
+    </message>
+    <message id="cut.dialog.browse">
+        <source>cut.dialog.browse</source>
+        <translation>浏览选择</translation>
+    </message>
+    <message id="cut.keyframe.detect">
+        <source>cut.keyframe.detect</source>
+        <translation>🔍 探测关键帧</translation>
+    </message>
+    <message id="cut.keyframe.prev">
+        <source>cut.keyframe.prev</source>
+        <translation>⏮ 上一关键帧</translation>
+    </message>
+    <message id="cut.keyframe.next">
+        <source>cut.keyframe.next</source>
+        <translation>⏭ 下一关键帧</translation>
+    </message>
+    <message id="cut.keyframe.snapIn">
+        <source>cut.keyframe.snapIn</source>
+        <translation>🧲 起点吸附</translation>
+    </message>
+    <message id="cut.keyframe.snapOut">
+        <source>cut.keyframe.snapOut</source>
+        <translation>🧲 终点吸附</translation>
+    </message>
+    <message id="cut.keyframe.notDetected">
+        <source>cut.keyframe.notDetected</source>
+        <translation>尚未探测关键帧 (点击探测按钮即可获取准确关键帧位置)</translation>
+    </message>
+    <message id="cut.keyframe.detecting">
+        <source>cut.keyframe.detecting</source>
+        <translation>⏳ 正在高速探测视频关键帧...</translation>
+    </message>
+    <message id="cut.keyframe.detectFailed">
+        <source>cut.keyframe.detectFailed</source>
+        <translation>⚠️ 关键帧探测失败，将使用常规模式</translation>
+    </message>
+    <message id="cut.keyframe.bothAligned">
+        <source>cut.keyframe.bothAligned</source>
+        <translation>✅ 起止点均已精准对齐关键帧 (已探测 %1 个关键帧，100% 无损极速导出)</translation>
+    </message>
+    <message id="cut.keyframe.inAlignedOnly">
+        <source>cut.keyframe.inAlignedOnly</source>
+        <translation>⚠️ 起点已对齐，终点未对齐关键帧 (最近关键帧: %1s)</translation>
+    </message>
+    <message id="cut.keyframe.outAlignedOnly">
+        <source>cut.keyframe.outAlignedOnly</source>
+        <translation>⚠️ 终点已对齐，起点未对齐关键帧 (最近关键帧: %1s)</translation>
+    </message>
+    <message id="cut.keyframe.neitherAligned">
+        <source>cut.keyframe.neitherAligned</source>
+        <translation>⚠️ 起止点均未对齐关键帧 (可使用智能微切或吸附关键帧)</translation>
+    </message>
+    <message id="cut.range.markIn">
+        <source>cut.range.markIn</source>
+        <translation>标记起点 [In]</translation>
+    </message>
+    <message id="cut.range.markOut">
+        <source>cut.range.markOut</source>
+        <translation>标记终点 [Out]</translation>
+    </message>
+    <message id="cut.range.preview">
+        <source>cut.range.preview</source>
+        <translation>预览片段</translation>
+    </message>
+    <message id="cut.range.addSegment">
+        <source>cut.range.addSegment</source>
+        <translation>➕ 添加到切片列表</translation>
+    </message>
+    <message id="cut.table.title">
+        <source>cut.table.title</source>
+        <translation>切片列表与多段管理</translation>
+    </message>
+    <message id="cut.table.clear">
+        <source>cut.table.clear</source>
+        <translation>清空切片</translation>
+    </message>
+    <message id="cut.table.colIndex">
+        <source>cut.table.colIndex</source>
+        <translation>序号</translation>
+    </message>
+    <message id="cut.table.colStart">
+        <source>cut.table.colStart</source>
+        <translation>起点</translation>
+    </message>
+    <message id="cut.table.colEnd">
+        <source>cut.table.colEnd</source>
+        <translation>终点</translation>
+    </message>
+    <message id="cut.table.colDuration">
+        <source>cut.table.colDuration</source>
+        <translation>时长</translation>
+    </message>
+    <message id="cut.table.colAction">
+        <source>cut.table.colAction</source>
+        <translation>操作</translation>
+    </message>
+    <message id="cut.table.summary">
+        <source>cut.table.summary</source>
+        <translation>已选 %1 个切片，合计时长: %2</translation>
+    </message>
+    <message id="cut.mode.caption">
+        <source>cut.mode.caption</source>
+        <translation>剪辑模式</translation>
+    </message>
+    <message id="cut.mode.lossless">
+        <source>cut.mode.lossless</source>
+        <translation>极速无损 (Keyframe Copy - 0转码/秒级导出)</translation>
+    </message>
+    <message id="cut.mode.smart">
+        <source>cut.mode.smart</source>
+        <translation>智能微切 (Smart Cut - 边界智能微编码/中间无损直通)</translation>
+    </message>
+    <message id="cut.mode.accurate">
+        <source>cut.mode.accurate</source>
+        <translation>逐帧重编码 (Accurate - 逐帧精确/高质量CRF)</translation>
+    </message>
+    <message id="cut.export.caption">
+        <source>cut.export.caption</source>
+        <translation>导出方式</translation>
+    </message>
+    <message id="cut.export.merge">
+        <source>cut.export.merge</source>
+        <translation>拼接合并为一个完整视频 (Merge Segments)</translation>
+    </message>
+    <message id="cut.export.separate">
+        <source>cut.export.separate</source>
+        <translation>分别导出为独立片段 (Export Separate Files)</translation>
+    </message>
+    <message id="cut.format.caption">
+        <source>cut.format.caption</source>
+        <translation>封装格式</translation>
+    </message>
+    <message id="cut.action.export">
+        <source>cut.action.export</source>
+        <translation>🚀 开始剪辑 / 加入队列</translation>
+    </message>
+    <message id="cut.error.invalidRange">
+        <source>cut.error.invalidRange</source>
+        <translation>切片终点必须大于起点！</translation>
+    </message>
+    <message id="cut.error.noFile">
+        <source>cut.error.noFile</source>
+        <translation>请先选择有效的输入视频文件！</translation>
+    </message>
+    <message id="cut.success.enqueued">
+        <source>cut.success.enqueued</source>
+        <translation>成功将 %1 个剪辑任务加入后台执行队列！</translation>
+    </message>
 </context>
 </TS>

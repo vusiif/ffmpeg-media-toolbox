@@ -47,6 +47,7 @@ private:
     void enqueueSample();
     void openABCompare();
     void openQualityDialog();
+    void openLosslessCutDialog();
     void addToQueue();
     void updateCommandPreview();
     void rebuildCodecLists();
@@ -154,6 +155,7 @@ private:
     ElaPushButton *m_sampleButton = nullptr;
     ElaPushButton *m_abCompareButton = nullptr;
     ElaPushButton *m_qualityButton = nullptr;
+    ElaPushButton *m_losslessCutButton = nullptr;
     ElaPushButton *m_addButton = nullptr;
     QString m_lastSamplePath;
 };

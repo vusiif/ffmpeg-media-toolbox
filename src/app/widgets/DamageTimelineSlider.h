@@ -3,6 +3,7 @@
 #include "ElaSlider.h"
 #include "media/CorruptedVideoScanner.h"
 
+#include <QPair>
 #include <QVector>
 
 class DamageTimelineSlider : public ElaSlider
@@ -25,6 +26,14 @@ public:
     double markOut() const { return m_markOut; }
     void clearMarkRange();
 
+    void setKeyframes(const QVector<double> &keyframes);
+    QVector<double> keyframes() const;
+    void clearKeyframes();
+
+    void setCutSegments(const QVector<QPair<double, double>> &segments);
+    QVector<QPair<double, double>> cutSegments() const;
+    void clearCutSegments();
+
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -34,4 +43,6 @@ private:
     double m_markIn = 0.0;
     double m_markOut = 0.0;
     QVector<CorruptedSegment> m_segments;
+    QVector<double> m_keyframes;
+    QVector<QPair<double, double>> m_cutSegments;
 };

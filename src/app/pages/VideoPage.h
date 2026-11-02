@@ -1,9 +1,13 @@
 #pragma once
 
+#include <QProcess>
+#include <QVector>
 #include <QWidget>
+#include "cut/SmartCutEngine.h"
 
 class FFmpegLocator;
 class FFmpegCommandBuilder;
+class MediaProbeService;
 class JobQueue;
 class QListWidget;
 class QStackedWidget;
@@ -25,7 +29,9 @@ class VideoPage : public QWidget
 
 public:
     explicit VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                       JobQueue *queue, QWidget *parent = nullptr);
+                       JobQueue *queue, MediaProbeService *probeService = nullptr,
+                       QWidget *parent = nullptr);
+    ~VideoPage() override;
 
     void retranslateUi();
 
@@ -38,6 +44,11 @@ private:
     void enqueue(const QString &name, const QStringList &args);
 
     void trim();
+    void openLosslessCutStudio();
+    void detectKeyframes();
+    void onKeyframeProbeFinished(int exitCode);
+    void updateKeyframeStatus();
+
     void extractAudio();
     void mute();
     void screenshot();
@@ -53,8 +64,11 @@ private:
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
     JobQueue *m_queue;
+    MediaProbeService *m_probeService;
 
     QString m_inputFile;
+    QVector<double> m_keyframes;
+    QProcess *m_probeProcess = nullptr;
 
     ElaText *m_titleLabel = nullptr;
     ElaText *m_inputCaption = nullptr;
@@ -75,10 +89,18 @@ private:
     ElaPushButton *m_setInButton = nullptr;
     ElaPushButton *m_setOutButton = nullptr;
     ElaPushButton *m_previewTrimButton = nullptr;
+    ElaPushButton *m_prevKeyframeBtn = nullptr;
+    ElaPushButton *m_nextKeyframeBtn = nullptr;
+    ElaPushButton *m_snapInButton = nullptr;
+    ElaPushButton *m_snapOutButton = nullptr;
+    ElaPushButton *m_openStudioButton = nullptr;
+    ElaText *m_keyframeStatusLabel = nullptr;
     ElaText *m_trimStartCaption = nullptr;
     ElaDoubleSpinBox *m_trimStart = nullptr;
     ElaText *m_trimEndCaption = nullptr;
     ElaDoubleSpinBox *m_trimEnd = nullptr;
+    ElaText *m_trimModeCaption = nullptr;
+    ElaComboBox *m_trimMode = nullptr;
     ElaText *m_trimFormatCaption = nullptr;
     ElaComboBox *m_trimFormat = nullptr;
     ElaText *m_trimCopyCaption = nullptr;

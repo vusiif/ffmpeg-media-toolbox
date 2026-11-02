@@ -1,5 +1,6 @@
 #include "ConvertPage.h"
 #include "app/dialogs/ABCompareDialog.h"
+#include "app/dialogs/LosslessCutDialog.h"
 #include "app/dialogs/VideoQualityDialog.h"
 
 #include <QtConcurrent/QtConcurrentRun>
@@ -444,6 +445,12 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_qualityButton, &ElaPushButton::clicked, this, &ConvertPage::openQualityDialog);
     buttonRow->addWidget(m_qualityButton);
 
+    m_losslessCutButton = new ElaPushButton(this);
+    m_losslessCutButton->setFixedHeight(38);
+    m_losslessCutButton->setMinimumWidth(120);
+    connect(m_losslessCutButton, &ElaPushButton::clicked, this, &ConvertPage::openLosslessCutDialog);
+    buttonRow->addWidget(m_losslessCutButton);
+
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
     m_addButton->setFixedHeight(38);
@@ -758,6 +765,16 @@ void ConvertPage::openQualityDialog()
     dlg.exec();
 }
 
+void ConvertPage::openLosslessCutDialog()
+{
+    auto *dlg = new LosslessCutDialog(m_locator, m_probe, m_queue, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->loadFile(m_inputFile);
+    }
+    dlg->exec();
+}
+
 void ConvertPage::addToQueue()
 {
     if (m_inputFile.isEmpty()) return;
@@ -1041,6 +1058,7 @@ void ConvertPage::retranslateUi()
     m_sampleButton->setText(trId("convert.sampleClip"));
     m_abCompareButton->setText(trId("convert.abCompare"));
     m_qualityButton->setText(trId("convert.qualityEval"));
+    m_losslessCutButton->setText(trId("convert.losslessCut"));
     m_addButton->setText(trId("convert.addToQueue"));
     updateCommandPreview();
 }
