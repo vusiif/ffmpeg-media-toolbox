@@ -144,6 +144,16 @@ double VideoPlayerWidget::durationSec() const
     return m_durationMs / 1000.0;
 }
 
+qint64 VideoPlayerWidget::currentPositionMs() const
+{
+    return static_cast<qint64>(currentPositionSec() * 1000.0);
+}
+
+void VideoPlayerWidget::seekToMs(qint64 ms)
+{
+    seekToSec(ms / 1000.0);
+}
+
 void VideoPlayerWidget::seekToSec(double sec)
 {
     const qint64 ms = static_cast<qint64>(sec * 1000.0);
@@ -197,6 +207,7 @@ void VideoPlayerWidget::onPositionChanged(qint64 positionMs)
     m_timeLabel->setText(QStringLiteral("%1 / %2")
                              .arg(formatTime(positionMs))
                              .arg(formatTime(m_durationMs)));
+    emit positionChanged(positionMs);
 
     // Auto-skip logic
     if (m_autoSkipCheck->isChecked() && !m_segments.isEmpty()) {

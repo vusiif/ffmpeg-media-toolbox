@@ -1867,5 +1867,105 @@
         <source>batch.matrix.noTargetSelected</source>
         <translation>Please select at least one export target profile!</translation>
     </message>
+    <message id="sub.dialog.title">
+        <source>sub.dialog.title</source>
+        <translation>Subtitle Studio</translation>
+    </message>
+    <message id="sub.dialog.subtitle">
+        <source>sub.dialog.subtitle</source>
+        <translation>Offline AI speech-to-subtitle, millisecond timing alignment, editing and mux/burn</translation>
+    </message>
+    <message id="sub.col.start">
+        <source>sub.col.start</source>
+        <translation>Start Time</translation>
+    </message>
+    <message id="sub.col.end">
+        <source>sub.col.end</source>
+        <translation>End Time</translation>
+    </message>
+    <message id="sub.col.duration">
+        <source>sub.col.duration</source>
+        <translation>Duration</translation>
+    </message>
+    <message id="sub.col.text">
+        <source>sub.col.text</source>
+        <translation>Subtitle Text</translation>
+    </message>
+    <message id="sub.action.import">
+        <source>sub.action.import</source>
+        <translation>Import Subtitles</translation>
+    </message>
+    <message id="sub.action.export">
+        <source>sub.action.export</source>
+        <translation>Export Subtitles</translation>
+    </message>
+    <message id="sub.action.aiWhisper">
+        <source>sub.action.aiWhisper</source>
+        <translation>AI Speech to Text</translation>
+    </message>
+    <message id="sub.action.applyShift">
+        <source>sub.action.applyShift</source>
+        <translation>Apply Shift</translation>
+    </message>
+    <message id="sub.action.burnVideo">
+        <source>sub.action.burnVideo</source>
+        <translation>Burn into Video</translation>
+    </message>
+    <message id="sub.action.softMux">
+        <source>sub.action.softMux</source>
+        <translation>Soft Mux Subtitles</translation>
+    </message>
+    <message id="sub.emptyNotice">
+        <source>sub.emptyNotice</source>
+        <translation>No subtitle entries found!</translation>
+    </message>
+    <message id="sub.saveSuccess">
+        <source>sub.saveSuccess</source>
+        <translation>Subtitles exported successfully!</translation>
+    </message>
+    <message id="sub.saveFailed">
+        <source>sub.saveFailed</source>
+        <translation>Failed to export subtitles, check permissions!</translation>
+    </message>
+    <message id="sub.newSubtitle">
+        <source>sub.newSubtitle</source>
+        <translation>New subtitle text...</translation>
+    </message>
+    <message id="sub.noVideo">
+        <source>sub.noVideo</source>
+        <translation>Please load or select a video file first!</translation>
+    </message>
+    <message id="sub.ai.extractingAudio">
+        <source>sub.ai.extractingAudio</source>
+        <translation>Extracting 16kHz mono speech audio...</translation>
+    </message>
+    <message id="sub.ai.extractFailed">
+        <source>sub.ai.extractFailed</source>
+        <translation>Failed to extract speech audio, check FFmpeg installation!</translation>
+    </message>
+    <message id="sub.ai.runningWhisper">
+        <source>sub.ai.runningWhisper</source>
+        <translation>Running local offline Whisper AI model...</translation>
+    </message>
+    <message id="sub.ai.cliNotFoundNotice">
+        <source>sub.ai.cliNotFoundNotice</source>
+        <translation>Local whisper-cli.exe was not detected.\nYou can place whisper-cli.exe and ggml models in the app directory to enjoy fully offline AI subtitle generation!</translation>
+    </message>
+    <message id="sub.ai.complete">
+        <source>sub.ai.complete</source>
+        <translation>AI speech recognition complete, subtitles imported!</translation>
+    </message>
+    <message id="sub.ai.failed">
+        <source>sub.ai.failed</source>
+        <translation>AI speech recognition failed or was interrupted!</translation>
+    </message>
+    <message id="sub.enqueuedNotice">
+        <source>sub.enqueuedNotice</source>
+        <translation>Subtitle job successfully enqueued!</translation>
+    </message>
+    <message id="video.sub.openStudio">
+        <source>video.sub.openStudio</source>
+        <translation>🎨 Open Subtitle Studio</translation>
+    </message>
 </context>
 </TS>

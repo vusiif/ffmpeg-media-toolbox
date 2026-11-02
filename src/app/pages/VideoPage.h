@@ -58,6 +58,7 @@ private:
     void sequence();
     void watermark();
     void subtitleMux();
+    void openSubtitleStudio();
     void adjust();
     void detectAutoCrop();
     void pip();
@@ -189,6 +190,7 @@ private:
     ElaText *m_subQualityCaption = nullptr;
     ElaSpinBox *m_subQualitySpin = nullptr;
     ElaPushButton *m_subButton = nullptr;
+    ElaPushButton *m_openSubStudioBtn = nullptr;
     QString m_subtitleFile;
 
     // Tab 4: Frames & Animation

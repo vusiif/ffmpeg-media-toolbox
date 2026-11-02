@@ -92,6 +92,10 @@ set(FFMEDIA_CORE_SOURCES
     src/batch/BatchExportMatrix.cpp
     src/batch/FolderWatcherService.h
     src/batch/FolderWatcherService.cpp
+    src/subtitles/SubtitleEngine.h
+    src/subtitles/SubtitleEngine.cpp
+    src/subtitles/WhisperPipeline.h
+    src/subtitles/WhisperPipeline.cpp
 )
 
 set(APP_SOURCES
@@ -130,6 +134,8 @@ set(APP_SOURCES
     src/app/dialogs/LosslessCutDialog.cpp
     src/app/dialogs/FilterStudioDialog.h
     src/app/dialogs/FilterStudioDialog.cpp
+    src/app/dialogs/SubtitleStudioDialog.h
+    src/app/dialogs/SubtitleStudioDialog.cpp
 )
 
 set(TS_FILES
@@ -191,7 +197,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine MediaFilterStudio BatchProcessing)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine MediaFilterStudio BatchProcessing SubtitleEngine)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

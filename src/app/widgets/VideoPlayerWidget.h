@@ -33,8 +33,10 @@ public:
     void clearCutSegments();
 
     double currentPositionSec() const;
+    qint64 currentPositionMs() const;
     double durationSec() const;
     void seekToSec(double sec);
+    void seekToMs(qint64 ms);
     void setAutoSkipVisible(bool visible);
 
     bool isAutoSkipEnabled() const;
@@ -48,6 +50,7 @@ public:
 
 signals:
     void skippedSegment(double fromSec, double toSec);
+    void positionChanged(qint64 positionMs);
 
 private slots:
     void onPositionChanged(qint64 positionMs);

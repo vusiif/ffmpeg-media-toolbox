@@ -36,6 +36,7 @@
 #include "output/OutputNaming.h"
 #include "app/widgets/VideoPlayerWidget.h"
 #include "app/dialogs/FilterStudioDialog.h"
+#include "app/dialogs/SubtitleStudioDialog.h"
 #include "app/dialogs/LosslessCutDialog.h"
 #include "media/MediaProbeService.h"
 
@@ -586,8 +587,18 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         m_subQualitySpin->setVisible(checked);
     });
     qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subForm);
+    m_openSubStudioBtn = new ElaPushButton(trId("video.sub.openStudio"), m_subCard);
+    m_openSubStudioBtn->setFixedHeight(36);
+    connect(m_openSubStudioBtn, &ElaPushButton::clicked, this, &VideoPage::openSubtitleStudio);
+
     m_subButton = createCardButton(m_subCard);
     connect(m_subButton, &ElaPushButton::clicked, this, &VideoPage::subtitleMux);
+
+    auto *subBtnRow = new QHBoxLayout();
+    subBtnRow->addWidget(m_openSubStudioBtn);
+    subBtnRow->addWidget(m_subButton);
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subBtnRow);
+
     bodyEffectsLayout->addWidget(m_subCard);
 
     bodyEffectsLayout->addStretch();
@@ -921,6 +932,16 @@ void VideoPage::watermark()
                                       m_wmOpacity->value()));
 }
 
+void VideoPage::openSubtitleStudio()
+{
+    auto *dlg = new SubtitleStudioDialog(m_queue, m_locator, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->setVideoFile(m_inputFile);
+    }
+    dlg->show();
+}
+
 void VideoPage::subtitleMux()
 {
     if (m_inputFile.isEmpty() || m_subtitleFile.isEmpty()) return;
@@ -1135,6 +1156,7 @@ void VideoPage::retranslateUi()
     m_subCaption->setText(trId("video.sub.file") + QStringLiteral(":"));
     m_subPathButton->setText(trId("common.browse"));
     m_subBurnCheck->setText(trId("video.sub.burn"));
+    m_openSubStudioBtn->setText(trId("video.sub.openStudio"));
     m_subQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_subButton->setText(trId("convert.addToQueue"));
 

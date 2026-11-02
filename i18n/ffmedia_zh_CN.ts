@@ -1867,5 +1867,105 @@
         <source>batch.matrix.noTargetSelected</source>
         <translation>请至少勾选一个导出目标规格！</translation>
     </message>
+    <message id="sub.dialog.title">
+        <source>sub.dialog.title</source>
+        <translation>专业字幕工作台</translation>
+    </message>
+    <message id="sub.dialog.subtitle">
+        <source>sub.dialog.subtitle</source>
+        <translation>集成本地 AI 离线语音识别、时间轴毫秒级校准、双语字幕编辑与压制导出</translation>
+    </message>
+    <message id="sub.col.start">
+        <source>sub.col.start</source>
+        <translation>开始时间</translation>
+    </message>
+    <message id="sub.col.end">
+        <source>sub.col.end</source>
+        <translation>结束时间</translation>
+    </message>
+    <message id="sub.col.duration">
+        <source>sub.col.duration</source>
+        <translation>持续时间</translation>
+    </message>
+    <message id="sub.col.text">
+        <source>sub.col.text</source>
+        <translation>字幕内容</translation>
+    </message>
+    <message id="sub.action.import">
+        <source>sub.action.import</source>
+        <translation>导入字幕</translation>
+    </message>
+    <message id="sub.action.export">
+        <source>sub.action.export</source>
+        <translation>导出字幕</translation>
+    </message>
+    <message id="sub.action.aiWhisper">
+        <source>sub.action.aiWhisper</source>
+        <translation>AI 语音识别</translation>
+    </message>
+    <message id="sub.action.applyShift">
+        <source>sub.action.applyShift</source>
+        <translation>应用平移</translation>
+    </message>
+    <message id="sub.action.burnVideo">
+        <source>sub.action.burnVideo</source>
+        <translation>硬字幕压制导出</translation>
+    </message>
+    <message id="sub.action.softMux">
+        <source>sub.action.softMux</source>
+        <translation>软字幕封装导出</translation>
+    </message>
+    <message id="sub.emptyNotice">
+        <source>sub.emptyNotice</source>
+        <translation>当前没有字幕条目！</translation>
+    </message>
+    <message id="sub.saveSuccess">
+        <source>sub.saveSuccess</source>
+        <translation>字幕文件导出成功！</translation>
+    </message>
+    <message id="sub.saveFailed">
+        <source>sub.saveFailed</source>
+        <translation>导出字幕失败，请检查写入权限！</translation>
+    </message>
+    <message id="sub.newSubtitle">
+        <source>sub.newSubtitle</source>
+        <translation>新字幕内容...</translation>
+    </message>
+    <message id="sub.noVideo">
+        <source>sub.noVideo</source>
+        <translation>请先加载或选择一个视频文件！</translation>
+    </message>
+    <message id="sub.ai.extractingAudio">
+        <source>sub.ai.extractingAudio</source>
+        <translation>正在提取 16kHz 纯净单声道语音音频...</translation>
+    </message>
+    <message id="sub.ai.extractFailed">
+        <source>sub.ai.extractFailed</source>
+        <translation>提取语音音频失败，请检查 FFmpeg 安装！</translation>
+    </message>
+    <message id="sub.ai.runningWhisper">
+        <source>sub.ai.runningWhisper</source>
+        <translation>正在运行本地离线 AI 语音识别模型...</translation>
+    </message>
+    <message id="sub.ai.cliNotFoundNotice">
+        <source>sub.ai.cliNotFoundNotice</source>
+        <translation>未检测到本地 whisper-cli.exe 可执行程序。\n您可以将 whisper.cpp 编译后的 whisper-cli.exe 放置于应用目录或系统 PATH 中，并下载 ggml 模型文件即可享受完全离线的 AI 语音转字幕功能！</translation>
+    </message>
+    <message id="sub.ai.complete">
+        <source>sub.ai.complete</source>
+        <translation>AI 语音识别完成，字幕已自动导入！</translation>
+    </message>
+    <message id="sub.ai.failed">
+        <source>sub.ai.failed</source>
+        <translation>AI 语音识别运行失败或被中断！</translation>
+    </message>
+    <message id="sub.enqueuedNotice">
+        <source>sub.enqueuedNotice</source>
+        <translation>字幕导出任务已成功加入队列！</translation>
+    </message>
+    <message id="video.sub.openStudio">
+        <source>video.sub.openStudio</source>
+        <translation>🎨 打开专业字幕工作台</translation>
+    </message>
 </context>
 </TS>
