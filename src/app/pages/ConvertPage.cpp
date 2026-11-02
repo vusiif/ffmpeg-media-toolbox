@@ -1,5 +1,6 @@
 #include "ConvertPage.h"
 #include "app/dialogs/ABCompareDialog.h"
+#include "app/dialogs/VideoQualityDialog.h"
 
 #include <QtConcurrent/QtConcurrentRun>
 
@@ -437,6 +438,12 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_abCompareButton, &ElaPushButton::clicked, this, &ConvertPage::openABCompare);
     buttonRow->addWidget(m_abCompareButton);
 
+    m_qualityButton = new ElaPushButton(this);
+    m_qualityButton->setFixedHeight(38);
+    m_qualityButton->setMinimumWidth(120);
+    connect(m_qualityButton, &ElaPushButton::clicked, this, &ConvertPage::openQualityDialog);
+    buttonRow->addWidget(m_qualityButton);
+
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
     m_addButton->setFixedHeight(38);
@@ -744,6 +751,13 @@ void ConvertPage::openABCompare()
     dlg.exec();
 }
 
+void ConvertPage::openQualityDialog()
+{
+    if (m_inputFile.isEmpty()) return;
+    VideoQualityDialog dlg(m_inputFile, m_lastSamplePath, m_locator, m_probe, this);
+    dlg.exec();
+}
+
 void ConvertPage::addToQueue()
 {
     if (m_inputFile.isEmpty()) return;
@@ -1026,6 +1040,7 @@ void ConvertPage::retranslateUi()
     m_previewCaption->setText(trId("convert.preview") + QStringLiteral(":"));
     m_sampleButton->setText(trId("convert.sampleClip"));
     m_abCompareButton->setText(trId("convert.abCompare"));
+    m_qualityButton->setText(trId("convert.qualityEval"));
     m_addButton->setText(trId("convert.addToQueue"));
     updateCommandPreview();
 }

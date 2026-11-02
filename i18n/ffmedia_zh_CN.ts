@@ -1267,5 +1267,77 @@
         <source>repair.qc.col.desc</source>
         <translation>详细说明</translation>
     </message>
+    <message id="convert.qualityEval">
+        <source>convert.qualityEval</source>
+        <translation>画质量化打分</translation>
+    </message>
+    <message id="abcompare.evalQuality">
+        <source>abcompare.evalQuality</source>
+        <translation>客观画质评分</translation>
+    </message>
+    <message id="quality.dialog.title">
+        <source>quality.dialog.title</source>
+        <translation>客观画质量化评测 (VMAF / SSIM / PSNR)</translation>
+    </message>
+    <message id="quality.refFile">
+        <source>quality.refFile</source>
+        <translation>原始参考视频 (Reference)</translation>
+    </message>
+    <message id="quality.distFile">
+        <source>quality.distFile</source>
+        <translation>压缩后视频 (Distorted)</translation>
+    </message>
+    <message id="quality.browseRef">
+        <source>quality.browseRef</source>
+        <translation>选择原始参考视频</translation>
+    </message>
+    <message id="quality.browseDist">
+        <source>quality.browseDist</source>
+        <translation>选择压缩后视频</translation>
+    </message>
+    <message id="quality.mode">
+        <source>quality.mode</source>
+        <translation>评测范围</translation>
+    </message>
+    <message id="quality.mode.sample10s">
+        <source>quality.mode.sample10s</source>
+        <translation>快速样片评估 (10秒)</translation>
+    </message>
+    <message id="quality.mode.full">
+        <source>quality.mode.full</source>
+        <translation>全量完整评估 (整段视频)</translation>
+    </message>
+    <message id="quality.fastSubsample">
+        <source>quality.fastSubsample</source>
+        <translation>跳帧加速 (2x 提速)</translation>
+    </message>
+    <message id="quality.ratingGuide">
+        <source>quality.ratingGuide</source>
+        <translation>VMAF 评分标准：95~100 分为视觉无损（与原画肉眼无异）；85~94 分为高品质画质（推荐发布标准）；75~84 分为良好画质（轻度压缩）；低于 75 分存在明显压缩失真。</translation>
+    </message>
+    <message id="quality.start">
+        <source>quality.start</source>
+        <translation>开始画质评测</translation>
+    </message>
+    <message id="quality.evaluating">
+        <source>quality.evaluating</source>
+        <translation>正在进行画质客观评分计算，请稍候...</translation>
+    </message>
+    <message id="quality.cancelled">
+        <source>quality.cancelled</source>
+        <translation>画质评测已取消</translation>
+    </message>
+    <message id="quality.finished">
+        <source>quality.finished</source>
+        <translation>画质客观评分完成</translation>
+    </message>
+    <message id="quality.failed">
+        <source>quality.failed</source>
+        <translation>画质评测失败</translation>
+    </message>
+    <message id="quality.export">
+        <source>quality.export</source>
+        <translation>导出评分报告</translation>
+    </message>
 </context>
 </TS>

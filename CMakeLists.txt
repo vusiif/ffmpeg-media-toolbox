@@ -82,6 +82,8 @@ set(FFMEDIA_CORE_SOURCES
     src/pipeline/BatchPipeline.cpp
     src/pipeline/PipelineManager.h
     src/pipeline/PipelineManager.cpp
+    src/quality/VideoQualityEvaluator.h
+    src/quality/VideoQualityEvaluator.cpp
 )
 
 set(APP_SOURCES
@@ -114,6 +116,8 @@ set(APP_SOURCES
     src/app/pages/AudioPage.cpp
     src/app/dialogs/ABCompareDialog.h
     src/app/dialogs/ABCompareDialog.cpp
+    src/app/dialogs/VideoQualityDialog.h
+    src/app/dialogs/VideoQualityDialog.cpp
 )
 
 set(TS_FILES
@@ -175,7 +179,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

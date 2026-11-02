@@ -46,6 +46,7 @@ private:
     void enqueueJob(const MediaFile &info);
     void enqueueSample();
     void openABCompare();
+    void openQualityDialog();
     void addToQueue();
     void updateCommandPreview();
     void rebuildCodecLists();
@@ -152,6 +153,7 @@ private:
     // Bottom Action Row
     ElaPushButton *m_sampleButton = nullptr;
     ElaPushButton *m_abCompareButton = nullptr;
+    ElaPushButton *m_qualityButton = nullptr;
     ElaPushButton *m_addButton = nullptr;
     QString m_lastSamplePath;
 };

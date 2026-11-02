@@ -1267,5 +1267,77 @@
         <source>repair.qc.col.desc</source>
         <translation>Description</translation>
     </message>
+    <message id="convert.qualityEval">
+        <source>convert.qualityEval</source>
+        <translation>Quality Evaluation</translation>
+    </message>
+    <message id="abcompare.evalQuality">
+        <source>abcompare.evalQuality</source>
+        <translation>Evaluate Quality</translation>
+    </message>
+    <message id="quality.dialog.title">
+        <source>quality.dialog.title</source>
+        <translation>Objective Video Quality Assessment (VMAF / SSIM / PSNR)</translation>
+    </message>
+    <message id="quality.refFile">
+        <source>quality.refFile</source>
+        <translation>Reference Video (Original)</translation>
+    </message>
+    <message id="quality.distFile">
+        <source>quality.distFile</source>
+        <translation>Distorted Video (Encoded)</translation>
+    </message>
+    <message id="quality.browseRef">
+        <source>quality.browseRef</source>
+        <translation>Select Reference Video</translation>
+    </message>
+    <message id="quality.browseDist">
+        <source>quality.browseDist</source>
+        <translation>Select Distorted Video</translation>
+    </message>
+    <message id="quality.mode">
+        <source>quality.mode</source>
+        <translation>Scope</translation>
+    </message>
+    <message id="quality.mode.sample10s">
+        <source>quality.mode.sample10s</source>
+        <translation>Quick 10s Sample</translation>
+    </message>
+    <message id="quality.mode.full">
+        <source>quality.mode.full</source>
+        <translation>Full Video Stream</translation>
+    </message>
+    <message id="quality.fastSubsample">
+        <source>quality.fastSubsample</source>
+        <translation>Subsample 2x (Faster)</translation>
+    </message>
+    <message id="quality.ratingGuide">
+        <source>quality.ratingGuide</source>
+        <translation>VMAF Rating Scale: 95-100 is visually lossless; 85-94 is high quality; 75-84 is good quality; below 75 indicates noticeable compression loss.</translation>
+    </message>
+    <message id="quality.start">
+        <source>quality.start</source>
+        <translation>Start Evaluation</translation>
+    </message>
+    <message id="quality.evaluating">
+        <source>quality.evaluating</source>
+        <translation>Computing objective quality scores, please wait...</translation>
+    </message>
+    <message id="quality.cancelled">
+        <source>quality.cancelled</source>
+        <translation>Quality evaluation cancelled</translation>
+    </message>
+    <message id="quality.finished">
+        <source>quality.finished</source>
+        <translation>Quality evaluation finished</translation>
+    </message>
+    <message id="quality.failed">
+        <source>quality.failed</source>
+        <translation>Quality evaluation failed</translation>
+    </message>
+    <message id="quality.export">
+        <source>quality.export</source>
+        <translation>Export Report</translation>
+    </message>
 </context>
 </TS>

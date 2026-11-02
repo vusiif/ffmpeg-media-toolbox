@@ -1,20 +1,22 @@
 #include "ABCompareDialog.h"
-#include "ElaDoubleSpinBox.h"
-#include "ElaPushButton.h"
-#include "ElaText.h"
+
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/TrId.h"
 
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QHBoxLayout>
-#include <QImageReader>
-#include <QPixmap>
+#include <QLabel>
 #include <QProcess>
 #include <QScrollArea>
 #include <QUuid>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+
+#include "ElaDoubleSpinBox.h"
+#include "ElaPushButton.h"
+#include "ElaText.h"
 
 ABCompareDialog::ABCompareDialog(const QString &sourcePath,
                                  const QString &previewPath,
@@ -26,6 +28,7 @@ ABCompareDialog::ABCompareDialog(const QString &sourcePath,
     , m_previewPath(previewPath)
     , m_duration(qMax(0.0, duration))
     , m_locator(locator)
+    , m_evaluator(new VideoQualityEvaluator(locator, this))
 {
     const QString token = QUuid::createUuid().toString(QUuid::Id128).left(8);
     m_sourceTempImg = QDir::temp().filePath(QStringLiteral("ab_src_%1.png").arg(token));
@@ -34,6 +37,8 @@ ABCompareDialog::ABCompareDialog(const QString &sourcePath,
     m_watcher = new QFutureWatcher<QPair<bool, bool>>(this);
     connect(m_watcher, &QFutureWatcher<QPair<bool, bool>>::finished,
             this, &ABCompareDialog::onCaptureFinished);
+    connect(m_evaluator, &VideoQualityEvaluator::finished,
+            this, &ABCompareDialog::onQualityEvaluationFinished);
 
     setupUi();
     retranslateUi();
@@ -113,6 +118,10 @@ void ABCompareDialog::setupUi()
     connect(m_refreshBtn, &ElaPushButton::clicked, this, &ABCompareDialog::captureFrames);
     ctrlRow->addWidget(m_refreshBtn);
 
+    m_evalQualityBtn = new ElaPushButton(this);
+    connect(m_evalQualityBtn, &ElaPushButton::clicked, this, &ABCompareDialog::onEvaluateQuality);
+    ctrlRow->addWidget(m_evalQualityBtn);
+
     ctrlRow->addStretch();
     rootLayout->addLayout(ctrlRow);
 
@@ -160,6 +169,9 @@ void ABCompareDialog::setupUi()
     m_statusLabel->setStyleSheet(QStringLiteral("color: #888888;"));
     bottomRow->addWidget(m_statusLabel, 1);
 
+    m_qualityScoreLabel = new ElaText(QString(), 13, this);
+    bottomRow->addWidget(m_qualityScoreLabel);
+
     m_closeBtn = new ElaPushButton(this);
     connect(m_closeBtn, &ElaPushButton::clicked, this, &QDialog::accept);
     bottomRow->addWidget(m_closeBtn);
@@ -171,6 +183,7 @@ void ABCompareDialog::retranslateUi()
     m_titleText->setText(trId("abcompare.title"));
     m_timeCaption->setText(trId("abcompare.timestamp") + QStringLiteral(":"));
     m_refreshBtn->setText(trId("abcompare.refresh"));
+    m_evalQualityBtn->setText(trId("abcompare.evalQuality"));
     m_leftHeader->setText(trId("abcompare.original") + QStringLiteral(" (") + QFileInfo(m_sourcePath).fileName() + QStringLiteral(")"));
     m_rightHeader->setText(trId("abcompare.preview") + QStringLiteral(" (") + (m_previewPath.isEmpty() ? trId("abcompare.notAvailable") : QFileInfo(m_previewPath).fileName()) + QStringLiteral(")"));
     m_closeBtn->setText(trId("common.close"));
@@ -183,20 +196,21 @@ bool ABCompareDialog::extractFrame(const QString &ffmpegPath, const QString &inp
         return false;
     }
     QFileInfo fi(input);
-    if (!fi.exists()) {
+    if (!fi.exists() || fi.size() == 0) {
         return false;
     }
 
     QProcess proc;
     QStringList args;
-    args << QStringLiteral("-y")
+    args << QStringLiteral("-hide_banner")
          << QStringLiteral("-ss") << QString::number(timeSec, 'f', 2)
          << QStringLiteral("-i") << input
          << QStringLiteral("-frames:v") << QStringLiteral("1")
+         << QStringLiteral("-y")
          << outputImage;
 
     proc.start(ffmpegPath, args);
-    if (!proc.waitForFinished(10000)) {
+    if (!proc.waitForFinished(6000)) {
         proc.kill();
         return false;
     }
@@ -250,4 +264,32 @@ void ABCompareDialog::onCaptureFinished()
     }
 
     m_statusLabel->setText(trId("abcompare.ready") + QStringLiteral(" @ %1s").arg(m_timeSpin->value(), 0, 'f', 1));
+}
+
+void ABCompareDialog::onEvaluateQuality()
+{
+    if (m_sourcePath.isEmpty() || m_previewPath.isEmpty()) return;
+
+    m_evalQualityBtn->setEnabled(false);
+    m_qualityScoreLabel->setText(trId("quality.evaluating"));
+
+    VideoQualityOptions opts;
+    opts.calculateVmaf = true;
+    opts.calculateSsim = true;
+    opts.calculatePsnr = true;
+    opts.sampleStart = qMax(0.0, m_timeSpin->value() - 2.5);
+    opts.sampleDuration = 5.0;
+
+    m_evaluator->startEvaluation(m_sourcePath, m_previewPath, opts, 5.0);
+}
+
+void ABCompareDialog::onQualityEvaluationFinished(const VideoQualityResult &res)
+{
+    m_evalQualityBtn->setEnabled(true);
+    if (res.success) {
+        m_qualityScoreLabel->setText(res.summaryText());
+        m_qualityScoreLabel->setStyleSheet(QStringLiteral("font-weight: bold; color: %1;").arg(res.ratingColor().name()));
+    } else {
+        m_qualityScoreLabel->setText(trId("quality.failed"));
+    }
 }
