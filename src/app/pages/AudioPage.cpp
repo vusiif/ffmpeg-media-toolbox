@@ -27,13 +27,16 @@
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
 #include "output/OutputNaming.h"
+#include "app/dialogs/AudioTagStudioDialog.h"
+#include "media/MediaProbeService.h"
 
 AudioPage::AudioPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                     JobQueue *queue, QWidget *parent)
+                     JobQueue *queue, MediaProbeService *probeService, QWidget *parent)
     : QWidget(parent)
     , m_locator(locator)
     , m_builder(builder)
     , m_queue(queue)
+    , m_probeService(probeService)
 {
     setAcceptDrops(true);
 
@@ -182,8 +185,19 @@ AudioPage::AudioPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     fmtForm->addRow(m_channelsCaption, m_channelsCombo);
     qobject_cast<QVBoxLayout *>(m_formatCard->layout())->addLayout(fmtForm);
 
-    m_formatButton = createCardButton(m_formatCard);
+    auto *fmtBtnRow = new QHBoxLayout();
+    m_openAudioStudioBtn = new ElaPushButton(m_formatCard);
+    m_openAudioStudioBtn->setFixedHeight(36);
+    m_openAudioStudioBtn->setMinimumWidth(160);
+    connect(m_openAudioStudioBtn, &ElaPushButton::clicked, this, &AudioPage::openAudioTagStudio);
+    fmtBtnRow->addWidget(m_openAudioStudioBtn);
+    fmtBtnRow->addStretch();
+    m_formatButton = new ElaPushButton(m_formatCard);
+    m_formatButton->setFixedHeight(36);
+    m_formatButton->setMinimumWidth(140);
     connect(m_formatButton, &ElaPushButton::clicked, this, &AudioPage::processFormat);
+    fmtBtnRow->addWidget(m_formatButton);
+    qobject_cast<QVBoxLayout *>(m_formatCard->layout())->addLayout(fmtBtnRow);
     bodyFormatLayout->addWidget(m_formatCard);
     bodyFormatLayout->addStretch();
     m_stackedWidget->addWidget(tabFormat);
@@ -354,6 +368,7 @@ void AudioPage::retranslateUi()
     m_bitrateCaption->setText(trId("convert.adv.audioBitrate") + QStringLiteral(":"));
     m_samplerateCaption->setText(trId("convert.adv.samplerate") + QStringLiteral(":"));
     m_channelsCaption->setText(trId("convert.adv.channels") + QStringLiteral(":"));
+    m_openAudioStudioBtn->setText(trId("audio.format.openStudio"));
     m_formatButton->setText(trId("convert.addToQueue"));
 
     // Tab 2
@@ -411,6 +426,16 @@ void AudioPage::dropEvent(QDropEvent *event)
             m_inputEdit->setText(path);
         }
     }
+}
+
+void AudioPage::openAudioTagStudio()
+{
+    auto *dlg = new AudioTagStudioDialog(m_queue, m_locator, m_probeService, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->addFile(m_inputFile);
+    }
+    dlg->show();
 }
 
 void AudioPage::processFormat()

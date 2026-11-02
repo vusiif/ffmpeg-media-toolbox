@@ -2367,5 +2367,145 @@
         <source>player.exitFullscreen</source>
         <translation>Exit Fullscreen (Esc / F / Double-Click)</translation>
     </message>
+    <message id="audio.format.openStudio">
+        <source>audio.format.openStudio</source>
+        <translation>Audio Tag &amp; Batch Extractor Studio</translation>
+    </message>
+    <message id="audiotag.title">
+        <source>audiotag.title</source>
+        <translation>Audio Tag &amp; Batch Extractor Studio</translation>
+    </message>
+    <message id="audiotag.subtitle">
+        <source>audiotag.subtitle</source>
+        <translation>Batch extract audio from video/audio, edit ID3v2 tags, inject cover art, and convert formats</translation>
+    </message>
+    <message id="audiotag.addFiles">
+        <source>audiotag.addFiles</source>
+        <translation>Add Files...</translation>
+    </message>
+    <message id="audiotag.clearFiles">
+        <source>audiotag.clearFiles</source>
+        <translation>Clear All</translation>
+    </message>
+    <message id="audiotag.guessTags">
+        <source>audiotag.guessTags</source>
+        <translation>Guess from Filename</translation>
+    </message>
+    <message id="audiotag.col.name">
+        <source>audiotag.col.name</source>
+        <translation>File Name</translation>
+    </message>
+    <message id="audiotag.col.title">
+        <source>audiotag.col.title</source>
+        <translation>Title</translation>
+    </message>
+    <message id="audiotag.col.artist">
+        <source>audiotag.col.artist</source>
+        <translation>Artist</translation>
+    </message>
+    <message id="audiotag.col.album">
+        <source>audiotag.col.album</source>
+        <translation>Album</translation>
+    </message>
+    <message id="audiotag.col.year">
+        <source>audiotag.col.year</source>
+        <translation>Year</translation>
+    </message>
+    <message id="audiotag.col.cover">
+        <source>audiotag.col.cover</source>
+        <translation>Cover Status</translation>
+    </message>
+    <message id="audiotag.cover.has">
+        <source>audiotag.cover.has</source>
+        <translation>Embedded</translation>
+    </message>
+    <message id="audiotag.cover.none">
+        <source>audiotag.cover.none</source>
+        <translation>No Cover</translation>
+    </message>
+    <message id="audiotag.cover.title">
+        <source>audiotag.cover.title</source>
+        <translation>Album Cover Art</translation>
+    </message>
+    <message id="audiotag.cover.select">
+        <source>audiotag.cover.select</source>
+        <translation>Select Cover Image...</translation>
+    </message>
+    <message id="audiotag.cover.clear">
+        <source>audiotag.cover.clear</source>
+        <translation>Clear</translation>
+    </message>
+    <message id="audiotag.cover.embedCheck">
+        <source>audiotag.cover.embedCheck</source>
+        <translation>Embed cover art during export</translation>
+    </message>
+    <message id="audiotag.edit.title">
+        <source>audiotag.edit.title</source>
+        <translation>Metadata Tags (ID3)</translation>
+    </message>
+    <message id="audiotag.tag.title">
+        <source>audiotag.tag.title</source>
+        <translation>Title:</translation>
+    </message>
+    <message id="audiotag.tag.artist">
+        <source>audiotag.tag.artist</source>
+        <translation>Artist:</translation>
+    </message>
+    <message id="audiotag.tag.album">
+        <source>audiotag.tag.album</source>
+        <translation>Album:</translation>
+    </message>
+    <message id="audiotag.tag.genre">
+        <source>audiotag.tag.genre</source>
+        <translation>Genre:</translation>
+    </message>
+    <message id="audiotag.tag.year">
+        <source>audiotag.tag.year</source>
+        <translation>Year:</translation>
+    </message>
+    <message id="audiotag.tag.track">
+        <source>audiotag.tag.track</source>
+        <translation>Track #:</translation>
+    </message>
+    <message id="audiotag.export.title">
+        <source>audiotag.export.title</source>
+        <translation>Output Format &amp; Quality</translation>
+    </message>
+    <message id="audiotag.export.preset">
+        <source>audiotag.export.preset</source>
+        <translation>Quality Preset:</translation>
+    </message>
+    <message id="audiotag.export.format">
+        <source>audiotag.export.format</source>
+        <translation>Audio Format:</translation>
+    </message>
+    <message id="audiotag.export.bitrate">
+        <source>audiotag.export.bitrate</source>
+        <translation>Audio Bitrate:</translation>
+    </message>
+    <message id="audiotag.export.samplerate">
+        <source>audiotag.export.samplerate</source>
+        <translation>Sample Rate:</translation>
+    </message>
+    <message id="audiotag.export.channels">
+        <source>audiotag.export.channels</source>
+        <translation>Channels:</translation>
+    </message>
+    <message id="audiotag.action.startBatch">
+        <source>audiotag.action.startBatch</source>
+        <translation>Enqueue and Start Batch Extraction</translation>
+    </message>
+    <message id="audiotag.action.close">
+        <source>audiotag.action.close</source>
+        <translation>Close</translation>
+    </message>
+    <message id="audiotag.job.name">
+        <source>audiotag.job.name</source>
+        <translation>Audio Extract [%1] -&gt; %2</translation>
+    </message>
+    <message id="audiotag.notice.enqueued">
+        <source>audiotag.notice.enqueued</source>
+        <translation>Successfully added %1 audio extraction task(s) to the queue!</translation>
+    </message>
 </context>
 </TS>

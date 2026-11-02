@@ -2367,5 +2367,145 @@
         <source>player.exitFullscreen</source>
         <translation>退出全屏模式 (Esc / F / 双击画面)</translation>
     </message>
+    <message id="audio.format.openStudio">
+        <source>audio.format.openStudio</source>
+        <translation>音频标签与批量提取工坊</translation>
+    </message>
+    <message id="audiotag.title">
+        <source>audiotag.title</source>
+        <translation>音频标签编辑与批量提取工坊</translation>
+    </message>
+    <message id="audiotag.subtitle">
+        <source>audiotag.subtitle</source>
+        <translation>批量从视频/音频提取音乐，支持 ID3v2 标签编辑、封面注入与无损/高品质格式转换</translation>
+    </message>
+    <message id="audiotag.addFiles">
+        <source>audiotag.addFiles</source>
+        <translation>添加文件...</translation>
+    </message>
+    <message id="audiotag.clearFiles">
+        <source>audiotag.clearFiles</source>
+        <translation>清空列表</translation>
+    </message>
+    <message id="audiotag.guessTags">
+        <source>audiotag.guessTags</source>
+        <translation>从文件名猜测标签</translation>
+    </message>
+    <message id="audiotag.col.name">
+        <source>audiotag.col.name</source>
+        <translation>文件名</translation>
+    </message>
+    <message id="audiotag.col.title">
+        <source>audiotag.col.title</source>
+        <translation>标题 (Title)</translation>
+    </message>
+    <message id="audiotag.col.artist">
+        <source>audiotag.col.artist</source>
+        <translation>艺术家 (Artist)</translation>
+    </message>
+    <message id="audiotag.col.album">
+        <source>audiotag.col.album</source>
+        <translation>专辑 (Album)</translation>
+    </message>
+    <message id="audiotag.col.year">
+        <source>audiotag.col.year</source>
+        <translation>年份 (Year)</translation>
+    </message>
+    <message id="audiotag.col.cover">
+        <source>audiotag.col.cover</source>
+        <translation>封面状态</translation>
+    </message>
+    <message id="audiotag.cover.has">
+        <source>audiotag.cover.has</source>
+        <translation>已嵌入</translation>
+    </message>
+    <message id="audiotag.cover.none">
+        <source>audiotag.cover.none</source>
+        <translation>无封面</translation>
+    </message>
+    <message id="audiotag.cover.title">
+        <source>audiotag.cover.title</source>
+        <translation>专辑封面 (Cover Art)</translation>
+    </message>
+    <message id="audiotag.cover.select">
+        <source>audiotag.cover.select</source>
+        <translation>选择封面图片...</translation>
+    </message>
+    <message id="audiotag.cover.clear">
+        <source>audiotag.cover.clear</source>
+        <translation>清除</translation>
+    </message>
+    <message id="audiotag.cover.embedCheck">
+        <source>audiotag.cover.embedCheck</source>
+        <translation>导出时嵌入封面</translation>
+    </message>
+    <message id="audiotag.edit.title">
+        <source>audiotag.edit.title</source>
+        <translation>元数据标签 (ID3 Tags)</translation>
+    </message>
+    <message id="audiotag.tag.title">
+        <source>audiotag.tag.title</source>
+        <translation>歌曲标题:</translation>
+    </message>
+    <message id="audiotag.tag.artist">
+        <source>audiotag.tag.artist</source>
+        <translation>艺术家:</translation>
+    </message>
+    <message id="audiotag.tag.album">
+        <source>audiotag.tag.album</source>
+        <translation>专辑名称:</translation>
+    </message>
+    <message id="audiotag.tag.genre">
+        <source>audiotag.tag.genre</source>
+        <translation>流派/曲风:</translation>
+    </message>
+    <message id="audiotag.tag.year">
+        <source>audiotag.tag.year</source>
+        <translation>发行年份:</translation>
+    </message>
+    <message id="audiotag.tag.track">
+        <source>audiotag.tag.track</source>
+        <translation>音轨编号:</translation>
+    </message>
+    <message id="audiotag.export.title">
+        <source>audiotag.export.title</source>
+        <translation>输出格式与音质 (Format &amp; Quality)</translation>
+    </message>
+    <message id="audiotag.export.preset">
+        <source>audiotag.export.preset</source>
+        <translation>快捷音质预设:</translation>
+    </message>
+    <message id="audiotag.export.format">
+        <source>audiotag.export.format</source>
+        <translation>音频格式:</translation>
+    </message>
+    <message id="audiotag.export.bitrate">
+        <source>audiotag.export.bitrate</source>
+        <translation>音频码率:</translation>
+    </message>
+    <message id="audiotag.export.samplerate">
+        <source>audiotag.export.samplerate</source>
+        <translation>采样率:</translation>
+    </message>
+    <message id="audiotag.export.channels">
+        <source>audiotag.export.channels</source>
+        <translation>声 道:</translation>
+    </message>
+    <message id="audiotag.action.startBatch">
+        <source>audiotag.action.startBatch</source>
+        <translation>加入批处理队列并开始提取</translation>
+    </message>
+    <message id="audiotag.action.close">
+        <source>audiotag.action.close</source>
+        <translation>关闭</translation>
+    </message>
+    <message id="audiotag.job.name">
+        <source>audiotag.job.name</source>
+        <translation>音频提取 [%1] -&gt; %2</translation>
+    </message>
+    <message id="audiotag.notice.enqueued">
+        <source>audiotag.notice.enqueued</source>
+        <translation>已成功将 %1 个音频提取任务添加至工作队列！</translation>
+    </message>
 </context>
 </TS>

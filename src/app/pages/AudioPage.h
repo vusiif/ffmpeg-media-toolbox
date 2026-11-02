@@ -5,6 +5,7 @@
 class FFmpegLocator;
 class FFmpegCommandBuilder;
 class JobQueue;
+class MediaProbeService;
 class QStackedWidget;
 class ElaPivot;
 class ElaScrollArea;
@@ -23,7 +24,8 @@ class AudioPage : public QWidget
 
 public:
     explicit AudioPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
-                       JobQueue *queue, QWidget *parent = nullptr);
+                       JobQueue *queue, MediaProbeService *probeService = nullptr,
+                       QWidget *parent = nullptr);
 
     void retranslateUi();
 
@@ -35,6 +37,7 @@ private:
     QString browseFile(const QString &title, const QString &filters);
     void enqueue(const QString &name, const QStringList &args);
 
+    void openAudioTagStudio();
     void processFormat();
     void processDenoise();
     void processLoudness();
@@ -43,6 +46,7 @@ private:
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
     JobQueue *m_queue;
+    MediaProbeService *m_probeService = nullptr;
 
     QString m_inputFile;
 
@@ -69,6 +73,7 @@ private:
     ElaComboBox *m_samplerateCombo = nullptr;
     ElaText *m_channelsCaption = nullptr;
     ElaComboBox *m_channelsCombo = nullptr;
+    ElaPushButton *m_openAudioStudioBtn = nullptr;
     ElaPushButton *m_formatButton = nullptr;
 
     // Tab 2: 降噪与滤波 (Denoise & Filter)
