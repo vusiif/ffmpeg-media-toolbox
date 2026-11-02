@@ -1967,5 +1967,181 @@
         <source>video.sub.openStudio</source>
         <translation>🎨 Open Subtitle Studio</translation>
     </message>
+    <message id="video.pip.openStudio">
+        <source>video.pip.openStudio</source>
+        <translation>🎨 Open Multi-Track Compositor &amp; PiP Studio</translation>
+    </message>
+    <message id="compositor.dialog.title">
+        <source>compositor.dialog.title</source>
+        <translation>Multi-Track Compositor &amp; PiP Studio</translation>
+    </message>
+    <message id="compositor.dialog.subtitle">
+        <source>compositor.dialog.subtitle</source>
+        <translation>Support PiP overlay with free dragging, split-screen comparison and multi-track audio ducking</translation>
+    </message>
+    <message id="compositor.mainVideo">
+        <source>compositor.mainVideo</source>
+        <translation>Main Video Track</translation>
+    </message>
+    <message id="compositor.pipVideo">
+        <source>compositor.pipVideo</source>
+        <translation>Secondary / PiP Video Track</translation>
+    </message>
+    <message id="compositor.canvasTip">
+        <source>compositor.canvasTip</source>
+        <translation>💡 Tip: In PiP mode, you can drag the overlay box directly on the canvas above</translation>
+    </message>
+    <message id="compositor.label.main">
+        <source>compositor.label.main</source>
+        <translation>[1] Main Video</translation>
+    </message>
+    <message id="compositor.label.pip">
+        <source>compositor.label.pip</source>
+        <translation>[2] PiP Video</translation>
+    </message>
+    <message id="compositor.label.leftMain">
+        <source>compositor.label.leftMain</source>
+        <translation>[1] Left: Main Video</translation>
+    </message>
+    <message id="compositor.label.rightPip">
+        <source>compositor.label.rightPip</source>
+        <translation>[2] Right: Secondary Video</translation>
+    </message>
+    <message id="compositor.label.topMain">
+        <source>compositor.label.topMain</source>
+        <translation>[1] Top: Main Video</translation>
+    </message>
+    <message id="compositor.label.bottomPip">
+        <source>compositor.label.bottomPip</source>
+        <translation>[2] Bottom: Secondary Video</translation>
+    </message>
+    <message id="compositor.layoutMode">
+        <source>compositor.layoutMode</source>
+        <translation>Composition Mode</translation>
+    </message>
+    <message id="compositor.mode.pip">
+        <source>compositor.mode.pip</source>
+        <translation>Picture-in-Picture (PiP)</translation>
+    </message>
+    <message id="compositor.mode.sbs">
+        <source>compositor.mode.sbs</source>
+        <translation>Side-by-Side (Split Horizontal)</translation>
+    </message>
+    <message id="compositor.mode.topbottom">
+        <source>compositor.mode.topbottom</source>
+        <translation>Top-Bottom (Split Vertical)</translation>
+    </message>
+    <message id="compositor.pos.custom">
+        <source>compositor.pos.custom</source>
+        <translation>Custom Coordinates</translation>
+    </message>
+    <message id="compositor.scale">
+        <source>compositor.scale</source>
+        <translation>Scale Ratio</translation>
+    </message>
+    <message id="compositor.drawBorder">
+        <source>compositor.drawBorder</source>
+        <translation>Draw Border</translation>
+    </message>
+    <message id="compositor.border">
+        <source>compositor.border</source>
+        <translation>Border Styling</translation>
+    </message>
+    <message id="compositor.color.white">
+        <source>compositor.color.white</source>
+        <translation>White</translation>
+    </message>
+    <message id="compositor.color.black">
+        <source>compositor.color.black</source>
+        <translation>Black</translation>
+    </message>
+    <message id="compositor.color.yellow">
+        <source>compositor.color.yellow</source>
+        <translation>Yellow</translation>
+    </message>
+    <message id="compositor.color.cyan">
+        <source>compositor.color.cyan</source>
+        <translation>Cyan</translation>
+    </message>
+    <message id="compositor.color.red">
+        <source>compositor.color.red</source>
+        <translation>Red</translation>
+    </message>
+    <message id="compositor.enableTimeWindow">
+        <source>compositor.enableTimeWindow</source>
+        <translation>Enable Time Window</translation>
+    </message>
+    <message id="compositor.timeRange">
+        <source>compositor.timeRange</source>
+        <translation>Time Window</translation>
+    </message>
+    <message id="compositor.canvasRes">
+        <source>compositor.canvasRes</source>
+        <translation>Split Canvas Resolution</translation>
+    </message>
+    <message id="compositor.splitRatio">
+        <source>compositor.splitRatio</source>
+        <translation>Split Ratio</translation>
+    </message>
+    <message id="compositor.audioPolicy">
+        <source>compositor.audioPolicy</source>
+        <translation>Audio Mixing Policy</translation>
+    </message>
+    <message id="compositor.audio.mixDual">
+        <source>compositor.audio.mixDual</source>
+        <translation>Dual Track Mix</translation>
+    </message>
+    <message id="compositor.audio.mainOnly">
+        <source>compositor.audio.mainOnly</source>
+        <translation>Main Track Only</translation>
+    </message>
+    <message id="compositor.audio.pipOnly">
+        <source>compositor.audio.pipOnly</source>
+        <translation>Secondary Track Only</translation>
+    </message>
+    <message id="compositor.audio.ducking">
+        <source>compositor.audio.ducking</source>
+        <translation>Ducking (Commentary Priority)</translation>
+    </message>
+    <message id="compositor.audio.muteAll">
+        <source>compositor.audio.muteAll</source>
+        <translation>Mute All</translation>
+    </message>
+    <message id="compositor.mainVol">
+        <source>compositor.mainVol</source>
+        <translation>Main Track Volume</translation>
+    </message>
+    <message id="compositor.pipVol">
+        <source>compositor.pipVol</source>
+        <translation>Secondary Track Volume</translation>
+    </message>
+    <message id="compositor.shortest">
+        <source>compositor.shortest</source>
+        <translation>Stop when shortest stream ends (-shortest)</translation>
+    </message>
+    <message id="compositor.copyCmd">
+        <source>compositor.copyCmd</source>
+        <translation>📋 Copy FFmpeg Command</translation>
+    </message>
+    <message id="compositor.addToQueue">
+        <source>compositor.addToQueue</source>
+        <translation>🎬 Add to Job Queue</translation>
+    </message>
+    <message id="compositor.missingInputNotice">
+        <source>compositor.missingInputNotice</source>
+        <translation>Please select both main and secondary video files first!</translation>
+    </message>
+    <message id="compositor.cmdCopiedNotice">
+        <source>compositor.cmdCopiedNotice</source>
+        <translation>FFmpeg compositor command copied to clipboard!</translation>
+    </message>
+    <message id="compositor.enqueuedNotice">
+        <source>compositor.enqueuedNotice</source>
+        <translation>Compositor job successfully added to queue!</translation>
+    </message>
+    <message id="compositor.job.title">
+        <source>compositor.job.title</source>
+        <translation>Composite: %1</translation>
+    </message>
 </context>
 </TS>

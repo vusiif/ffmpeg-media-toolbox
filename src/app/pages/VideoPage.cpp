@@ -37,6 +37,7 @@
 #include "app/widgets/VideoPlayerWidget.h"
 #include "app/dialogs/FilterStudioDialog.h"
 #include "app/dialogs/SubtitleStudioDialog.h"
+#include "app/dialogs/PipCompositorDialog.h"
 #include "app/dialogs/LosslessCutDialog.h"
 #include "media/MediaProbeService.h"
 
@@ -548,8 +549,18 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_pipQualitySpin->setValue(23);
     pipForm->addRow(m_pipQualityCaption, m_pipQualitySpin);
     qobject_cast<QVBoxLayout *>(m_pipCard->layout())->addLayout(pipForm);
+    m_openPipStudioBtn = new ElaPushButton(trId("video.pip.openStudio"), m_pipCard);
+    m_openPipStudioBtn->setFixedHeight(36);
+    connect(m_openPipStudioBtn, &ElaPushButton::clicked, this, &VideoPage::openPipCompositorStudio);
+
     m_pipButton = createCardButton(m_pipCard);
     connect(m_pipButton, &ElaPushButton::clicked, this, &VideoPage::pip);
+
+    auto *pipBtnRow = new QHBoxLayout();
+    pipBtnRow->addWidget(m_openPipStudioBtn);
+    pipBtnRow->addWidget(m_pipButton);
+    qobject_cast<QVBoxLayout *>(m_pipCard->layout())->addLayout(pipBtnRow);
+
     bodyEffectsLayout->addWidget(m_pipCard);
 
     // Subtitle Card
@@ -942,6 +953,19 @@ void VideoPage::openSubtitleStudio()
     dlg->show();
 }
 
+void VideoPage::openPipCompositorStudio()
+{
+    auto *dlg = new PipCompositorDialog(m_queue, m_locator, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->setMainVideo(m_inputFile);
+    }
+    if (!m_pipFile.isEmpty()) {
+        dlg->setPipVideo(m_pipFile);
+    }
+    dlg->show();
+}
+
 void VideoPage::subtitleMux()
 {
     if (m_inputFile.isEmpty() || m_subtitleFile.isEmpty()) return;
@@ -1180,5 +1204,6 @@ void VideoPage::retranslateUi()
     m_pipPosition->setItemText(4, trId("video.wm.center"));
     m_pipMarginCaption->setText(trId("video.pip.margin") + QStringLiteral(":"));
     m_pipQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_openPipStudioBtn->setText(trId("video.pip.openStudio"));
     m_pipButton->setText(trId("convert.addToQueue"));
 }

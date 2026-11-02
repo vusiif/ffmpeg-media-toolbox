@@ -62,6 +62,7 @@ private:
     void adjust();
     void detectAutoCrop();
     void pip();
+    void openPipCompositorStudio();
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
@@ -179,6 +180,7 @@ private:
     ElaText *m_pipQualityCaption = nullptr;
     ElaSpinBox *m_pipQualitySpin = nullptr;
     ElaPushButton *m_pipButton = nullptr;
+    ElaPushButton *m_openPipStudioBtn = nullptr;
     QString m_pipFile;
 
     ElaScrollPageArea *m_subCard = nullptr;

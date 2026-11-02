@@ -1967,5 +1967,181 @@
         <source>video.sub.openStudio</source>
         <translation>🎨 打开专业字幕工作台</translation>
     </message>
+    <message id="video.pip.openStudio">
+        <source>video.pip.openStudio</source>
+        <translation>🎨 打开专业多轨与画中画工作台</translation>
+    </message>
+    <message id="compositor.dialog.title">
+        <source>compositor.dialog.title</source>
+        <translation>多轨道画面合成与画中画工作台</translation>
+    </message>
+    <message id="compositor.dialog.subtitle">
+        <source>compositor.dialog.subtitle</source>
+        <translation>支持画中画自由吸附拖拽、左右/上下对比分屏与智能多音轨混音闪避</translation>
+    </message>
+    <message id="compositor.mainVideo">
+        <source>compositor.mainVideo</source>
+        <translation>主视频画面 (底轨)</translation>
+    </message>
+    <message id="compositor.pipVideo">
+        <source>compositor.pipVideo</source>
+        <translation>副视频画面 (画中画/分屏)</translation>
+    </message>
+    <message id="compositor.canvasTip">
+        <source>compositor.canvasTip</source>
+        <translation>💡 提示: 在画中画模式下，您可以在上方画布中直接用鼠标拖动画中画矩形</translation>
+    </message>
+    <message id="compositor.label.main">
+        <source>compositor.label.main</source>
+        <translation>[1] 主视频画面</translation>
+    </message>
+    <message id="compositor.label.pip">
+        <source>compositor.label.pip</source>
+        <translation>[2] 画中画 (PiP)</translation>
+    </message>
+    <message id="compositor.label.leftMain">
+        <source>compositor.label.leftMain</source>
+        <translation>[1] 左: 主视频</translation>
+    </message>
+    <message id="compositor.label.rightPip">
+        <source>compositor.label.rightPip</source>
+        <translation>[2] 右: 副视频</translation>
+    </message>
+    <message id="compositor.label.topMain">
+        <source>compositor.label.topMain</source>
+        <translation>[1] 上: 主视频</translation>
+    </message>
+    <message id="compositor.label.bottomPip">
+        <source>compositor.label.bottomPip</source>
+        <translation>[2] 下: 副视频</translation>
+    </message>
+    <message id="compositor.layoutMode">
+        <source>compositor.layoutMode</source>
+        <translation>合成模式</translation>
+    </message>
+    <message id="compositor.mode.pip">
+        <source>compositor.mode.pip</source>
+        <translation>画中画模式 (Picture-in-Picture)</translation>
+    </message>
+    <message id="compositor.mode.sbs">
+        <source>compositor.mode.sbs</source>
+        <translation>左右分屏对比 (Side-by-Side)</translation>
+    </message>
+    <message id="compositor.mode.topbottom">
+        <source>compositor.mode.topbottom</source>
+        <translation>上下分屏对比 (Top-Bottom)</translation>
+    </message>
+    <message id="compositor.pos.custom">
+        <source>compositor.pos.custom</source>
+        <translation>自定义拖拽坐标</translation>
+    </message>
+    <message id="compositor.scale">
+        <source>compositor.scale</source>
+        <translation>画面缩放比例</translation>
+    </message>
+    <message id="compositor.drawBorder">
+        <source>compositor.drawBorder</source>
+        <translation>绘制边框</translation>
+    </message>
+    <message id="compositor.border">
+        <source>compositor.border</source>
+        <translation>边框美化</translation>
+    </message>
+    <message id="compositor.color.white">
+        <source>compositor.color.white</source>
+        <translation>白色</translation>
+    </message>
+    <message id="compositor.color.black">
+        <source>compositor.color.black</source>
+        <translation>黑色</translation>
+    </message>
+    <message id="compositor.color.yellow">
+        <source>compositor.color.yellow</source>
+        <translation>黄色</translation>
+    </message>
+    <message id="compositor.color.cyan">
+        <source>compositor.color.cyan</source>
+        <translation>青色</translation>
+    </message>
+    <message id="compositor.color.red">
+        <source>compositor.color.red</source>
+        <translation>红色</translation>
+    </message>
+    <message id="compositor.enableTimeWindow">
+        <source>compositor.enableTimeWindow</source>
+        <translation>指定时间区间</translation>
+    </message>
+    <message id="compositor.timeRange">
+        <source>compositor.timeRange</source>
+        <translation>出现时间区间</translation>
+    </message>
+    <message id="compositor.canvasRes">
+        <source>compositor.canvasRes</source>
+        <translation>输出分屏分辨率</translation>
+    </message>
+    <message id="compositor.splitRatio">
+        <source>compositor.splitRatio</source>
+        <translation>画面比例分割</translation>
+    </message>
+    <message id="compositor.audioPolicy">
+        <source>compositor.audioPolicy</source>
+        <translation>音频混合策略</translation>
+    </message>
+    <message id="compositor.audio.mixDual">
+        <source>compositor.audio.mixDual</source>
+        <translation>双音轨加权混合 (Dual Track Mix)</translation>
+    </message>
+    <message id="compositor.audio.mainOnly">
+        <source>compositor.audio.mainOnly</source>
+        <translation>仅保留主视频音频 (Main Only)</translation>
+    </message>
+    <message id="compositor.audio.pipOnly">
+        <source>compositor.audio.pipOnly</source>
+        <translation>仅保留副视频音频 (PiP Only)</translation>
+    </message>
+    <message id="compositor.audio.ducking">
+        <source>compositor.audio.ducking</source>
+        <translation>智能人声闪避 (Ducking Commentary)</translation>
+    </message>
+    <message id="compositor.audio.muteAll">
+        <source>compositor.audio.muteAll</source>
+        <translation>完全静音 (Mute All)</translation>
+    </message>
+    <message id="compositor.mainVol">
+        <source>compositor.mainVol</source>
+        <translation>主轨道音量</translation>
+    </message>
+    <message id="compositor.pipVol">
+        <source>compositor.pipVol</source>
+        <translation>副轨道音量</translation>
+    </message>
+    <message id="compositor.shortest">
+        <source>compositor.shortest</source>
+        <translation>任一流结束时停止合成 (-shortest)</translation>
+    </message>
+    <message id="compositor.copyCmd">
+        <source>compositor.copyCmd</source>
+        <translation>📋 复制 FFmpeg 命令</translation>
+    </message>
+    <message id="compositor.addToQueue">
+        <source>compositor.addToQueue</source>
+        <translation>🎬 加入转码任务队列</translation>
+    </message>
+    <message id="compositor.missingInputNotice">
+        <source>compositor.missingInputNotice</source>
+        <translation>请先选择有效的主视频和副视频文件！</translation>
+    </message>
+    <message id="compositor.cmdCopiedNotice">
+        <source>compositor.cmdCopiedNotice</source>
+        <translation>FFmpeg 合成命令已成功复制到剪贴板！</translation>
+    </message>
+    <message id="compositor.enqueuedNotice">
+        <source>compositor.enqueuedNotice</source>
+        <translation>多轨道合成任务已成功加入队列！</translation>
+    </message>
+    <message id="compositor.job.title">
+        <source>compositor.job.title</source>
+        <translation>多轨合成: %1</translation>
+    </message>
 </context>
 </TS>
