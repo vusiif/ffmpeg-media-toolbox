@@ -26,6 +26,7 @@ QVariant JobListModel::data(const QModelIndex &index, int role) const
     case StatusRole: return static_cast<int>(job->status());
     case ProgressRole: return job->progress();
     case ErrorMessageRole: return job->errorMessage();
+    case PriorityRole: return static_cast<int>(job->priority());
     default: return {};
     }
 }
@@ -38,7 +39,8 @@ QHash<int, QByteArray> JobListModel::roleNames() const
         {TypeRole, "jobType"},
         {StatusRole, "jobStatus"},
         {ProgressRole, "jobProgress"},
-        {ErrorMessageRole, "jobError"}
+        {ErrorMessageRole, "jobError"},
+        {PriorityRole, "jobPriority"}
     };
 }
 
@@ -83,6 +85,63 @@ Job* JobListModel::findJobById(const QString &id) const
         }
     }
     return nullptr;
+}
+
+int JobListModel::indexOfJob(const QString &id) const
+{
+    QUuid uuid(id);
+    for (int i = 0; i < m_jobs.size(); ++i) {
+        if (m_jobs.at(i)->id() == uuid) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool JobListModel::moveJobUp(int index)
+{
+    if (index <= 0 || index >= m_jobs.size()) {
+        return false;
+    }
+    beginMoveRows(QModelIndex(), index, index, QModelIndex(), index - 1);
+    m_jobs.swapItemsAt(index, index - 1);
+    endMoveRows();
+    return true;
+}
+
+bool JobListModel::moveJobDown(int index)
+{
+    if (index < 0 || index >= m_jobs.size() - 1) {
+        return false;
+    }
+    beginMoveRows(QModelIndex(), index, index, QModelIndex(), index + 2);
+    m_jobs.swapItemsAt(index, index + 1);
+    endMoveRows();
+    return true;
+}
+
+bool JobListModel::moveJobToTop(int index)
+{
+    if (index <= 0 || index >= m_jobs.size()) {
+        return false;
+    }
+    beginMoveRows(QModelIndex(), index, index, QModelIndex(), 0);
+    Job *job = m_jobs.takeAt(index);
+    m_jobs.prepend(job);
+    endMoveRows();
+    return true;
+}
+
+bool JobListModel::moveJobToBottom(int index)
+{
+    if (index < 0 || index >= m_jobs.size() - 1) {
+        return false;
+    }
+    beginMoveRows(QModelIndex(), index, index, QModelIndex(), m_jobs.size());
+    Job *job = m_jobs.takeAt(index);
+    m_jobs.append(job);
+    endMoveRows();
+    return true;
 }
 
 void JobListModel::addJob(Job *job)
@@ -154,6 +213,14 @@ void JobListModel::connectJobSignals(Job *job)
         if (idx >= 0) {
             QModelIndex modelIndex = index(idx);
             emit dataChanged(modelIndex, modelIndex, {NameRole});
+        }
+    });
+
+    connect(job, &Job::priorityChanged, this, [this, job]() {
+        int idx = m_jobs.indexOf(job);
+        if (idx >= 0) {
+            QModelIndex modelIndex = index(idx);
+            emit dataChanged(modelIndex, modelIndex, {PriorityRole});
         }
     });
 }

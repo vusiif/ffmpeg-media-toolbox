@@ -1739,5 +1739,133 @@
         <source>filter.success.enqueued</source>
         <translation>已将调色与滤镜渲染任务加入后台队列！</translation>
     </message>
+    <message id="queue.pause">
+        <source>queue.pause</source>
+        <translation>暂停队列</translation>
+    </message>
+    <message id="queue.resume">
+        <source>queue.resume</source>
+        <translation>恢复队列</translation>
+    </message>
+    <message id="queue.cancelAll">
+        <source>queue.cancelAll</source>
+        <translation>全部取消</translation>
+    </message>
+    <message id="queue.retryFailed">
+        <source>queue.retryFailed</source>
+        <translation>重试全部失败</translation>
+    </message>
+    <message id="queue.concurrency">
+        <source>queue.concurrency</source>
+        <translation>并发任务数:</translation>
+    </message>
+    <message id="queue.postAction">
+        <source>queue.postAction</source>
+        <translation>队列完成后:</translation>
+    </message>
+    <message id="queue.post.none">
+        <source>queue.post.none</source>
+        <translation>无动作</translation>
+    </message>
+    <message id="queue.post.openFolder">
+        <source>queue.post.openFolder</source>
+        <translation>打开输出文件夹</translation>
+    </message>
+    <message id="queue.post.beep">
+        <source>queue.post.beep</source>
+        <translation>播放提示音</translation>
+    </message>
+    <message id="queue.stats">
+        <source>queue.stats</source>
+        <translation>总计: %1 | 运行: %2 | 排队: %3 | 完成: %4 | 失败: %5</translation>
+    </message>
+    <message id="queue.priority.low">
+        <source>queue.priority.low</source>
+        <translation>低优先级</translation>
+    </message>
+    <message id="queue.priority.normal">
+        <source>queue.priority.normal</source>
+        <translation>普通优先级</translation>
+    </message>
+    <message id="queue.priority.high">
+        <source>queue.priority.high</source>
+        <translation>高优先级</translation>
+    </message>
+    <message id="queue.priority.urgent">
+        <source>queue.priority.urgent</source>
+        <translation>紧急优先</translation>
+    </message>
+    <message id="queue.moveUp">
+        <source>queue.moveUp</source>
+        <translation>上移</translation>
+    </message>
+    <message id="queue.moveDown">
+        <source>queue.moveDown</source>
+        <translation>下移</translation>
+    </message>
+    <message id="queue.moveToTop">
+        <source>queue.moveToTop</source>
+        <translation>置顶</translation>
+    </message>
+    <message id="queue.remove">
+        <source>queue.remove</source>
+        <translation>从队列中移除</translation>
+    </message>
+    <message id="batch.addFolder">
+        <source>batch.addFolder</source>
+        <translation>添加文件夹</translation>
+    </message>
+    <message id="batch.selectFolder">
+        <source>batch.selectFolder</source>
+        <translation>选择包含视频的文件夹</translation>
+    </message>
+    <message id="batch.preserveTree">
+        <source>batch.preserveTree</source>
+        <translation>保留相对子目录结构</translation>
+    </message>
+    <message id="batch.watcher.title">
+        <source>batch.watcher.title</source>
+        <translation>监视文件夹自动转码</translation>
+    </message>
+    <message id="batch.watcher.watchDir">
+        <source>batch.watcher.watchDir</source>
+        <translation>监听源目录</translation>
+    </message>
+    <message id="batch.watcher.selectDir">
+        <source>batch.watcher.selectDir</source>
+        <translation>选择要监听的源目录</translation>
+    </message>
+    <message id="batch.watcher.selectDirHint">
+        <source>batch.watcher.selectDirHint</source>
+        <translation>请选择或输入要实时监听的文件夹路径...</translation>
+    </message>
+    <message id="batch.watcher.invalidDir">
+        <source>batch.watcher.invalidDir</source>
+        <translation>指定的监听目录不存在，请检查路径！</translation>
+    </message>
+    <message id="batch.watcher.start">
+        <source>batch.watcher.start</source>
+        <translation>启动监听</translation>
+    </message>
+    <message id="batch.watcher.stop">
+        <source>batch.watcher.stop</source>
+        <translation>停止监听</translation>
+    </message>
+    <message id="batch.watcher.status.idle">
+        <source>batch.watcher.status.idle</source>
+        <translation>监听已就绪 (未启动)</translation>
+    </message>
+    <message id="batch.watcher.status.active">
+        <source>batch.watcher.status.active</source>
+        <translation>正在实时监听: %1 (已处理: %2 个文件)</translation>
+    </message>
+    <message id="batch.matrix.title">
+        <source>batch.matrix.title</source>
+        <translation>一源多出 (批量多目标同时导出)</translation>
+    </message>
+    <message id="batch.matrix.noTargetSelected">
+        <source>batch.matrix.noTargetSelected</source>
+        <translation>请至少勾选一个导出目标规格！</translation>
+    </message>
 </context>
 </TS>

@@ -10,11 +10,15 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QItemSelectionModel>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QSettings>
 #include <QStringListModel>
 #include <QUrl>
 #include <QVBoxLayout>
+
+#include "batch/BatchExportMatrix.h"
+#include "batch/FolderWatcherService.h"
 
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
@@ -69,6 +73,9 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 {
     m_presets = new PresetManager(this);
     m_pipelineManager = new PipelineManager(this);
+    m_watcherService = new FolderWatcherService(this);
+    connect(m_watcherService, &FolderWatcherService::fileReady,
+            this, &BatchPage::onWatcherFileReady);
     setAcceptDrops(true);
     m_outputDirectory = defaultOutputDirectory();
 
@@ -112,17 +119,24 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     auto *fileButtons = new QHBoxLayout();
     m_addButton = new ElaPushButton(leftCard);
+    m_addFolderButton = new ElaPushButton(leftCard);
     m_removeButton = new ElaPushButton(leftCard);
     m_clearButton = new ElaPushButton(leftCard);
     connect(m_addButton, &ElaPushButton::clicked, this, &BatchPage::addFiles);
+    connect(m_addFolderButton, &ElaPushButton::clicked, this, &BatchPage::addFolder);
     connect(m_removeButton, &ElaPushButton::clicked, this, &BatchPage::removeSelectedFiles);
     connect(m_clearButton, &ElaPushButton::clicked, this, &BatchPage::clearFiles);
 
     fileButtons->addWidget(m_addButton);
+    fileButtons->addWidget(m_addFolderButton);
     fileButtons->addWidget(m_removeButton);
     fileButtons->addWidget(m_clearButton);
     fileButtons->addStretch();
     leftLayout->addLayout(fileButtons);
+
+    m_preserveTreeCheck = new ElaCheckBox(trId("batch.preserveTree"), leftCard);
+    m_preserveTreeCheck->setChecked(true);
+    leftLayout->addWidget(m_preserveTreeCheck);
 
     body->addWidget(leftCard, 1);
 
@@ -499,6 +513,77 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     pipelineCardLayout->addWidget(m_pipelineContainer);
     right->addWidget(pipelineCard);
 
+    // Card 5: 监视文件夹自动转码 (Folder Watcher)
+    auto *watcherCard = new ElaScrollPageArea(scrollBody);
+    auto *watcherCardLayout = new QVBoxLayout(watcherCard);
+    watcherCardLayout->setContentsMargins(16, 16, 16, 16);
+    watcherCardLayout->setSpacing(10);
+
+    m_watcherToggle = new ElaCheckBox(trId("batch.watcher.title"), watcherCard);
+    watcherCardLayout->addWidget(m_watcherToggle);
+
+    m_watcherContainer = new QWidget(watcherCard);
+    auto *watcherForm = new QFormLayout(m_watcherContainer);
+    watcherForm->setContentsMargins(0, 8, 0, 0);
+    watcherForm->setSpacing(10);
+
+    auto *watchPathRow = new QHBoxLayout();
+    m_watchPathEdit = new ElaLineEdit(m_watcherContainer);
+    m_watchBrowseBtn = new ElaPushButton(trId("common.browse"), m_watcherContainer);
+    connect(m_watchBrowseBtn, &ElaPushButton::clicked, this, [this]() {
+        const QString dir = QFileDialog::getExistingDirectory(this, trId("batch.watcher.selectDir"));
+        if (!dir.isEmpty()) {
+            m_watchPathEdit->setText(dir);
+        }
+    });
+    watchPathRow->addWidget(m_watchPathEdit, 1);
+    watchPathRow->addWidget(m_watchBrowseBtn);
+    watcherForm->addRow(new ElaText(trId("batch.watcher.watchDir") + QStringLiteral(":"), 13, m_watcherContainer), watchPathRow);
+
+    auto *watchActionRow = new QHBoxLayout();
+    m_watchActionBtn = new ElaPushButton(trId("batch.watcher.start"), m_watcherContainer);
+    connect(m_watchActionBtn, &ElaPushButton::clicked, this, &BatchPage::toggleFolderWatcher);
+    m_watchStatusLabel = new ElaText(trId("batch.watcher.status.idle"), 12, m_watcherContainer);
+    watchActionRow->addWidget(m_watchActionBtn);
+    watchActionRow->addSpacing(12);
+    watchActionRow->addWidget(m_watchStatusLabel, 1);
+    watcherForm->addRow(watchActionRow);
+
+    m_watcherContainer->setVisible(false);
+    watcherCardLayout->addWidget(m_watcherContainer);
+    connect(m_watcherToggle, &ElaCheckBox::toggled, m_watcherContainer, &QWidget::setVisible);
+    right->addWidget(watcherCard);
+
+    // Card 6: 一源多出 (Multi-Target Matrix Card)
+    auto *matrixCard = new ElaScrollPageArea(scrollBody);
+    auto *matrixCardLayout = new QVBoxLayout(matrixCard);
+    matrixCardLayout->setContentsMargins(16, 16, 16, 16);
+    matrixCardLayout->setSpacing(10);
+
+    m_matrixToggle = new ElaCheckBox(trId("batch.matrix.title"), matrixCard);
+    matrixCardLayout->addWidget(m_matrixToggle);
+
+    m_matrixContainer = new QWidget(matrixCard);
+    auto *matrixLayout = new QVBoxLayout(m_matrixContainer);
+    matrixLayout->setContentsMargins(0, 8, 0, 0);
+    matrixLayout->setSpacing(6);
+
+    m_target1Check = new ElaCheckBox(QStringLiteral("Web MP4 (1080p H.264/AAC, CRF 23)"), m_matrixContainer);
+    m_target1Check->setChecked(true);
+    m_target2Check = new ElaCheckBox(QStringLiteral("Mobile MP4 (720p H.264/AAC, CRF 24)"), m_matrixContainer);
+    m_target3Check = new ElaCheckBox(QStringLiteral("High Efficiency (HEVC/H.265, CRF 26)"), m_matrixContainer);
+    m_target4Check = new ElaCheckBox(QStringLiteral("Audio Extraction (MP3 320kbps)"), m_matrixContainer);
+
+    matrixLayout->addWidget(m_target1Check);
+    matrixLayout->addWidget(m_target2Check);
+    matrixLayout->addWidget(m_target3Check);
+    matrixLayout->addWidget(m_target4Check);
+
+    m_matrixContainer->setVisible(false);
+    matrixCardLayout->addWidget(m_matrixContainer);
+    connect(m_matrixToggle, &ElaCheckBox::toggled, m_matrixContainer, &QWidget::setVisible);
+    right->addWidget(matrixCard);
+
     right->addStretch();
     scroll->setWidget(scrollBody);
     body->addWidget(scroll, 1);
@@ -538,7 +623,17 @@ void BatchPage::dropEvent(QDropEvent *event)
     for (const QUrl &url : urls) {
         if (!url.isLocalFile()) continue;
         const QString path = url.toLocalFile();
-        if (!m_inputFiles.contains(path)) {
+        const QFileInfo fi(path);
+        if (fi.isDir()) {
+            const auto scanned = BatchExportMatrix::scanDirectory(path, true);
+            for (const auto &item : scanned) {
+                if (!m_inputFiles.contains(item.fullPath)) {
+                    m_inputFiles.append(item.fullPath);
+                    m_relativeSubDirs.insert(item.fullPath, item.relativeSubDir);
+                    added = true;
+                }
+            }
+        } else if (!m_inputFiles.contains(path)) {
             m_inputFiles.append(path);
             added = true;
         }
@@ -569,6 +664,95 @@ void BatchPage::addFiles()
     if (added) {
         syncFileListModel();
     }
+}
+
+void BatchPage::addFolder()
+{
+    const QString dir = QFileDialog::getExistingDirectory(this, trId("batch.selectFolder"), QString());
+    if (dir.isEmpty()) return;
+
+    const auto scanned = BatchExportMatrix::scanDirectory(dir, true);
+    if (scanned.isEmpty()) return;
+
+    bool added = false;
+    for (const auto &item : scanned) {
+        if (!m_inputFiles.contains(item.fullPath)) {
+            m_inputFiles.append(item.fullPath);
+            m_relativeSubDirs.insert(item.fullPath, item.relativeSubDir);
+            added = true;
+        }
+    }
+    if (added) {
+        syncFileListModel();
+    }
+}
+
+void BatchPage::toggleFolderWatcher()
+{
+    if (m_watcherService->isWatching()) {
+        m_watcherService->stopWatching();
+        m_watchActionBtn->setText(trId("batch.watcher.start"));
+        m_watchStatusLabel->setText(trId("batch.watcher.status.idle"));
+    } else {
+        const QString watchPath = m_watchPathEdit->text().trimmed();
+        if (watchPath.isEmpty() || !QDir(watchPath).exists()) {
+            QMessageBox::warning(this, trId("batch.watcher.title"), trId("batch.watcher.invalidDir"));
+            return;
+        }
+        m_watcherService->startWatching(watchPath, m_outputDirectory);
+        m_watchActionBtn->setText(trId("batch.watcher.stop"));
+        m_watchStatusLabel->setText(trId("batch.watcher.status.active").arg(watchPath).arg(0));
+    }
+}
+
+void BatchPage::onWatcherFileReady(const QString &filePath, const QString &relativeSubDir)
+{
+    const QFileInfo info(filePath);
+    QString outputPath;
+
+    if (m_pipelineToggle->isChecked()) {
+        const PipelineStep step = currentPipelineStep();
+        BatchPipeline pipeline(QStringLiteral("BatchPipeline"), step);
+
+        if (m_preserveTreeCheck->isChecked() && !relativeSubDir.isEmpty()) {
+            outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, relativeSubDir,
+                                                             info.completeBaseName(), step.outputFormat);
+        } else {
+            outputPath = OutputNaming::build(filePath, QStringLiteral("{name}.{format}"),
+                                             step.outputFormat, m_outputDirectory);
+        }
+
+        const QStringList args = pipeline.buildCommand(filePath, outputPath, m_caps);
+        auto *job = new Job();
+        job->setName(info.fileName());
+        job->setRelativeSubPath(relativeSubDir);
+        job->setCommand(m_locator->ffmpegPath(), args);
+        m_queue->addJob(job);
+    } else {
+        const QString format = m_formatCombo->currentText();
+        if (m_preserveTreeCheck->isChecked() && !relativeSubDir.isEmpty()) {
+            outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, relativeSubDir,
+                                                             info.completeBaseName(), format);
+        } else {
+            outputPath = OutputNaming::build(filePath, QStringLiteral("{name}.{format}"),
+                                             format, m_outputDirectory);
+        }
+
+        const bool copy = m_smartCopyCheck->isChecked() &&
+                          RemuxPolicy::canCopyByExtension(filePath, format);
+        const FFmpegCommandBuilder::ConversionOptions opts = currentOptions(filePath, outputPath, copy);
+        const QStringList args = m_builder->buildConversion(opts);
+
+        auto *job = new Job();
+        job->setName(info.fileName());
+        job->setRelativeSubPath(relativeSubDir);
+        job->setCommand(m_locator->ffmpegPath(), args);
+        m_queue->addJob(job);
+    }
+
+    m_watchStatusLabel->setText(trId("batch.watcher.status.active")
+                                    .arg(m_watcherService->watchPath())
+                                    .arg(m_watcherService->processedCount()));
 }
 
 void BatchPage::removeSelectedFiles()
@@ -814,33 +998,122 @@ void BatchPage::addAllToQueue()
 {
     if (m_inputFiles.isEmpty()) return;
 
+    // 1. Multi-Target Matrix Mode
+    if (m_matrixToggle->isChecked()) {
+        struct TargetConfig {
+            QString name;
+            QString format;
+            QString vcodec;
+            QString acodec;
+            int crf;
+            QString scale;
+            QString suffix;
+            bool isAudio;
+        };
+
+        QList<TargetConfig> activeTargets;
+        if (m_target1Check->isChecked()) {
+            activeTargets.append({QStringLiteral("1080p MP4"), QStringLiteral("mp4"), QStringLiteral("libx264"),
+                                  QStringLiteral("aac"), 23, QStringLiteral("1920:-2"), QStringLiteral("_1080p"), false});
+        }
+        if (m_target2Check->isChecked()) {
+            activeTargets.append({QStringLiteral("720p MP4"), QStringLiteral("mp4"), QStringLiteral("libx264"),
+                                  QStringLiteral("aac"), 24, QStringLiteral("1280:-2"), QStringLiteral("_720p"), false});
+        }
+        if (m_target3Check->isChecked()) {
+            activeTargets.append({QStringLiteral("HEVC"), QStringLiteral("mp4"), QStringLiteral("libx265"),
+                                  QStringLiteral("aac"), 26, QString(), QStringLiteral("_hevc"), false});
+        }
+        if (m_target4Check->isChecked()) {
+            activeTargets.append({QStringLiteral("MP3 Audio"), QStringLiteral("mp3"), QString(),
+                                  QStringLiteral("libmp3lame"), 0, QString(), QStringLiteral("_audio"), true});
+        }
+
+        if (activeTargets.isEmpty()) {
+            QMessageBox::warning(this, trId("batch.matrix.title"), trId("batch.matrix.noTargetSelected"));
+            return;
+        }
+
+        for (const QString &inputFile : m_inputFiles) {
+            const QFileInfo info(inputFile);
+            const QString subDir = m_preserveTreeCheck->isChecked() ? m_relativeSubDirs.value(inputFile) : QString();
+
+            for (const auto &tgt : activeTargets) {
+                const QString outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, subDir,
+                                                                                info.completeBaseName(),
+                                                                                tgt.format, tgt.suffix);
+
+                QStringList args;
+                args << QStringLiteral("-hide_banner") << QStringLiteral("-y")
+                     << QStringLiteral("-i") << inputFile;
+
+                if (tgt.isAudio) {
+                    args << QStringLiteral("-vn")
+                         << QStringLiteral("-c:a") << tgt.acodec
+                         << QStringLiteral("-b:a") << QStringLiteral("320k");
+                } else {
+                    args << QStringLiteral("-c:v") << tgt.vcodec
+                         << QStringLiteral("-crf") << QString::number(tgt.crf);
+                    if (!tgt.scale.isEmpty()) {
+                        args << QStringLiteral("-vf") << QStringLiteral("scale=%1").arg(tgt.scale);
+                    }
+                    args << QStringLiteral("-c:a") << tgt.acodec;
+                }
+                args << outputPath;
+
+                auto *job = new Job();
+                job->setName(QStringLiteral("%1 (%2)").arg(info.fileName(), tgt.name));
+                job->setRelativeSubPath(subDir);
+                job->setCommand(m_locator->ffmpegPath(), args);
+                m_queue->addJob(job);
+            }
+        }
+        return;
+    }
+
+    // 2. Custom Pipeline Mode
     if (m_pipelineToggle->isChecked()) {
         const PipelineStep step = currentPipelineStep();
         BatchPipeline pipeline(QStringLiteral("BatchPipeline"), step);
 
         for (const QString &inputFile : m_inputFiles) {
             const QFileInfo info(inputFile);
-            const QString outputPath = OutputNaming::build(inputFile,
-                                                           QStringLiteral("{name}.{format}"),
-                                                           step.outputFormat, m_outputDirectory);
+            const QString subDir = m_preserveTreeCheck->isChecked() ? m_relativeSubDirs.value(inputFile) : QString();
+
+            QString outputPath;
+            if (!subDir.isEmpty()) {
+                outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, subDir,
+                                                                 info.completeBaseName(), step.outputFormat);
+            } else {
+                outputPath = OutputNaming::build(inputFile, QStringLiteral("{name}.{format}"),
+                                                 step.outputFormat, m_outputDirectory);
+            }
 
             const QStringList args = pipeline.buildCommand(inputFile, outputPath, m_caps);
 
             auto *job = new Job();
             job->setName(info.fileName());
+            job->setRelativeSubPath(subDir);
             job->setCommand(m_locator->ffmpegPath(), args);
             m_queue->addJob(job);
         }
         return;
     }
 
-    // Standard mode
+    // 3. Standard Conversion Mode
     const QString format = m_formatCombo->currentText();
     for (const QString &inputFile : m_inputFiles) {
         const QFileInfo info(inputFile);
-        const QString outputPath = OutputNaming::build(inputFile,
-                                                       QStringLiteral("{name}.{format}"),
-                                                       format, m_outputDirectory);
+        const QString subDir = m_preserveTreeCheck->isChecked() ? m_relativeSubDirs.value(inputFile) : QString();
+
+        QString outputPath;
+        if (!subDir.isEmpty()) {
+            outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, subDir,
+                                                             info.completeBaseName(), format);
+        } else {
+            outputPath = OutputNaming::build(inputFile, QStringLiteral("{name}.{format}"),
+                                             format, m_outputDirectory);
+        }
 
         const bool copy = m_smartCopyCheck->isChecked() &&
                           RemuxPolicy::canCopyByExtension(inputFile, format);
@@ -850,6 +1123,7 @@ void BatchPage::addAllToQueue()
 
         auto *job = new Job();
         job->setName(info.fileName());
+        job->setRelativeSubPath(subDir);
         job->setCommand(m_locator->ffmpegPath(), args);
         m_queue->addJob(job);
     }
@@ -951,8 +1225,10 @@ void BatchPage::retranslateUi()
     m_titleLabel->setText(trId("batch.title"));
     m_listHeader->setText(trId("batch.fileList"));
     m_addButton->setText(trId("batch.addFiles"));
+    m_addFolderButton->setText(trId("batch.addFolder"));
     m_removeButton->setText(trId("batch.removeSelected"));
     m_clearButton->setText(trId("common.clear"));
+    m_preserveTreeCheck->setText(trId("batch.preserveTree"));
     updateCountLabel();
 
     m_outputDirCaption->setText(trId("common.save") + QStringLiteral(":"));
@@ -1009,6 +1285,13 @@ void BatchPage::retranslateUi()
     m_pipeAudioCheck->setText(trId("batch.pipeline.audio"));
     m_pipeAudioLoudnormCheck->setText(trId("batch.pipeline.loudnorm"));
     m_pipeAudioMuteCheck->setText(trId("batch.pipeline.mute"));
+
+    // Watcher & Matrix retranslate
+    m_watcherToggle->setText(trId("batch.watcher.title"));
+    m_watchBrowseBtn->setText(trId("common.browse"));
+    m_watchActionBtn->setText(m_watcherService->isWatching() ? trId("batch.watcher.stop")
+                                                            : trId("batch.watcher.start"));
+    m_matrixToggle->setText(trId("batch.matrix.title"));
 
     m_queueButton->setText(trId("convert.addToQueue"));
 }

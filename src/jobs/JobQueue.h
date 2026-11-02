@@ -18,8 +18,15 @@ class JobQueue : public QObject
     Q_PROPERTY(JobListModel* model READ model CONSTANT)
     Q_PROPERTY(int maxConcurrent READ maxConcurrent WRITE setMaxConcurrent NOTIFY maxConcurrentChanged)
     Q_PROPERTY(bool hasRunningJobs READ hasRunningJobs NOTIFY runningCountChanged)
+    Q_PROPERTY(bool isPaused READ isPaused WRITE setPaused NOTIFY queuePausedChanged)
 
 public:
+    enum class PostQueueAction {
+        None = 0,
+        OpenFolder = 1,
+        SoundBeep = 2
+    };
+
     explicit JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService,
                       QObject *parent = nullptr);
     explicit JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeService,
@@ -44,9 +51,29 @@ public:
     Q_INVOKABLE void retryJob(const QString &jobId);
     Q_INVOKABLE void clearCompleted();
 
+    bool isPaused() const;
+    void setPaused(bool paused);
+    Q_INVOKABLE void pause();
+    Q_INVOKABLE void resume();
+
+    Q_INVOKABLE void cancelAll();
+    Q_INVOKABLE void retryAllFailed();
+
+    Q_INVOKABLE bool moveJobUp(const QString &jobId);
+    Q_INVOKABLE bool moveJobDown(const QString &jobId);
+    Q_INVOKABLE bool moveJobToTop(const QString &jobId);
+
+    int pendingJobCount() const;
+    int failedJobCount() const;
+
+    PostQueueAction postQueueAction() const;
+    void setPostQueueAction(PostQueueAction action);
+
 signals:
     void maxConcurrentChanged();
     void runningCountChanged();
+    void queuePausedChanged(bool paused);
+    void statsChanged();
     void allJobsFinished();
     void jobFinished(const QString &jobName, bool success);
 
@@ -63,6 +90,8 @@ private:
     JobListModel *m_model;
 
     int m_maxConcurrent = 1;
+    bool m_isPaused = false;
+    PostQueueAction m_postAction = PostQueueAction::None;
     QString m_storagePath;
     QMap<QUuid, FFmpegProcess*> m_processes;
 };

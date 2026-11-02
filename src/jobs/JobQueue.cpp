@@ -4,7 +4,9 @@
 #include "ffmpeg/FFmpegProcess.h"
 #include "media/MediaProbeService.h"
 
+#include <QApplication>
 #include <QCoreApplication>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -13,6 +15,7 @@
 #include <QPointer>
 #include <QSaveFile>
 #include <QStandardPaths>
+#include <QUrl>
 
 #include <algorithm>
 
@@ -139,25 +142,135 @@ void JobQueue::addJob(Job *job)
     startNext();
 }
 
+bool JobQueue::isPaused() const { return m_isPaused; }
+void JobQueue::setPaused(bool paused)
+{
+    if (m_isPaused == paused) return;
+    m_isPaused = paused;
+    emit queuePausedChanged(m_isPaused);
+    if (!m_isPaused) {
+        startNext();
+    }
+}
+void JobQueue::pause() { setPaused(true); }
+void JobQueue::resume() { setPaused(false); }
+
+void JobQueue::cancelAll()
+{
+    for (int i = 0; i < m_model->count(); ++i) {
+        if (Job *job = m_model->getJob(i)) {
+            const JobStatus s = job->status();
+            if (s == JobStatus::Running || s == JobStatus::Pending) {
+                cancelJob(job->id().toString());
+            }
+        }
+    }
+}
+
+void JobQueue::retryAllFailed()
+{
+    for (int i = 0; i < m_model->count(); ++i) {
+        if (Job *job = m_model->getJob(i)) {
+            const JobStatus s = job->status();
+            if (s == JobStatus::Failed || s == JobStatus::Cancelled) {
+                retryJob(job->id().toString());
+            }
+        }
+    }
+}
+
+bool JobQueue::moveJobUp(const QString &jobId)
+{
+    const int idx = m_model->indexOfJob(jobId);
+    if (idx > 0) {
+        bool ok = m_model->moveJobUp(idx);
+        if (ok) savePersistence();
+        return ok;
+    }
+    return false;
+}
+
+bool JobQueue::moveJobDown(const QString &jobId)
+{
+    const int idx = m_model->indexOfJob(jobId);
+    if (idx >= 0 && idx < m_model->count() - 1) {
+        bool ok = m_model->moveJobDown(idx);
+        if (ok) savePersistence();
+        return ok;
+    }
+    return false;
+}
+
+bool JobQueue::moveJobToTop(const QString &jobId)
+{
+    const int idx = m_model->indexOfJob(jobId);
+    if (idx > 0) {
+        bool ok = m_model->moveJobToTop(idx);
+        if (ok) savePersistence();
+        return ok;
+    }
+    return false;
+}
+
+int JobQueue::pendingJobCount() const
+{
+    int count = 0;
+    for (int i = 0; i < m_model->count(); ++i) {
+        if (Job *job = m_model->getJob(i)) {
+            if (job->status() == JobStatus::Pending) count++;
+        }
+    }
+    return count;
+}
+
+int JobQueue::failedJobCount() const
+{
+    int count = 0;
+    for (int i = 0; i < m_model->count(); ++i) {
+        if (Job *job = m_model->getJob(i)) {
+            if (job->status() == JobStatus::Failed) count++;
+        }
+    }
+    return count;
+}
+
+JobQueue::PostQueueAction JobQueue::postQueueAction() const { return m_postAction; }
+void JobQueue::setPostQueueAction(JobQueue::PostQueueAction action) { m_postAction = action; }
+
 void JobQueue::startNext()
 {
+    if (m_isPaused) {
+        return;
+    }
     if (m_processes.size() >= m_maxConcurrent) {
         return;
     }
 
-    for (int i = 0; i < m_model->count(); ++i) {
-        Job *job = m_model->getJob(i);
-        if (job && job->status() == JobStatus::Pending) {
-            // A cancelled job's process may still be winding down; its slot
-            // stays occupied until that process reports finished.
+    while (m_processes.size() < m_maxConcurrent) {
+        Job *bestJob = nullptr;
+        int bestPriorityVal = -1;
+
+        for (int i = 0; i < m_model->count(); ++i) {
+            Job *job = m_model->getJob(i);
+            if (!job || job->status() != JobStatus::Pending) {
+                continue;
+            }
             if (m_processes.contains(job->id())) {
                 continue;
             }
-            startJob(job);
-            if (m_processes.size() >= m_maxConcurrent) {
-                break;
+
+            const int prio = static_cast<int>(job->priority());
+            if (prio > bestPriorityVal) {
+                bestPriorityVal = prio;
+                bestJob = job;
             }
         }
+
+        if (!bestJob) {
+            break;
+        }
+
+        startJob(bestJob);
     }
 }
 
@@ -326,6 +439,22 @@ void JobQueue::onJobFinished(bool success)
     }
     if (noActiveJobs) {
         emit allJobsFinished();
+        if (m_postAction == PostQueueAction::OpenFolder) {
+            QString outDir;
+            for (int i = m_model->count() - 1; i >= 0; --i) {
+                if (Job *j = m_model->getJob(i)) {
+                    if (j->status() == JobStatus::Completed && !j->outputFile().isEmpty()) {
+                        outDir = QFileInfo(j->outputFile()).absolutePath();
+                        break;
+                    }
+                }
+            }
+            if (!outDir.isEmpty() && QDir(outDir).exists()) {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(outDir));
+            }
+        } else if (m_postAction == PostQueueAction::SoundBeep) {
+            QApplication::beep();
+        }
     }
 
     savePersistence();

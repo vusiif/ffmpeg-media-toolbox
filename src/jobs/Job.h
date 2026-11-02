@@ -24,6 +24,13 @@ enum class JobStatus {
     Cancelled
 };
 
+enum class JobPriority {
+    Low = 0,
+    Normal = 1,
+    High = 2,
+    Urgent = 3
+};
+
 struct JobLog {
     QDateTime timestamp;
     QString message;
@@ -80,6 +87,11 @@ public:
     void setLogs(const QList<JobLog> &logs);
     void addLog(const QString &message);
 
+    JobPriority priority() const;
+    void setPriority(JobPriority priority);
+    QString relativeSubPath() const;
+    void setRelativeSubPath(const QString &subPath);
+
     bool autoSoftwareFallback() const;
     void setAutoSoftwareFallback(bool enable);
     bool fallbackAttempted() const;
@@ -93,12 +105,15 @@ signals:
     void statusChanged();
     void progressChanged();
     void commandChanged();
+    void priorityChanged();
 
 private:
     QUuid m_id;
     QString m_name;
     JobType m_type = JobType::Conversion;
     JobStatus m_status = JobStatus::Pending;
+    JobPriority m_priority = JobPriority::Normal;
+    QString m_relativeSubPath;
     double m_progress = 0;
     QString m_errorMessage;
 

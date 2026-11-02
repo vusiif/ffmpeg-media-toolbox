@@ -95,6 +95,18 @@ void Job::addLog(const QString &message)
     }
 }
 
+JobPriority Job::priority() const { return m_priority; }
+void Job::setPriority(JobPriority priority)
+{
+    if (m_priority != priority) {
+        m_priority = priority;
+        emit priorityChanged();
+    }
+}
+
+QString Job::relativeSubPath() const { return m_relativeSubPath; }
+void Job::setRelativeSubPath(const QString &subPath) { m_relativeSubPath = subPath; }
+
 bool Job::autoSoftwareFallback() const { return m_autoSoftwareFallback; }
 void Job::setAutoSoftwareFallback(bool enable) { m_autoSoftwareFallback = enable; }
 bool Job::fallbackAttempted() const { return m_fallbackAttempted; }
@@ -124,6 +136,8 @@ QJsonObject Job::toJson() const
     }
     obj[QStringLiteral("inputFiles")] = inputs;
     obj[QStringLiteral("outputFile")] = m_outputFile;
+    obj[QStringLiteral("priority")] = static_cast<int>(m_priority);
+    obj[QStringLiteral("relativeSubPath")] = m_relativeSubPath;
     obj[QStringLiteral("autoSoftwareFallback")] = m_autoSoftwareFallback;
     obj[QStringLiteral("fallbackAttempted")] = m_fallbackAttempted;
 
@@ -177,6 +191,8 @@ Job* Job::fromJson(const QJsonObject &obj, QObject *parent)
     job->setProgress(obj.value(QStringLiteral("progress")).toDouble(0.0));
     job->setTotalDuration(obj.value(QStringLiteral("totalDuration")).toDouble(0.0));
     job->setOutputFile(obj.value(QStringLiteral("outputFile")).toString());
+    job->setPriority(static_cast<JobPriority>(obj.value(QStringLiteral("priority")).toInt(static_cast<int>(JobPriority::Normal))));
+    job->setRelativeSubPath(obj.value(QStringLiteral("relativeSubPath")).toString());
     job->setAutoSoftwareFallback(obj.value(QStringLiteral("autoSoftwareFallback")).toBool(true));
     job->setFallbackAttempted(obj.value(QStringLiteral("fallbackAttempted")).toBool(false));
 

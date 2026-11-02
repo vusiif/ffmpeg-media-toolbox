@@ -11,6 +11,7 @@ class FFmpegCapabilities;
 class JobQueue;
 class PresetManager;
 class PipelineManager;
+class FolderWatcherService;
 class ElaListView;
 class QStringListModel;
 class ElaText;
@@ -37,11 +38,14 @@ protected:
 
 private:
     void addFiles();
+    void addFolder();
     void removeSelectedFiles();
     void clearFiles();
     void syncFileListModel();
     void browseOutputDir();
     void addAllToQueue();
+    void toggleFolderWatcher();
+    void onWatcherFileReady(const QString &filePath, const QString &relativeSubDir);
     void rebuildCodecLists();
     void refreshPresetList();
     void loadPreset(const QString &name);
@@ -65,6 +69,9 @@ private:
     PresetManager *m_presets = nullptr;
     PipelineManager *m_pipelineManager = nullptr;
 
+    FolderWatcherService *m_watcherService = nullptr;
+    QMap<QString, QString> m_relativeSubDirs;
+
     QStringList m_inputFiles;
     QString m_outputDirectory;
 
@@ -73,8 +80,10 @@ private:
     ElaListView *m_fileView = nullptr;
     QStringListModel *m_fileModel = nullptr;
     ElaPushButton *m_addButton = nullptr;
+    ElaPushButton *m_addFolderButton = nullptr;
     ElaPushButton *m_removeButton = nullptr;
     ElaPushButton *m_clearButton = nullptr;
+    ElaCheckBox *m_preserveTreeCheck = nullptr;
     ElaText *m_countLabel = nullptr;
 
     // Output Directory
@@ -161,6 +170,22 @@ private:
     ElaSpinBox *m_pipeAudioVolSpin = nullptr;
     ElaCheckBox *m_pipeAudioLoudnormCheck = nullptr;
     ElaCheckBox *m_pipeAudioMuteCheck = nullptr;
+
+    // Card 5: Folder Auto-Watch Transcoding Card
+    ElaCheckBox *m_watcherToggle = nullptr;
+    QWidget *m_watcherContainer = nullptr;
+    ElaLineEdit *m_watchPathEdit = nullptr;
+    ElaPushButton *m_watchBrowseBtn = nullptr;
+    ElaPushButton *m_watchActionBtn = nullptr;
+    ElaText *m_watchStatusLabel = nullptr;
+
+    // Card 6: Multi-Export Target Matrix Card
+    ElaCheckBox *m_matrixToggle = nullptr;
+    QWidget *m_matrixContainer = nullptr;
+    ElaCheckBox *m_target1Check = nullptr;
+    ElaCheckBox *m_target2Check = nullptr;
+    ElaCheckBox *m_target3Check = nullptr;
+    ElaCheckBox *m_target4Check = nullptr;
 
     ElaPushButton *m_queueButton = nullptr;
 };

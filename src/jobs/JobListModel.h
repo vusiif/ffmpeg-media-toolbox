@@ -19,7 +19,8 @@ public:
         TypeRole,
         StatusRole,
         ProgressRole,
-        ErrorMessageRole
+        ErrorMessageRole,
+        PriorityRole
     };
 
     explicit JobListModel(QObject *parent = nullptr);
@@ -34,11 +35,17 @@ public:
 
     Q_INVOKABLE Job* getJob(int index) const;
     Q_INVOKABLE Job* findJobById(const QString &id) const;
+    int indexOfJob(const QString &id) const;
 
     void addJob(Job *job);
     void removeJob(int index);
     void removeJobById(const QString &id);
     void clearCompleted();
+
+    bool moveJobUp(int index);
+    bool moveJobDown(int index);
+    bool moveJobToTop(int index);
+    bool moveJobToBottom(int index);
 
 signals:
     void countChanged();

@@ -1739,5 +1739,133 @@
         <source>filter.success.enqueued</source>
         <translation>Filter rendering job added to the queue!</translation>
     </message>
+    <message id="queue.pause">
+        <source>queue.pause</source>
+        <translation>Pause Queue</translation>
+    </message>
+    <message id="queue.resume">
+        <source>queue.resume</source>
+        <translation>Resume Queue</translation>
+    </message>
+    <message id="queue.cancelAll">
+        <source>queue.cancelAll</source>
+        <translation>Cancel All</translation>
+    </message>
+    <message id="queue.retryFailed">
+        <source>queue.retryFailed</source>
+        <translation>Retry Failed</translation>
+    </message>
+    <message id="queue.concurrency">
+        <source>queue.concurrency</source>
+        <translation>Workers:</translation>
+    </message>
+    <message id="queue.postAction">
+        <source>queue.postAction</source>
+        <translation>When Finished:</translation>
+    </message>
+    <message id="queue.post.none">
+        <source>queue.post.none</source>
+        <translation>Do Nothing</translation>
+    </message>
+    <message id="queue.post.openFolder">
+        <source>queue.post.openFolder</source>
+        <translation>Open Output Folder</translation>
+    </message>
+    <message id="queue.post.beep">
+        <source>queue.post.beep</source>
+        <translation>Play Sound Beep</translation>
+    </message>
+    <message id="queue.stats">
+        <source>queue.stats</source>
+        <translation>Total: %1 | Running: %2 | Pending: %3 | Done: %4 | Failed: %5</translation>
+    </message>
+    <message id="queue.priority.low">
+        <source>queue.priority.low</source>
+        <translation>Low Priority</translation>
+    </message>
+    <message id="queue.priority.normal">
+        <source>queue.priority.normal</source>
+        <translation>Normal Priority</translation>
+    </message>
+    <message id="queue.priority.high">
+        <source>queue.priority.high</source>
+        <translation>High Priority</translation>
+    </message>
+    <message id="queue.priority.urgent">
+        <source>queue.priority.urgent</source>
+        <translation>Urgent Priority</translation>
+    </message>
+    <message id="queue.moveUp">
+        <source>queue.moveUp</source>
+        <translation>Move Up</translation>
+    </message>
+    <message id="queue.moveDown">
+        <source>queue.moveDown</source>
+        <translation>Move Down</translation>
+    </message>
+    <message id="queue.moveToTop">
+        <source>queue.moveToTop</source>
+        <translation>Move to Top</translation>
+    </message>
+    <message id="queue.remove">
+        <source>queue.remove</source>
+        <translation>Remove from Queue</translation>
+    </message>
+    <message id="batch.addFolder">
+        <source>batch.addFolder</source>
+        <translation>Add Folder</translation>
+    </message>
+    <message id="batch.selectFolder">
+        <source>batch.selectFolder</source>
+        <translation>Select Folder with Media Files</translation>
+    </message>
+    <message id="batch.preserveTree">
+        <source>batch.preserveTree</source>
+        <translation>Preserve Subdirectory Tree</translation>
+    </message>
+    <message id="batch.watcher.title">
+        <source>batch.watcher.title</source>
+        <translation>Auto-Watch Folder Transcoding</translation>
+    </message>
+    <message id="batch.watcher.watchDir">
+        <source>batch.watcher.watchDir</source>
+        <translation>Watched Directory</translation>
+    </message>
+    <message id="batch.watcher.selectDir">
+        <source>batch.watcher.selectDir</source>
+        <translation>Select Directory to Watch</translation>
+    </message>
+    <message id="batch.watcher.selectDirHint">
+        <source>batch.watcher.selectDirHint</source>
+        <translation>Select or enter directory to watch...</translation>
+    </message>
+    <message id="batch.watcher.invalidDir">
+        <source>batch.watcher.invalidDir</source>
+        <translation>The specified directory does not exist, please check the path!</translation>
+    </message>
+    <message id="batch.watcher.start">
+        <source>batch.watcher.start</source>
+        <translation>Start Watching</translation>
+    </message>
+    <message id="batch.watcher.stop">
+        <source>batch.watcher.stop</source>
+        <translation>Stop Watching</translation>
+    </message>
+    <message id="batch.watcher.status.idle">
+        <source>batch.watcher.status.idle</source>
+        <translation>Watcher Idle (Not Started)</translation>
+    </message>
+    <message id="batch.watcher.status.active">
+        <source>batch.watcher.status.active</source>
+        <translation>Watching: %1 (Processed: %2 files)</translation>
+    </message>
+    <message id="batch.matrix.title">
+        <source>batch.matrix.title</source>
+        <translation>Multi-Target Export Matrix</translation>
+    </message>
+    <message id="batch.matrix.noTargetSelected">
+        <source>batch.matrix.noTargetSelected</source>
+        <translation>Please select at least one export target profile!</translation>
+    </message>
 </context>
 </TS>
