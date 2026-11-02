@@ -98,6 +98,8 @@ set(FFMEDIA_CORE_SOURCES
     src/subtitles/WhisperPipeline.cpp
     src/compositor/MultiTrackCompositor.h
     src/compositor/MultiTrackCompositor.cpp
+    src/animation/AnimatedImageEngine.h
+    src/animation/AnimatedImageEngine.cpp
 )
 
 set(APP_SOURCES
@@ -140,6 +142,8 @@ set(APP_SOURCES
     src/app/dialogs/SubtitleStudioDialog.cpp
     src/app/dialogs/PipCompositorDialog.h
     src/app/dialogs/PipCompositorDialog.cpp
+    src/app/dialogs/GifStudioDialog.h
+    src/app/dialogs/GifStudioDialog.cpp
 )
 
 set(TS_FILES
@@ -201,7 +205,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor AnimatedImageEngine)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

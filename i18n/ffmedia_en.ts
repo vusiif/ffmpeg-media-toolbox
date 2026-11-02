@@ -2143,5 +2143,193 @@
         <source>compositor.job.title</source>
         <translation>Composite: %1</translation>
     </message>
+    <message id="video.gif.openStudio">
+        <source>video.gif.openStudio</source>
+        <translation>🎨 Open Animated Image Studio</translation>
+    </message>
+    <message id="animation.dialog.title">
+        <source>animation.dialog.title</source>
+        <translation>Animated Image &amp; Meme Studio</translation>
+    </message>
+    <message id="animation.dialog.subtitle">
+        <source>animation.dialog.subtitle</source>
+        <translation>Create high-quality GIF / WebP / APNG animations with 2-pass palette optimization</translation>
+    </message>
+    <message id="animation.selectVideo">
+        <source>animation.selectVideo</source>
+        <translation>Select Source Video</translation>
+    </message>
+    <message id="animation.setIn">
+        <source>animation.setIn</source>
+        <translation>Set In [ [</translation>
+    </message>
+    <message id="animation.setOut">
+        <source>animation.setOut</source>
+        <translation>Set Out ] ]</translation>
+    </message>
+    <message id="animation.previewRange">
+        <source>animation.previewRange</source>
+        <translation>▶ Play Range</translation>
+    </message>
+    <message id="animation.startTime">
+        <source>animation.startTime</source>
+        <translation>Start Time</translation>
+    </message>
+    <message id="animation.duration">
+        <source>animation.duration</source>
+        <translation>Duration</translation>
+    </message>
+    <message id="animation.endTime">
+        <source>animation.endTime</source>
+        <translation>End Time</translation>
+    </message>
+    <message id="animation.totalFrames">
+        <source>animation.totalFrames</source>
+        <translation>Total Frames</translation>
+    </message>
+    <message id="animation.framesUnit">
+        <source>animation.framesUnit</source>
+        <translation>frames</translation>
+    </message>
+    <message id="animation.estSize">
+        <source>animation.estSize</source>
+        <translation>Estimated Size</translation>
+    </message>
+    <message id="animation.outputFormat">
+        <source>animation.outputFormat</source>
+        <translation>Output Format</translation>
+    </message>
+    <message id="animation.preset">
+        <source>animation.preset</source>
+        <translation>Quality / Size Preset</translation>
+    </message>
+    <message id="animation.preset.hq256">
+        <source>animation.preset.hq256</source>
+        <translation>High Quality (256c / Bayer / 15fps)</translation>
+    </message>
+    <message id="animation.preset.balanced128">
+        <source>animation.preset.balanced128</source>
+        <translation>Balanced Size (128c / Bayer / 12fps)</translation>
+    </message>
+    <message id="animation.preset.sticker64">
+        <source>animation.preset.sticker64</source>
+        <translation>Sticker (64c / No Dither / 10fps)</translation>
+    </message>
+    <message id="animation.preset.smooth60">
+        <source>animation.preset.smooth60</source>
+        <translation>Smooth (256c / Full Palette / 24fps)</translation>
+    </message>
+    <message id="animation.resolution">
+        <source>animation.resolution</source>
+        <translation>Resolution Preset</translation>
+    </message>
+    <message id="animation.customWidth">
+        <source>animation.customWidth</source>
+        <translation>Image Width (px)</translation>
+    </message>
+    <message id="animation.fps">
+        <source>animation.fps</source>
+        <translation>Frame Rate (FPS)</translation>
+    </message>
+    <message id="animation.speed">
+        <source>animation.speed</source>
+        <translation>Playback Speed</translation>
+    </message>
+    <message id="animation.direction">
+        <source>animation.direction</source>
+        <translation>Playback Direction</translation>
+    </message>
+    <message id="animation.dir.normal">
+        <source>animation.dir.normal</source>
+        <translation>Normal</translation>
+    </message>
+    <message id="animation.dir.reverse">
+        <source>animation.dir.reverse</source>
+        <translation>Reverse</translation>
+    </message>
+    <message id="animation.dir.pingpong">
+        <source>animation.dir.pingpong</source>
+        <translation>Ping-Pong Loop</translation>
+    </message>
+    <message id="animation.maxColors">
+        <source>animation.maxColors</source>
+        <translation>Max Palette Colors</translation>
+    </message>
+    <message id="animation.dither">
+        <source>animation.dither</source>
+        <translation>Dithering Algorithm</translation>
+    </message>
+    <message id="animation.dither.bayer">
+        <source>animation.dither.bayer</source>
+        <translation>Bayer Ordered Dithering</translation>
+    </message>
+    <message id="animation.dither.floyd">
+        <source>animation.dither.floyd</source>
+        <translation>Floyd-Steinberg Diffusion</translation>
+    </message>
+    <message id="animation.dither.sierra">
+        <source>animation.dither.sierra</source>
+        <translation>Sierra 2-4A Diffusion</translation>
+    </message>
+    <message id="animation.dither.none">
+        <source>animation.dither.none</source>
+        <translation>None (Flat Color Quantization)</translation>
+    </message>
+    <message id="animation.bayerScale">
+        <source>animation.bayerScale</source>
+        <translation>Bayer Dither Scale</translation>
+    </message>
+    <message id="animation.statsMode">
+        <source>animation.statsMode</source>
+        <translation>Palette Stats Mode</translation>
+    </message>
+    <message id="animation.stats.diff">
+        <source>animation.stats.diff</source>
+        <translation>Diff Mode (Moving Subject Focus)</translation>
+    </message>
+    <message id="animation.stats.full">
+        <source>animation.stats.full</source>
+        <translation>Full Mode (All-frame Average)</translation>
+    </message>
+    <message id="animation.loopCount">
+        <source>animation.loopCount</source>
+        <translation>Loop Count</translation>
+    </message>
+    <message id="animation.loop.infinite">
+        <source>animation.loop.infinite</source>
+        <translation>Infinite (0)</translation>
+    </message>
+    <message id="animation.webpQuality">
+        <source>animation.webpQuality</source>
+        <translation>WebP Quality</translation>
+    </message>
+    <message id="animation.webpLossless">
+        <source>animation.webpLossless</source>
+        <translation>Lossless WebP Compression</translation>
+    </message>
+    <message id="animation.copyCmd">
+        <source>animation.copyCmd</source>
+        <translation>📋 Copy FFmpeg Command</translation>
+    </message>
+    <message id="animation.addToQueue">
+        <source>animation.addToQueue</source>
+        <translation>🎬 Add to Job Queue</translation>
+    </message>
+    <message id="animation.missingInputNotice">
+        <source>animation.missingInputNotice</source>
+        <translation>Please select a valid source video file first!</translation>
+    </message>
+    <message id="animation.cmdCopiedNotice">
+        <source>animation.cmdCopiedNotice</source>
+        <translation>FFmpeg animation command copied to clipboard!</translation>
+    </message>
+    <message id="animation.enqueuedNotice">
+        <source>animation.enqueuedNotice</source>
+        <translation>Animated image job successfully added to queue!</translation>
+    </message>
+    <message id="animation.job.title">
+        <source>animation.job.title</source>
+        <translation>Animation: %1</translation>
+    </message>
 </context>
 </TS>

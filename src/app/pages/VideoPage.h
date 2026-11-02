@@ -54,6 +54,7 @@ private:
     void mute();
     void screenshot();
     void makeGif();
+    void openGifStudio();
     void joinVideos();
     void sequence();
     void watermark();
@@ -215,6 +216,7 @@ private:
     ElaText *m_gifWidthCaption = nullptr;
     ElaSpinBox *m_gifWidth = nullptr;
     ElaPushButton *m_gifButton = nullptr;
+    ElaPushButton *m_openGifStudioBtn = nullptr;
 
     ElaScrollPageArea *m_seqCard = nullptr;
     ElaText *m_seqTitleLabel = nullptr;

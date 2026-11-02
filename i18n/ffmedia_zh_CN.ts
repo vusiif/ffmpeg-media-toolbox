@@ -2143,5 +2143,193 @@
         <source>compositor.job.title</source>
         <translation>多轨合成: %1</translation>
     </message>
+    <message id="video.gif.openStudio">
+        <source>video.gif.openStudio</source>
+        <translation>🎨 打开专业动图工坊</translation>
+    </message>
+    <message id="animation.dialog.title">
+        <source>animation.dialog.title</source>
+        <translation>动图与动效提取工坊</translation>
+    </message>
+    <message id="animation.dialog.subtitle">
+        <source>animation.dialog.subtitle</source>
+        <translation>基于 FFmpeg 双遍调色板分析算法，轻松制作高质量 GIF / 动效 WebP / APNG 表情包</translation>
+    </message>
+    <message id="animation.selectVideo">
+        <source>animation.selectVideo</source>
+        <translation>选择源视频文件</translation>
+    </message>
+    <message id="animation.setIn">
+        <source>animation.setIn</source>
+        <translation>设为起点 [ [</translation>
+    </message>
+    <message id="animation.setOut">
+        <source>animation.setOut</source>
+        <translation>设为终点 ] ]</translation>
+    </message>
+    <message id="animation.previewRange">
+        <source>animation.previewRange</source>
+        <translation>▶ 播放选段</translation>
+    </message>
+    <message id="animation.startTime">
+        <source>animation.startTime</source>
+        <translation>开始时间 (Start)</translation>
+    </message>
+    <message id="animation.duration">
+        <source>animation.duration</source>
+        <translation>片段时长 (Duration)</translation>
+    </message>
+    <message id="animation.endTime">
+        <source>animation.endTime</source>
+        <translation>结束时间 (End)</translation>
+    </message>
+    <message id="animation.totalFrames">
+        <source>animation.totalFrames</source>
+        <translation>总帧数</translation>
+    </message>
+    <message id="animation.framesUnit">
+        <source>animation.framesUnit</source>
+        <translation>帧</translation>
+    </message>
+    <message id="animation.estSize">
+        <source>animation.estSize</source>
+        <translation>预估体积</translation>
+    </message>
+    <message id="animation.outputFormat">
+        <source>animation.outputFormat</source>
+        <translation>输出动图格式</translation>
+    </message>
+    <message id="animation.preset">
+        <source>animation.preset</source>
+        <translation>画质/体积预设</translation>
+    </message>
+    <message id="animation.preset.hq256">
+        <source>animation.preset.hq256</source>
+        <translation>高质量推荐 (256色 / Bayer抖动 / 15fps)</translation>
+    </message>
+    <message id="animation.preset.balanced128">
+        <source>animation.preset.balanced128</source>
+        <translation>平衡体积 (128色 / Bayer抖动 / 12fps)</translation>
+    </message>
+    <message id="animation.preset.sticker64">
+        <source>animation.preset.sticker64</source>
+        <translation>轻量表情包 (64色 / 无抖动 / 10fps)</translation>
+    </message>
+    <message id="animation.preset.smooth60">
+        <source>animation.preset.smooth60</source>
+        <translation>丝滑高帧率 (256色 / 全局调色 / 24fps)</translation>
+    </message>
+    <message id="animation.resolution">
+        <source>animation.resolution</source>
+        <translation>预设分辨率</translation>
+    </message>
+    <message id="animation.customWidth">
+        <source>animation.customWidth</source>
+        <translation>画面宽度 (像素)</translation>
+    </message>
+    <message id="animation.fps">
+        <source>animation.fps</source>
+        <translation>画面帧率 (FPS)</translation>
+    </message>
+    <message id="animation.speed">
+        <source>animation.speed</source>
+        <translation>播放速度</translation>
+    </message>
+    <message id="animation.direction">
+        <source>animation.direction</source>
+        <translation>播放方向</translation>
+    </message>
+    <message id="animation.dir.normal">
+        <source>animation.dir.normal</source>
+        <translation>正常顺放 (Normal)</translation>
+    </message>
+    <message id="animation.dir.reverse">
+        <source>animation.dir.reverse</source>
+        <translation>逆向倒放 (Reverse)</translation>
+    </message>
+    <message id="animation.dir.pingpong">
+        <source>animation.dir.pingpong</source>
+        <translation>往返循环/弹簧 (Ping-Pong Loop)</translation>
+    </message>
+    <message id="animation.maxColors">
+        <source>animation.maxColors</source>
+        <translation>最大调色板颜色数</translation>
+    </message>
+    <message id="animation.dither">
+        <source>animation.dither</source>
+        <translation>色彩抖动算法</translation>
+    </message>
+    <message id="animation.dither.bayer">
+        <source>animation.dither.bayer</source>
+        <translation>Bayer 有序抖动 (推荐)</translation>
+    </message>
+    <message id="animation.dither.floyd">
+        <source>animation.dither.floyd</source>
+        <translation>Floyd-Steinberg 误差扩散</translation>
+    </message>
+    <message id="animation.dither.sierra">
+        <source>animation.dither.sierra</source>
+        <translation>Sierra 快速误差扩散</translation>
+    </message>
+    <message id="animation.dither.none">
+        <source>animation.dither.none</source>
+        <translation>无抖动 (纯色阶降噪)</translation>
+    </message>
+    <message id="animation.bayerScale">
+        <source>animation.bayerScale</source>
+        <translation>Bayer 抖动等级</translation>
+    </message>
+    <message id="animation.statsMode">
+        <source>animation.statsMode</source>
+        <translation>调色板统计模式</translation>
+    </message>
+    <message id="animation.stats.diff">
+        <source>animation.stats.diff</source>
+        <translation>差分动态模式 (运动主体优化)</translation>
+    </message>
+    <message id="animation.stats.full">
+        <source>animation.stats.full</source>
+        <translation>全局静态模式 (全场景色彩平均)</translation>
+    </message>
+    <message id="animation.loopCount">
+        <source>animation.loopCount</source>
+        <translation>循环播放次数</translation>
+    </message>
+    <message id="animation.loop.infinite">
+        <source>animation.loop.infinite</source>
+        <translation>无限循环 (0)</translation>
+    </message>
+    <message id="animation.webpQuality">
+        <source>animation.webpQuality</source>
+        <translation>WebP 压缩画质</translation>
+    </message>
+    <message id="animation.webpLossless">
+        <source>animation.webpLossless</source>
+        <translation>启用 WebP 无损压缩</translation>
+    </message>
+    <message id="animation.copyCmd">
+        <source>animation.copyCmd</source>
+        <translation>📋 复制 FFmpeg 导出命令</translation>
+    </message>
+    <message id="animation.addToQueue">
+        <source>animation.addToQueue</source>
+        <translation>🎬 加入转码任务队列</translation>
+    </message>
+    <message id="animation.missingInputNotice">
+        <source>animation.missingInputNotice</source>
+        <translation>请先选择有效的源视频文件！</translation>
+    </message>
+    <message id="animation.cmdCopiedNotice">
+        <source>animation.cmdCopiedNotice</source>
+        <translation>FFmpeg 动图导出命令已复制到剪贴板！</translation>
+    </message>
+    <message id="animation.enqueuedNotice">
+        <source>animation.enqueuedNotice</source>
+        <translation>动图导出任务已成功加入队列！</translation>
+    </message>
+    <message id="animation.job.title">
+        <source>animation.job.title</source>
+        <translation>动图制作: %1</translation>
+    </message>
 </context>
 </TS>

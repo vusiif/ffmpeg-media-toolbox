@@ -38,6 +38,7 @@
 #include "app/dialogs/FilterStudioDialog.h"
 #include "app/dialogs/SubtitleStudioDialog.h"
 #include "app/dialogs/PipCompositorDialog.h"
+#include "app/dialogs/GifStudioDialog.h"
 #include "app/dialogs/LosslessCutDialog.h"
 #include "media/MediaProbeService.h"
 
@@ -665,8 +666,18 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     gifForm->addRow(m_gifFpsCaption, m_gifFps);
     gifForm->addRow(m_gifWidthCaption, m_gifWidth);
     qobject_cast<QVBoxLayout *>(m_gifCard->layout())->addLayout(gifForm);
+    m_openGifStudioBtn = new ElaPushButton(trId("video.gif.openStudio"), m_gifCard);
+    m_openGifStudioBtn->setFixedHeight(36);
+    connect(m_openGifStudioBtn, &ElaPushButton::clicked, this, &VideoPage::openGifStudio);
+
     m_gifButton = createCardButton(m_gifCard);
     connect(m_gifButton, &ElaPushButton::clicked, this, &VideoPage::makeGif);
+
+    auto *gifBtnRow = new QHBoxLayout();
+    gifBtnRow->addWidget(m_openGifStudioBtn);
+    gifBtnRow->addWidget(m_gifButton);
+    qobject_cast<QVBoxLayout *>(m_gifCard->layout())->addLayout(gifBtnRow);
+
     bodyFramesLayout->addWidget(m_gifCard);
 
     // Image Sequence Card
@@ -899,6 +910,16 @@ void VideoPage::makeGif()
             m_builder->buildGif(m_inputFile, output,
                                 m_gifFps->value(), m_gifWidth->value(),
                                 m_gifStart->value(), m_gifEnd->value()));
+}
+
+void VideoPage::openGifStudio()
+{
+    auto *dlg = new GifStudioDialog(m_queue, m_locator, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->setVideoFile(m_inputFile);
+    }
+    dlg->show();
 }
 
 void VideoPage::joinVideos()
@@ -1147,6 +1168,7 @@ void VideoPage::retranslateUi()
     m_gifEndCaption->setText(trId("common.end") + QStringLiteral(":"));
     m_gifFpsCaption->setText(trId("common.fps") + QStringLiteral(":"));
     m_gifWidthCaption->setText(trId("common.width") + QStringLiteral(":"));
+    m_openGifStudioBtn->setText(trId("video.gif.openStudio"));
     m_gifButton->setText(trId("convert.addToQueue"));
 
     m_joinTitleLabel->setText(trId("video.join"));
