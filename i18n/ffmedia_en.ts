@@ -2331,5 +2331,41 @@
         <source>animation.job.title</source>
         <translation>Animation: %1</translation>
     </message>
+    <message id="player.playPause">
+        <source>player.playPause</source>
+        <translation>Play / Pause (Space)</translation>
+    </message>
+    <message id="player.prevKeyframe">
+        <source>player.prevKeyframe</source>
+        <translation>Jump to Previous Keyframe (Ctrl+Left)</translation>
+    </message>
+    <message id="player.stepBackward">
+        <source>player.stepBackward</source>
+        <translation>Step 1 Frame Backward ~40ms (Left Arrow)</translation>
+    </message>
+    <message id="player.stepForward">
+        <source>player.stepForward</source>
+        <translation>Step 1 Frame Forward ~40ms (Right Arrow)</translation>
+    </message>
+    <message id="player.nextKeyframe">
+        <source>player.nextKeyframe</source>
+        <translation>Jump to Next Keyframe (Ctrl+Right)</translation>
+    </message>
+    <message id="player.muteToggle">
+        <source>player.muteToggle</source>
+        <translation>Mute / Unmute (M)</translation>
+    </message>
+    <message id="player.volume">
+        <source>player.volume</source>
+        <translation>Volume Control (Up/Down)</translation>
+    </message>
+    <message id="player.fullscreen">
+        <source>player.fullscreen</source>
+        <translation>Enter Fullscreen (F / F11 / Double-Click)</translation>
+    </message>
+    <message id="player.exitFullscreen">
+        <source>player.exitFullscreen</source>
+        <translation>Exit Fullscreen (Esc / F / Double-Click)</translation>
+    </message>
 </context>
 </TS>

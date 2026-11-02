@@ -2331,5 +2331,41 @@
         <source>animation.job.title</source>
         <translation>动图制作: %1</translation>
     </message>
+    <message id="player.playPause">
+        <source>player.playPause</source>
+        <translation>播放 / 暂停 (Space)</translation>
+    </message>
+    <message id="player.prevKeyframe">
+        <source>player.prevKeyframe</source>
+        <translation>跳转至上一关键帧 (Ctrl+Left)</translation>
+    </message>
+    <message id="player.stepBackward">
+        <source>player.stepBackward</source>
+        <translation>单帧后退 ~40ms (Left Arrow)</translation>
+    </message>
+    <message id="player.stepForward">
+        <source>player.stepForward</source>
+        <translation>单帧前进 ~40ms (Right Arrow)</translation>
+    </message>
+    <message id="player.nextKeyframe">
+        <source>player.nextKeyframe</source>
+        <translation>跳转至下一关键帧 (Ctrl+Right)</translation>
+    </message>
+    <message id="player.muteToggle">
+        <source>player.muteToggle</source>
+        <translation>静音 / 恢复声音 (M)</translation>
+    </message>
+    <message id="player.volume">
+        <source>player.volume</source>
+        <translation>音量调节 (Up/Down)</translation>
+    </message>
+    <message id="player.fullscreen">
+        <source>player.fullscreen</source>
+        <translation>进入全屏沉浸播放 (F / F11 / 双击画面)</translation>
+    </message>
+    <message id="player.exitFullscreen">
+        <source>player.exitFullscreen</source>
+        <translation>退出全屏模式 (Esc / F / 双击画面)</translation>
+    </message>
 </context>
 </TS>
