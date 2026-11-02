@@ -35,6 +35,7 @@
 #include "jobs/JobQueue.h"
 #include "output/OutputNaming.h"
 #include "app/widgets/VideoPlayerWidget.h"
+#include "app/dialogs/FilterStudioDialog.h"
 #include "app/dialogs/LosslessCutDialog.h"
 #include "media/MediaProbeService.h"
 
@@ -443,6 +444,21 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     QVBoxLayout *bodyEffectsLayout = nullptr;
     QWidget *tabEffects = createTab(bodyEffects, bodyEffectsLayout);
 
+    // Filter Studio Card
+    m_filterStudioCard = createCard(bodyEffects, m_filterStudioTitleLabel);
+    auto *filterStudioLayout = qobject_cast<QVBoxLayout *>(m_filterStudioCard->layout());
+    auto *filterStudioRow = new QHBoxLayout();
+    auto *filterStudioDesc = new ElaText(trId("filter.dialog.subtitle"), 13, m_filterStudioCard);
+    filterStudioDesc->setStyleSheet(QStringLiteral("color: #888888;"));
+    m_filterStudioButton = new ElaPushButton(trId("filter.action.openStudio"), m_filterStudioCard);
+    m_filterStudioButton->setFixedHeight(34);
+    m_filterStudioButton->setStyleSheet(QStringLiteral("font-weight: bold; background-color: #0078d4; color: white;"));
+    connect(m_filterStudioButton, &ElaPushButton::clicked, this, &VideoPage::openFilterStudioDialog);
+    filterStudioRow->addWidget(filterStudioDesc, 1);
+    filterStudioRow->addWidget(m_filterStudioButton);
+    filterStudioLayout->addLayout(filterStudioRow);
+    bodyEffectsLayout->addWidget(m_filterStudioCard);
+
     // Watermark Card
     m_wmCard = createCard(bodyEffects, m_wmTitleLabel);
     auto *wmForm = new QFormLayout();
@@ -670,6 +686,16 @@ VideoPage::~VideoPage()
 void VideoPage::openLosslessCutStudio()
 {
     auto *dlg = new LosslessCutDialog(m_locator, m_probeService, m_queue, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        dlg->loadFile(m_inputFile);
+    }
+    dlg->exec();
+}
+
+void VideoPage::openFilterStudioDialog()
+{
+    auto *dlg = new FilterStudioDialog(m_locator, m_probeService, m_queue, this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     if (!m_inputFile.isEmpty()) {
         dlg->loadFile(m_inputFile);
@@ -1091,6 +1117,8 @@ void VideoPage::retranslateUi()
     m_seqFpsCaption->setText(trId("common.fps") + QStringLiteral(":"));
     m_seqButton->setText(trId("convert.addToQueue"));
 
+    m_filterStudioTitleLabel->setText(trId("filter.dialog.title"));
+    m_filterStudioButton->setText(trId("filter.action.openStudio"));
     m_wmTitleLabel->setText(trId("video.watermark"));
     m_wmImageCaption->setText(trId("common.image") + QStringLiteral(":"));
     m_wmPositionCaption->setText(trId("common.position") + QStringLiteral(":"));

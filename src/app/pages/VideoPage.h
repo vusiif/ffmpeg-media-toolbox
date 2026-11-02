@@ -45,6 +45,7 @@ private:
 
     void trim();
     void openLosslessCutStudio();
+    void openFilterStudioDialog();
     void detectKeyframes();
     void onKeyframeProbeFinished(int exitCode);
     void updateKeyframeStatus();
@@ -148,6 +149,9 @@ private:
     ElaPushButton *m_muteButton = nullptr;
 
     // Tab 3: Overlay & Subtitles
+    ElaScrollPageArea *m_filterStudioCard = nullptr;
+    ElaText *m_filterStudioTitleLabel = nullptr;
+    ElaPushButton *m_filterStudioButton = nullptr;
     ElaScrollPageArea *m_wmCard = nullptr;
     ElaText *m_wmTitleLabel = nullptr;
     ElaText *m_wmImageCaption = nullptr;

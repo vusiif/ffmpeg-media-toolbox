@@ -1507,5 +1507,237 @@
         <source>cut.success.enqueued</source>
         <translation>成功将 %1 个剪辑任务加入后台执行队列！</translation>
     </message>
+    <message id="convert.filterStudio">
+        <source>convert.filterStudio</source>
+        <translation>滤镜与调色</translation>
+    </message>
+    <message id="convert.adv.openStudio">
+        <source>convert.adv.openStudio</source>
+        <translation>🎨 打开调色与特效工作台...</translation>
+    </message>
+    <message id="filter.dialog.title">
+        <source>filter.dialog.title</source>
+        <translation>专业音视频滤镜与调色工作台</translation>
+    </message>
+    <message id="filter.dialog.subtitle">
+        <source>filter.dialog.subtitle</source>
+        <translation>支持 3D LUT 加载、色彩饱和对比微调、时域降噪锐化与 EBU R128 广播级响度标准化。</translation>
+    </message>
+    <message id="filter.dialog.filePlaceholder">
+        <source>filter.dialog.filePlaceholder</source>
+        <translation>请选择或拖拽视频/音频文件至此...</translation>
+    </message>
+    <message id="filter.dialog.browse">
+        <source>filter.dialog.browse</source>
+        <translation>浏览选择</translation>
+    </message>
+    <message id="filter.preview.generate">
+        <source>filter.preview.generate</source>
+        <translation>⚡ 生成5秒试看样片</translation>
+    </message>
+    <message id="filter.preview.toggleOriginal">
+        <source>filter.preview.toggleOriginal</source>
+        <translation>切换原片</translation>
+    </message>
+    <message id="filter.preview.toggleGraded">
+        <source>filter.preview.toggleGraded</source>
+        <translation>切换调色效果</translation>
+    </message>
+    <message id="filter.preview.generating">
+        <source>filter.preview.generating</source>
+        <translation>正在快速渲染5秒样片...</translation>
+    </message>
+    <message id="filter.preview.finished">
+        <source>filter.preview.finished</source>
+        <translation>样片已就绪，正在播放</translation>
+    </message>
+    <message id="filter.preview.failed">
+        <source>filter.preview.failed</source>
+        <translation>样片渲染失败</translation>
+    </message>
+    <message id="filter.tab.color">
+        <source>filter.tab.color</source>
+        <translation>色彩与风格 (3D LUT)</translation>
+    </message>
+    <message id="filter.tab.enhancements">
+        <source>filter.tab.enhancements</source>
+        <translation>画面降噪与画质优化</translation>
+    </message>
+    <message id="filter.tab.audio">
+        <source>filter.tab.audio</source>
+        <translation>音频专业特效 (Audio FX)</translation>
+    </message>
+    <message id="filter.preset.caption">
+        <source>filter.preset.caption</source>
+        <translation>调色风格预设</translation>
+    </message>
+    <message id="filter.preset.default">
+        <source>filter.preset.default</source>
+        <translation>原片默认 (无调色)</translation>
+    </message>
+    <message id="filter.preset.cinematic">
+        <source>filter.preset.cinematic</source>
+        <translation>电影质感 (Teal &amp; Orange)</translation>
+    </message>
+    <message id="filter.preset.warmVintage">
+        <source>filter.preset.warmVintage</source>
+        <translation>温暖复古 (Warm Vintage)</translation>
+    </message>
+    <message id="filter.preset.coolNight">
+        <source>filter.preset.coolNight</source>
+        <translation>冷冽科幻 (Cool Night)</translation>
+    </message>
+    <message id="filter.preset.bw">
+        <source>filter.preset.bw</source>
+        <translation>高对比黑白 (B&amp;W Classic)</translation>
+    </message>
+    <message id="filter.preset.lowlight">
+        <source>filter.preset.lowlight</source>
+        <translation>夜景低光提亮 (Lowlight Boost)</translation>
+    </message>
+    <message id="filter.preset.vivid">
+        <source>filter.preset.vivid</source>
+        <translation>清新通透 (Vivid Pop)</translation>
+    </message>
+    <message id="filter.preset.custom">
+        <source>filter.preset.custom</source>
+        <translation>自定义参数 (Custom)</translation>
+    </message>
+    <message id="filter.lut.caption">
+        <source>filter.lut.caption</source>
+        <translation>3D LUT 调色预设文件</translation>
+    </message>
+    <message id="filter.lut.placeholder">
+        <source>filter.lut.placeholder</source>
+        <translation>支持 .cube, .3dl, .dat, .m3d 预设文件...</translation>
+    </message>
+    <message id="filter.lut.browse">
+        <source>filter.lut.browse</source>
+        <translation>加载 LUT</translation>
+    </message>
+    <message id="filter.lut.clear">
+        <source>filter.lut.clear</source>
+        <translation>清除</translation>
+    </message>
+    <message id="filter.color.brightness">
+        <source>filter.color.brightness</source>
+        <translation>亮度调节</translation>
+    </message>
+    <message id="filter.color.contrast">
+        <source>filter.color.contrast</source>
+        <translation>对比度</translation>
+    </message>
+    <message id="filter.color.saturation">
+        <source>filter.color.saturation</source>
+        <translation>色彩饱和度</translation>
+    </message>
+    <message id="filter.color.gamma">
+        <source>filter.color.gamma</source>
+        <translation>伽马值 (Gamma)</translation>
+    </message>
+    <message id="filter.color.temperature">
+        <source>filter.color.temperature</source>
+        <translation>色温偏向 (冷 / 暖)</translation>
+    </message>
+    <message id="filter.color.tint">
+        <source>filter.color.tint</source>
+        <translation>色调偏向 (绿 / 洋红)</translation>
+    </message>
+    <message id="filter.video.denoise">
+        <source>filter.video.denoise</source>
+        <translation>空间与时域降噪 (hqdn3d)</translation>
+    </message>
+    <message id="filter.video.strength">
+        <source>filter.video.strength</source>
+        <translation>强度</translation>
+    </message>
+    <message id="filter.video.sharpen">
+        <source>filter.video.sharpen</source>
+        <translation>画面边缘锐化 (unsharp)</translation>
+    </message>
+    <message id="filter.video.amount">
+        <source>filter.video.amount</source>
+        <translation>锐化量</translation>
+    </message>
+    <message id="filter.video.vignette">
+        <source>filter.video.vignette</source>
+        <translation>电影暗角晕影 (vignette)</translation>
+    </message>
+    <message id="filter.video.radius">
+        <source>filter.video.radius</source>
+        <translation>强度</translation>
+    </message>
+    <message id="filter.video.deinterlace">
+        <source>filter.video.deinterlace</source>
+        <translation>去隔行扫描 (yadif)</translation>
+    </message>
+    <message id="filter.audio.loudnorm">
+        <source>filter.audio.loudnorm</source>
+        <translation>EBU R128 广播级响度标准化</translation>
+    </message>
+    <message id="filter.audio.standard.youtube">
+        <source>filter.audio.standard.youtube</source>
+        <translation>YouTube / 网页视频 (-14 LUFS)</translation>
+    </message>
+    <message id="filter.audio.standard.podcast">
+        <source>filter.audio.standard.podcast</source>
+        <translation>Apple 播客 / 流媒体 (-16 LUFS)</translation>
+    </message>
+    <message id="filter.audio.standard.ebur128">
+        <source>filter.audio.standard.ebur128</source>
+        <translation>欧洲广播电视 EBU R128 (-23 LUFS)</translation>
+    </message>
+    <message id="filter.audio.standard.atsc">
+        <source>filter.audio.standard.atsc</source>
+        <translation>北美电视 ATSC A/85 (-24 LUFS)</translation>
+    </message>
+    <message id="filter.audio.standard.custom">
+        <source>filter.audio.standard.custom</source>
+        <translation>自定义响度 (Custom)</translation>
+    </message>
+    <message id="filter.audio.denoise">
+        <source>filter.audio.denoise</source>
+        <translation>智能噪声消除 (afftdn)</translation>
+    </message>
+    <message id="filter.audio.highpass">
+        <source>filter.audio.highpass</source>
+        <translation>低频切除 (去低频轰鸣)</translation>
+    </message>
+    <message id="filter.audio.lowpass">
+        <source>filter.audio.lowpass</source>
+        <translation>高频抑制 (去高频杂音)</translation>
+    </message>
+    <message id="filter.audio.volume">
+        <source>filter.audio.volume</source>
+        <translation>音量增益微调</translation>
+    </message>
+    <message id="filter.action.reset">
+        <source>filter.action.reset</source>
+        <translation>🔄 重置全部参数</translation>
+    </message>
+    <message id="filter.action.apply">
+        <source>filter.action.apply</source>
+        <translation>📋 应用到转换参数</translation>
+    </message>
+    <message id="filter.action.export">
+        <source>filter.action.export</source>
+        <translation>🚀 直接渲染导出</translation>
+    </message>
+    <message id="filter.action.openStudio">
+        <source>filter.action.openStudio</source>
+        <translation>🎨 专业调色与滤镜工作台</translation>
+    </message>
+    <message id="filter.error.noFile">
+        <source>filter.error.noFile</source>
+        <translation>请先选择有效的媒体文件！</translation>
+    </message>
+    <message id="filter.success.applied">
+        <source>filter.success.applied</source>
+        <translation>已将调色与特效滤镜成功填充至格式转换页高级选项！</translation>
+    </message>
+    <message id="filter.success.enqueued">
+        <source>filter.success.enqueued</source>
+        <translation>已将调色与滤镜渲染任务加入后台队列！</translation>
+    </message>
 </context>
 </TS>
