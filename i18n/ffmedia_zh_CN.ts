@@ -1219,5 +1219,53 @@
         <source>pipeline.template.watermark</source>
         <translation>1080p + 右上角水印模板</translation>
     </message>
+    <message id="repair.qc.decode">
+        <source>repair.qc.decode</source>
+        <translation>解码坏帧</translation>
+    </message>
+    <message id="repair.qc.silence">
+        <source>repair.qc.silence</source>
+        <translation>静音检测</translation>
+    </message>
+    <message id="repair.qc.black">
+        <source>repair.qc.black</source>
+        <translation>黑场检测</translation>
+    </message>
+    <message id="repair.qc.freeze">
+        <source>repair.qc.freeze</source>
+        <translation>冻结画面</translation>
+    </message>
+    <message id="repair.qc.export">
+        <source>repair.qc.export</source>
+        <translation>导出质检报告</translation>
+    </message>
+    <message id="repair.qc.jump">
+        <source>repair.qc.jump</source>
+        <translation>定位播放</translation>
+    </message>
+    <message id="repair.qc.summary">
+        <source>repair.qc.summary</source>
+        <translation>质检结果: 共发现 %1 处异常</translation>
+    </message>
+    <message id="repair.qc.col.type">
+        <source>repair.qc.col.type</source>
+        <translation>异常类型</translation>
+    </message>
+    <message id="repair.qc.col.start">
+        <source>repair.qc.col.start</source>
+        <translation>开始时间</translation>
+    </message>
+    <message id="repair.qc.col.end">
+        <source>repair.qc.col.end</source>
+        <translation>结束时间</translation>
+    </message>
+    <message id="repair.qc.col.duration">
+        <source>repair.qc.col.duration</source>
+        <translation>持续时间</translation>
+    </message>
+    <message id="repair.qc.col.desc">
+        <source>repair.qc.col.desc</source>
+        <translation>详细说明</translation>
+    </message>
 </context>
 </TS>

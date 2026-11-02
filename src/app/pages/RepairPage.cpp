@@ -8,20 +8,26 @@
 #include "repair/UntruncProcess.h"
 
 #include <QDesktopServices>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QMimeData>
 #include <QPlainTextEdit>
 #include <QStackedWidget>
+#include <QStandardItemModel>
+#include <QTextStream>
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include "ElaCheckBox.h"
 #include "ElaLineEdit.h"
 #include "ElaPivot.h"
 #include "ElaProgressBar.h"
 #include "ElaPushButton.h"
 #include "ElaScrollPageArea.h"
+#include "ElaTableView.h"
 #include "ElaText.h"
 #include "ElaTheme.h"
 
@@ -120,6 +126,25 @@ void RepairPage::setupScanTab(QWidget *tab)
     inputRow->addWidget(m_scanBrowseBtn);
     controlLayout->addLayout(inputRow);
 
+    // QC Detection Options row
+    auto *qcOptionsRow = new QHBoxLayout();
+    qcOptionsRow->setSpacing(16);
+    m_qcDecodeCheck = new ElaCheckBox(m_scanControlCard);
+    m_qcDecodeCheck->setChecked(true);
+    m_qcSilenceCheck = new ElaCheckBox(m_scanControlCard);
+    m_qcSilenceCheck->setChecked(true);
+    m_qcBlackCheck = new ElaCheckBox(m_scanControlCard);
+    m_qcBlackCheck->setChecked(true);
+    m_qcFreezeCheck = new ElaCheckBox(m_scanControlCard);
+    m_qcFreezeCheck->setChecked(true);
+
+    qcOptionsRow->addWidget(m_qcDecodeCheck);
+    qcOptionsRow->addWidget(m_qcSilenceCheck);
+    qcOptionsRow->addWidget(m_qcBlackCheck);
+    qcOptionsRow->addWidget(m_qcFreezeCheck);
+    qcOptionsRow->addStretch();
+    controlLayout->addLayout(qcOptionsRow);
+
     auto *actionRow = new QHBoxLayout();
     m_scanStartBtn = new ElaPushButton(m_scanControlCard);
     m_scanStartBtn->setFixedHeight(34);
@@ -129,6 +154,11 @@ void RepairPage::setupScanTab(QWidget *tab)
     m_scanCancelBtn = new ElaPushButton(m_scanControlCard);
     m_scanCancelBtn->setFixedHeight(34);
     m_scanCancelBtn->setEnabled(false);
+
+    m_exportReportBtn = new ElaPushButton(m_scanControlCard);
+    m_exportReportBtn->setFixedHeight(34);
+    m_exportReportBtn->setEnabled(false);
+    connect(m_exportReportBtn, &ElaPushButton::clicked, this, &RepairPage::onExportReport);
 
     m_scanProgressBar = new ElaProgressBar(m_scanControlCard);
     m_scanProgressBar->setRange(0, 100);
@@ -143,13 +173,18 @@ void RepairPage::setupScanTab(QWidget *tab)
 
     actionRow->addWidget(m_scanStartBtn);
     actionRow->addWidget(m_scanCancelBtn);
+    actionRow->addWidget(m_exportReportBtn);
     actionRow->addWidget(m_scanProgressBar, 1);
     actionRow->addWidget(m_scanStatusLabel);
     controlLayout->addLayout(actionRow);
 
     layout->addWidget(m_scanControlCard);
 
-    // Card 2: Video Player & Corruption Timeline
+    // Body: Player Card (Left) and QC Results Table Card (Right)
+    auto *scanBodyLayout = new QHBoxLayout();
+    scanBodyLayout->setSpacing(14);
+
+    // Left Column: Video Player & Timeline
     m_playerCard = new ElaScrollPageArea(tab);
     m_playerCard->setMinimumHeight(0);
     m_playerCard->setMaximumHeight(QWIDGETSIZE_MAX);
@@ -158,8 +193,44 @@ void RepairPage::setupScanTab(QWidget *tab)
 
     m_playerWidget = new VideoPlayerWidget(m_playerCard);
     playerLayout->addWidget(m_playerWidget);
+    scanBodyLayout->addWidget(m_playerCard, 3);
 
-    layout->addWidget(m_playerCard, 1);
+    // Right Column: QC Issues List Card
+    m_qcResultCard = new ElaScrollPageArea(tab);
+    m_qcResultCard->setMinimumHeight(0);
+    m_qcResultCard->setMaximumHeight(QWIDGETSIZE_MAX);
+    auto *qcLayout = new QVBoxLayout(m_qcResultCard);
+    qcLayout->setContentsMargins(14, 14, 14, 14);
+    qcLayout->setSpacing(10);
+
+    auto *qcHeader = new QHBoxLayout();
+    m_qcSummaryLabel = new ElaText(QString(), 14, m_qcResultCard);
+    m_qcSummaryLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_jumpBtn = new ElaPushButton(m_qcResultCard);
+    m_jumpBtn->setFixedHeight(30);
+    m_jumpBtn->setEnabled(false);
+    connect(m_jumpBtn, &ElaPushButton::clicked, this, &RepairPage::onJumpToSelectedIssue);
+
+    qcHeader->addWidget(m_qcSummaryLabel);
+    qcHeader->addStretch();
+    qcHeader->addWidget(m_jumpBtn);
+    qcLayout->addLayout(qcHeader);
+
+    m_qcTableView = new ElaTableView(m_qcResultCard);
+    m_qcModel = new QStandardItemModel(0, 5, this);
+    m_qcTableView->setModel(m_qcModel);
+    m_qcTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_qcTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_qcTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_qcTableView->verticalHeader()->setVisible(false);
+    m_qcTableView->horizontalHeader()->setStretchLastSection(true);
+    connect(m_qcTableView, &ElaTableView::clicked, this, &RepairPage::onQcTableClicked);
+    connect(m_qcTableView, &ElaTableView::doubleClicked, this, &RepairPage::onJumpToSelectedIssue);
+
+    qcLayout->addWidget(m_qcTableView, 1);
+    scanBodyLayout->addWidget(m_qcResultCard, 2);
+
+    layout->addLayout(scanBodyLayout, 1);
 }
 
 void RepairPage::setupRepairTab(QWidget *tab)
@@ -340,6 +411,16 @@ void RepairPage::dropEvent(QDropEvent *event)
         m_scanStartBtn->setEnabled(true);
         m_playerWidget->loadMedia(path);
         m_playerWidget->clearSegments();
+        m_qcModel->removeRows(0, m_qcModel->rowCount());
+        m_exportReportBtn->setEnabled(false);
+        m_jumpBtn->setEnabled(false);
+
+        if (m_probeService) {
+            MediaFile info = m_probeService->probe(path);
+            m_scanDuration = info.duration;
+            m_hasVideo = !info.videoStreams.isEmpty();
+            m_hasAudio = !info.audioStreams.isEmpty();
+        }
     } else {
         if (m_corruptedPath.isEmpty()) {
             m_corruptedPath = path;
@@ -355,7 +436,7 @@ void RepairPage::onBrowseScanInput()
 {
     const QString path = QFileDialog::getOpenFileName(
         this, trId("repair.browse"), QString(),
-        QStringLiteral("Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv);;All files (*)"));
+        QStringLiteral("Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv *.mp3 *.wav *.flac);;All files (*)"));
     if (path.isEmpty()) return;
 
     m_scanFilePath = path;
@@ -364,10 +445,15 @@ void RepairPage::onBrowseScanInput()
     m_scanStartBtn->setEnabled(true);
     m_playerWidget->loadMedia(path);
     m_playerWidget->clearSegments();
+    m_qcModel->removeRows(0, m_qcModel->rowCount());
+    m_exportReportBtn->setEnabled(false);
+    m_jumpBtn->setEnabled(false);
 
     if (m_probeService) {
         MediaFile info = m_probeService->probe(path);
         m_scanDuration = info.duration;
+        m_hasVideo = !info.videoStreams.isEmpty();
+        m_hasAudio = !info.audioStreams.isEmpty();
     }
 }
 
@@ -377,12 +463,24 @@ void RepairPage::onStartScan()
 
     m_scanStartBtn->setEnabled(false);
     m_scanCancelBtn->setEnabled(true);
+    m_exportReportBtn->setEnabled(false);
+    m_jumpBtn->setEnabled(false);
     m_scanProgressBar->setVisible(true);
     m_scanProgressBar->setValue(0);
     m_scanStatusLabel->setText(trId("repair.scanning"));
 
     m_playerWidget->clearSegments();
-    m_scanner->startScan(m_scanFilePath, m_scanDuration);
+    m_qcModel->removeRows(0, m_qcModel->rowCount());
+
+    QCOptions opts;
+    opts.checkDecodeErrors = m_qcDecodeCheck->isChecked();
+    opts.checkSilence = m_qcSilenceCheck->isChecked();
+    opts.checkBlackFrames = m_qcBlackCheck->isChecked();
+    opts.checkFreezeFrames = m_qcFreezeCheck->isChecked();
+    opts.hasVideo = m_hasVideo;
+    opts.hasAudio = m_hasAudio;
+
+    m_scanner->startScan(m_scanFilePath, m_scanDuration, opts);
 }
 
 void RepairPage::onCancelScan()
@@ -407,13 +505,81 @@ void RepairPage::onScanFinished(bool success, const QVector<CorruptedSegment> &s
 
     if (success) {
         m_playerWidget->setCorruptedSegments(segments);
+        m_exportReportBtn->setEnabled(!segments.isEmpty());
+        m_jumpBtn->setEnabled(false);
+
+        // Populate QC Table
+        m_qcModel->removeRows(0, m_qcModel->rowCount());
+
+        for (int i = 0; i < segments.size(); ++i) {
+            const auto &seg = segments[i];
+            QList<QStandardItem *> rowItems;
+
+            auto *typeItem = new QStandardItem(seg.typeName());
+            typeItem->setForeground(seg.color().darker(110));
+            rowItems << typeItem;
+
+            rowItems << new QStandardItem(QString::number(seg.start, 'f', 2) + QStringLiteral("s"));
+            rowItems << new QStandardItem(QString::number(seg.end, 'f', 2) + QStringLiteral("s"));
+            rowItems << new QStandardItem(QString::number(seg.end - seg.start, 'f', 2) + QStringLiteral("s"));
+            rowItems << new QStandardItem(seg.errorMsg);
+
+            m_qcModel->appendRow(rowItems);
+        }
+
         if (segments.isEmpty()) {
             m_scanStatusLabel->setText(trId("repair.scanNoDamage"));
+            m_qcSummaryLabel->setText(trId("repair.qc.summary").arg(0));
         } else {
             m_scanStatusLabel->setText(trId("repair.scanFoundDamage").arg(segments.size()));
+            m_qcSummaryLabel->setText(trId("repair.qc.summary").arg(segments.size()));
         }
     } else {
         m_scanStatusLabel->setText(trId("repair.scanFailed"));
+        m_exportReportBtn->setEnabled(false);
+    }
+}
+
+void RepairPage::onQcTableClicked(const QModelIndex &index)
+{
+    if (!index.isValid()) return;
+    m_jumpBtn->setEnabled(true);
+    const int row = index.row();
+    const auto segs = m_scanner->segments();
+    if (row >= 0 && row < segs.size()) {
+        m_playerWidget->seekToSec(segs.at(row).start);
+    }
+}
+
+void RepairPage::onJumpToSelectedIssue()
+{
+    const QModelIndex idx = m_qcTableView->currentIndex();
+    if (!idx.isValid()) return;
+    const int row = idx.row();
+    const auto segs = m_scanner->segments();
+    if (row >= 0 && row < segs.size()) {
+        m_playerWidget->seekToSec(segs.at(row).start);
+        m_playerWidget->play();
+    }
+}
+
+void RepairPage::onExportReport()
+{
+    if (m_scanFilePath.isEmpty() || m_scanner->segments().isEmpty()) return;
+
+    const QString defaultName = QFileInfo(m_scanFilePath).baseName() + QStringLiteral("_qc_report.txt");
+    const QString savePath = QFileDialog::getSaveFileName(
+        this, trId("repair.qc.export"), defaultName,
+        QStringLiteral("Text Report (*.txt);;CSV File (*.csv);;All Files (*)"));
+
+    if (savePath.isEmpty()) return;
+
+    const QString report = CorruptedVideoScanner::generateReport(m_scanFilePath, m_scanDuration, m_scanner->segments());
+    QFile f(savePath);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&f);
+        out << report;
+        f.close();
     }
 }
 
@@ -439,29 +605,20 @@ void RepairPage::onBrowseReference()
 
 void RepairPage::onStartRepair()
 {
-    if (m_corruptedPath.isEmpty() || m_referencePath.isEmpty()) {
-        m_repairStatusLabel->setVisible(true);
-        m_repairStatusLabel->setText(trId("repair.errorSelectBoth"));
-        return;
-    }
-
-    if (!m_untruncLocator->isAvailable()) {
-        m_repairStatusLabel->setVisible(true);
-        m_repairStatusLabel->setText(trId("repair.untruncNotFound"));
-        return;
-    }
+    if (m_corruptedPath.isEmpty() || m_referencePath.isEmpty()) return;
 
     m_startRepairBtn->setEnabled(false);
     m_cancelRepairBtn->setEnabled(true);
-    m_repairProgressBar->setRange(0, 100);
-    m_repairProgressBar->setValue(0);
     m_repairProgressBar->setVisible(true);
-    m_resultBar->setVisible(false);
+    m_repairProgressBar->setValue(0);
     m_repairStatusLabel->setVisible(true);
-    m_repairStatusLabel->setText(trId("repair.repairing"));
+    m_repairStatusLabel->setText(trId("repair.starting"));
+    m_resultBar->setVisible(false);
     m_console->clear();
 
-    m_repairProcess->start(m_untruncLocator->untruncPath(), m_referencePath, m_corruptedPath);
+    m_repairProcess->start(m_untruncLocator->untruncPath(),
+                           m_referencePath,
+                           m_corruptedPath);
 }
 
 void RepairPage::onCancelRepair()
@@ -518,10 +675,13 @@ void RepairPage::onPreviewFixedVideo()
     m_scanInputEdit->setText(m_lastFixedPath);
     m_playerWidget->loadMedia(m_lastFixedPath);
     m_playerWidget->clearSegments();
+    m_qcModel->removeRows(0, m_qcModel->rowCount());
 
     if (m_probeService) {
         MediaFile info = m_probeService->probe(m_lastFixedPath);
         m_scanDuration = info.duration;
+        m_hasVideo = !info.videoStreams.isEmpty();
+        m_hasAudio = !info.audioStreams.isEmpty();
     }
 
     m_pivot->setCurrentIndex(0);
@@ -544,15 +704,32 @@ void RepairPage::retranslateUi()
 
     m_pageTitleLabel->setText(trId("nav.repair"));
 
-    // Tab 1
+    // Tab 1 (Scan & QC)
     m_scanTitleLabel->setText(trId("repair.scan.title"));
     m_scanDescLabel->setText(trId("repair.scan.desc"));
     m_scanInputCaption->setText(trId("repair.scan.input") + QStringLiteral(":"));
     m_scanBrowseBtn->setText(trId("common.browse"));
+
+    m_qcDecodeCheck->setText(trId("repair.qc.decode"));
+    m_qcSilenceCheck->setText(trId("repair.qc.silence"));
+    m_qcBlackCheck->setText(trId("repair.qc.black"));
+    m_qcFreezeCheck->setText(trId("repair.qc.freeze"));
+
     m_scanStartBtn->setText(trId("repair.scan.start"));
     m_scanCancelBtn->setText(trId("common.cancel"));
+    m_exportReportBtn->setText(trId("repair.qc.export"));
 
-    // Tab 2
+    m_qcSummaryLabel->setText(trId("repair.qc.summary").arg(m_qcModel->rowCount()));
+    m_jumpBtn->setText(trId("repair.qc.jump"));
+
+    // Table headers
+    m_qcModel->setHeaderData(0, Qt::Horizontal, trId("repair.qc.col.type"));
+    m_qcModel->setHeaderData(1, Qt::Horizontal, trId("repair.qc.col.start"));
+    m_qcModel->setHeaderData(2, Qt::Horizontal, trId("repair.qc.col.end"));
+    m_qcModel->setHeaderData(3, Qt::Horizontal, trId("repair.qc.col.duration"));
+    m_qcModel->setHeaderData(4, Qt::Horizontal, trId("repair.qc.col.desc"));
+
+    // Tab 2 (Untrunc)
     m_repairTitleLabel->setText(trId("repair.untrunc.title"));
     m_repairDescLabel->setText(trId("repair.untrunc.desc"));
     m_corruptedCaption->setText(trId("repair.corruptedVideo") + QStringLiteral(":"));

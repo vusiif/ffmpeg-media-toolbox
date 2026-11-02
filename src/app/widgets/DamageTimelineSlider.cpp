@@ -95,11 +95,8 @@ void DamageTimelineSlider::paintEvent(QPaintEvent *event)
         painter.drawLine(x2, barY - 3, x2, barY + barHeight + 3);
     }
 
-    // 2. Paint Corrupted Segments (if any)
+    // 2. Paint QC / Corrupted Segments (if any)
     if (!m_segments.isEmpty()) {
-        painter.setPen(QPen(QColor(255, 60, 60, 220), 1));
-        painter.setBrush(QColor(235, 60, 60, 180));
-
         for (const auto &seg : m_segments) {
             const double startFrac = qBound(0.0, seg.start / m_duration, 1.0);
             const double endFrac = qBound(0.0, seg.end / m_duration, 1.0);
@@ -108,6 +105,9 @@ void DamageTimelineSlider::paintEvent(QPaintEvent *event)
             const int x2 = margin + static_cast<int>(endFrac * trackWidth);
             const int w = qMax(4, x2 - x1);
 
+            const QColor col = seg.color();
+            painter.setPen(QPen(col.darker(115), 1));
+            painter.setBrush(col);
             painter.drawRoundedRect(QRect(x1, barY, w, barHeight), 2, 2);
         }
     }
@@ -131,9 +131,11 @@ void DamageTimelineSlider::mouseMoveEvent(QMouseEvent *event)
 
     for (const auto &seg : m_segments) {
         if (currentSec >= seg.start && currentSec <= seg.end) {
-            const QString tip = QStringLiteral("⚠️ [%1s - %2s]\n%3")
-                                    .arg(seg.start, 0, 'f', 2)
-                                    .arg(seg.end, 0, 'f', 2)
+            const QString tip = QStringLiteral("⚠️ [%1] %2s - %3s (%4s)\n%5")
+                                    .arg(seg.typeName())
+                                    .arg(QString::number(seg.start, 'f', 2))
+                                    .arg(QString::number(seg.end, 'f', 2))
+                                    .arg(QString::number(seg.end - seg.start, 'f', 2))
                                     .arg(seg.errorMsg);
             QToolTip::showText(event->globalPosition().toPoint(), tip, this);
             return;

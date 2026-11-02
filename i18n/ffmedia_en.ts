@@ -1219,5 +1219,53 @@
         <source>pipeline.template.watermark</source>
         <translation>1080p + Top-Right Watermark Template</translation>
     </message>
+    <message id="repair.qc.decode">
+        <source>repair.qc.decode</source>
+        <translation>Decode Errors</translation>
+    </message>
+    <message id="repair.qc.silence">
+        <source>repair.qc.silence</source>
+        <translation>Silence Detect</translation>
+    </message>
+    <message id="repair.qc.black">
+        <source>repair.qc.black</source>
+        <translation>Black Detect</translation>
+    </message>
+    <message id="repair.qc.freeze">
+        <source>repair.qc.freeze</source>
+        <translation>Freeze Detect</translation>
+    </message>
+    <message id="repair.qc.export">
+        <source>repair.qc.export</source>
+        <translation>Export QC Report</translation>
+    </message>
+    <message id="repair.qc.jump">
+        <source>repair.qc.jump</source>
+        <translation>Jump &amp; Play</translation>
+    </message>
+    <message id="repair.qc.summary">
+        <source>repair.qc.summary</source>
+        <translation>QC Results: %1 issues detected</translation>
+    </message>
+    <message id="repair.qc.col.type">
+        <source>repair.qc.col.type</source>
+        <translation>Issue Type</translation>
+    </message>
+    <message id="repair.qc.col.start">
+        <source>repair.qc.col.start</source>
+        <translation>Start Time</translation>
+    </message>
+    <message id="repair.qc.col.end">
+        <source>repair.qc.col.end</source>
+        <translation>End Time</translation>
+    </message>
+    <message id="repair.qc.col.duration">
+        <source>repair.qc.col.duration</source>
+        <translation>Duration</translation>
+    </message>
+    <message id="repair.qc.col.desc">
+        <source>repair.qc.col.desc</source>
+        <translation>Description</translation>
+    </message>
 </context>
 </TS>

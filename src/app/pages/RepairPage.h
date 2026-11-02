@@ -15,8 +15,12 @@ class ElaPushButton;
 class ElaProgressBar;
 class ElaPivot;
 class ElaScrollPageArea;
+class ElaCheckBox;
+class ElaTableView;
 class QStackedWidget;
 class QPlainTextEdit;
+class QStandardItemModel;
+class QModelIndex;
 
 class RepairPage : public QWidget
 {
@@ -36,12 +40,15 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
 private slots:
-    // Tab 1: Scan & Preview
+    // Tab 1: Scan & Preview (QC)
     void onBrowseScanInput();
     void onStartScan();
     void onCancelScan();
     void onScanProgress(double fraction);
     void onScanFinished(bool success, const QVector<CorruptedSegment> &segments);
+    void onQcTableClicked(const QModelIndex &index);
+    void onJumpToSelectedIssue();
+    void onExportReport();
 
     // Tab 2: Deep Repair (Untrunc)
     void onBrowseCorrupted();
@@ -66,6 +73,8 @@ private:
 
     QString m_scanFilePath;
     double m_scanDuration = 0.0;
+    bool m_hasVideo = true;
+    bool m_hasAudio = true;
 
     QString m_corruptedPath;
     QString m_referencePath;
@@ -84,12 +93,28 @@ private:
     ElaText *m_scanInputCaption = nullptr;
     ElaLineEdit *m_scanInputEdit = nullptr;
     ElaPushButton *m_scanBrowseBtn = nullptr;
+
+    // QC Options
+    ElaCheckBox *m_qcDecodeCheck = nullptr;
+    ElaCheckBox *m_qcSilenceCheck = nullptr;
+    ElaCheckBox *m_qcBlackCheck = nullptr;
+    ElaCheckBox *m_qcFreezeCheck = nullptr;
+
     ElaPushButton *m_scanStartBtn = nullptr;
     ElaPushButton *m_scanCancelBtn = nullptr;
+    ElaPushButton *m_exportReportBtn = nullptr;
     ElaProgressBar *m_scanProgressBar = nullptr;
     ElaText *m_scanStatusLabel = nullptr;
+
     ElaScrollPageArea *m_playerCard = nullptr;
     VideoPlayerWidget *m_playerWidget = nullptr;
+
+    // QC Issues Table Card
+    ElaScrollPageArea *m_qcResultCard = nullptr;
+    ElaText *m_qcSummaryLabel = nullptr;
+    ElaTableView *m_qcTableView = nullptr;
+    QStandardItemModel *m_qcModel = nullptr;
+    ElaPushButton *m_jumpBtn = nullptr;
 
     // Repair Tab UI
     ElaScrollPageArea *m_repairControlCard = nullptr;
