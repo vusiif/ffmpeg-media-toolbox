@@ -4,11 +4,13 @@
 #include <QWidget>
 
 #include "ffmpeg/FFmpegCommandBuilder.h"
+#include "pipeline/BatchPipeline.h"
 
 class FFmpegLocator;
 class FFmpegCapabilities;
 class JobQueue;
 class PresetManager;
+class PipelineManager;
 class ElaListView;
 class QStringListModel;
 class ElaText;
@@ -44,6 +46,15 @@ private:
     void refreshPresetList();
     void loadPreset(const QString &name);
     void updateCountLabel();
+
+    // Custom Batch Pipeline methods
+    void refreshPipelineTemplates();
+    void loadPipelineTemplate(const QString &name);
+    void savePipelineTemplate();
+    void deletePipelineTemplate();
+    PipelineStep currentPipelineStep() const;
+    void applyPipelineStepToUi(const PipelineStep &step);
+
     FFmpegCommandBuilder::ConversionOptions currentOptions(
         const QString &inputFile, const QString &outputPath, bool copy) const;
 
@@ -52,6 +63,7 @@ private:
     FFmpegCapabilities *m_caps;
     JobQueue *m_queue;
     PresetManager *m_presets = nullptr;
+    PipelineManager *m_pipelineManager = nullptr;
 
     QStringList m_inputFiles;
     QString m_outputDirectory;
@@ -109,6 +121,46 @@ private:
     ElaLineEdit *m_vfEdit = nullptr;
     ElaText *m_afCaption = nullptr;
     ElaLineEdit *m_afEdit = nullptr;
+
+    // Batch Processing Pipeline Card
+    ElaCheckBox *m_pipelineToggle = nullptr;
+    QWidget *m_pipelineContainer = nullptr;
+
+    ElaText *m_pipelineTemplateCaption = nullptr;
+    ElaComboBox *m_pipelineTemplateCombo = nullptr;
+    ElaPushButton *m_pipelineSaveBtn = nullptr;
+    ElaPushButton *m_pipelineDeleteBtn = nullptr;
+
+    // Pipeline Steps UI
+    ElaCheckBox *m_pipeTrimCheck = nullptr;
+    ElaLineEdit *m_pipeStartEdit = nullptr;
+    ElaLineEdit *m_pipeEndEdit = nullptr;
+
+    ElaCheckBox *m_pipeCropCheck = nullptr;
+    ElaComboBox *m_pipeCropPresetCombo = nullptr;
+    ElaSpinBox *m_pipeCropXSpin = nullptr;
+    ElaSpinBox *m_pipeCropYSpin = nullptr;
+    ElaSpinBox *m_pipeCropWSpin = nullptr;
+    ElaSpinBox *m_pipeCropHSpin = nullptr;
+
+    ElaCheckBox *m_pipeScaleCheck = nullptr;
+    ElaComboBox *m_pipeScaleCombo = nullptr;
+    ElaSpinBox *m_pipeScaleWSpin = nullptr;
+    ElaSpinBox *m_pipeScaleHSpin = nullptr;
+
+    ElaCheckBox *m_pipeFpsCheck = nullptr;
+    ElaComboBox *m_pipeFpsCombo = nullptr;
+
+    ElaCheckBox *m_pipeWatermarkCheck = nullptr;
+    ElaLineEdit *m_pipeWatermarkPathEdit = nullptr;
+    ElaPushButton *m_pipeWatermarkBrowseBtn = nullptr;
+    ElaComboBox *m_pipeWatermarkPosCombo = nullptr;
+    ElaSpinBox *m_pipeWatermarkOpacitySpin = nullptr;
+
+    ElaCheckBox *m_pipeAudioCheck = nullptr;
+    ElaSpinBox *m_pipeAudioVolSpin = nullptr;
+    ElaCheckBox *m_pipeAudioLoudnormCheck = nullptr;
+    ElaCheckBox *m_pipeAudioMuteCheck = nullptr;
 
     ElaPushButton *m_queueButton = nullptr;
 };

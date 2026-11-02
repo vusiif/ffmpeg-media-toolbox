@@ -1147,5 +1147,77 @@
         <source>queue.error.interrupted</source>
         <translation>Application exited, task interrupted</translation>
     </message>
+    <message id="batch.pipeline.toggle">
+        <source>batch.pipeline.toggle</source>
+        <translation>Enable Custom Multi-Step Pipeline</translation>
+    </message>
+    <message id="batch.pipeline.template">
+        <source>batch.pipeline.template</source>
+        <translation>Pipeline Template</translation>
+    </message>
+    <message id="batch.pipeline.saveTemplate">
+        <source>batch.pipeline.saveTemplate</source>
+        <translation>Save Pipeline Template</translation>
+    </message>
+    <message id="batch.pipeline.templatePrompt">
+        <source>batch.pipeline.templatePrompt</source>
+        <translation>Enter pipeline template name</translation>
+    </message>
+    <message id="batch.pipeline.trim">
+        <source>batch.pipeline.trim</source>
+        <translation>Step 1: Trim Video</translation>
+    </message>
+    <message id="batch.pipeline.crop">
+        <source>batch.pipeline.crop</source>
+        <translation>Step 2: Crop Frame</translation>
+    </message>
+    <message id="batch.pipeline.scale">
+        <source>batch.pipeline.scale</source>
+        <translation>Step 3: Resize Resolution</translation>
+    </message>
+    <message id="batch.pipeline.fps">
+        <source>batch.pipeline.fps</source>
+        <translation>Step 4: Frame Rate (FPS)</translation>
+    </message>
+    <message id="batch.pipeline.watermark">
+        <source>batch.pipeline.watermark</source>
+        <translation>Step 5: Watermark Overlay</translation>
+    </message>
+    <message id="batch.pipeline.selectWatermark">
+        <source>batch.pipeline.selectWatermark</source>
+        <translation>Select Watermark Image</translation>
+    </message>
+    <message id="batch.pipeline.audio">
+        <source>batch.pipeline.audio</source>
+        <translation>Step 6: Audio Enhancement</translation>
+    </message>
+    <message id="batch.pipeline.loudnorm">
+        <source>batch.pipeline.loudnorm</source>
+        <translation>Loudness Normalization (EBU R128)</translation>
+    </message>
+    <message id="batch.pipeline.mute">
+        <source>batch.pipeline.mute</source>
+        <translation>Mute (Remove Audio)</translation>
+    </message>
+    <message id="pipeline.template.shorts">
+        <source>pipeline.template.shorts</source>
+        <translation>Shorts &amp; Reels (9:16 / 1080x1920 / 30fps)</translation>
+    </message>
+    <message id="pipeline.template.course">
+        <source>pipeline.template.course</source>
+        <translation>Meeting &amp; Lecture (720p / 1.5x Vol / Loudnorm)</translation>
+    </message>
+    <message id="pipeline.template.hq60">
+        <source>pipeline.template.hq60</source>
+        <translation>HQ Release (1080p / 60fps / HEVC / 320k Audio)</translation>
+    </message>
+    <message id="pipeline.template.skipIntro">
+        <source>pipeline.template.skipIntro</source>
+        <translation>Skip Intro (Skip first 5s / High Quality)</translation>
+    </message>
+    <message id="pipeline.template.watermark">
+        <source>pipeline.template.watermark</source>
+        <translation>1080p + Top-Right Watermark Template</translation>
+    </message>
 </context>
 </TS>

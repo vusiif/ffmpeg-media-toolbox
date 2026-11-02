@@ -78,6 +78,10 @@ set(FFMEDIA_CORE_SOURCES
     src/output/OutputNaming.cpp
     src/presets/PresetManager.h
     src/presets/PresetManager.cpp
+    src/pipeline/BatchPipeline.h
+    src/pipeline/BatchPipeline.cpp
+    src/pipeline/PipelineManager.h
+    src/pipeline/PipelineManager.cpp
 )
 
 set(APP_SOURCES
@@ -171,7 +175,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager UntruncProcess CorruptedVideoScanner)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

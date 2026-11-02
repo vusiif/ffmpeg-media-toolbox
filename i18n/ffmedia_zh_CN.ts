@@ -1147,5 +1147,77 @@
         <source>queue.error.interrupted</source>
         <translation>程序退出，任务中断</translation>
     </message>
+    <message id="batch.pipeline.toggle">
+        <source>batch.pipeline.toggle</source>
+        <translation>启用自定义多步流水线 (裁剪/缩放/水印/音频)</translation>
+    </message>
+    <message id="batch.pipeline.template">
+        <source>batch.pipeline.template</source>
+        <translation>流水线模板</translation>
+    </message>
+    <message id="batch.pipeline.saveTemplate">
+        <source>batch.pipeline.saveTemplate</source>
+        <translation>保存流水线模板</translation>
+    </message>
+    <message id="batch.pipeline.templatePrompt">
+        <source>batch.pipeline.templatePrompt</source>
+        <translation>请输入流水线模板名称</translation>
+    </message>
+    <message id="batch.pipeline.trim">
+        <source>batch.pipeline.trim</source>
+        <translation>步骤 1: 片段截取 (Trim)</translation>
+    </message>
+    <message id="batch.pipeline.crop">
+        <source>batch.pipeline.crop</source>
+        <translation>步骤 2: 画面裁剪 (Crop)</translation>
+    </message>
+    <message id="batch.pipeline.scale">
+        <source>batch.pipeline.scale</source>
+        <translation>步骤 3: 分辨率调整 (Scale)</translation>
+    </message>
+    <message id="batch.pipeline.fps">
+        <source>batch.pipeline.fps</source>
+        <translation>步骤 4: 帧率控制 (FPS)</translation>
+    </message>
+    <message id="batch.pipeline.watermark">
+        <source>batch.pipeline.watermark</source>
+        <translation>步骤 5: 画面水印 (Watermark)</translation>
+    </message>
+    <message id="batch.pipeline.selectWatermark">
+        <source>batch.pipeline.selectWatermark</source>
+        <translation>选择水印图片</translation>
+    </message>
+    <message id="batch.pipeline.audio">
+        <source>batch.pipeline.audio</source>
+        <translation>步骤 6: 音频增强与调节</translation>
+    </message>
+    <message id="batch.pipeline.loudnorm">
+        <source>batch.pipeline.loudnorm</source>
+        <translation>智能响度均衡 (EBU R128)</translation>
+    </message>
+    <message id="batch.pipeline.mute">
+        <source>batch.pipeline.mute</source>
+        <translation>消除音频 (静音)</translation>
+    </message>
+    <message id="pipeline.template.shorts">
+        <source>pipeline.template.shorts</source>
+        <translation>短视频适配 (9:16 / 1080x1920 / 30fps)</translation>
+    </message>
+    <message id="pipeline.template.course">
+        <source>pipeline.template.course</source>
+        <translation>会议网课精简 (720p / 1.5x音量 / 响度归一化)</translation>
+    </message>
+    <message id="pipeline.template.hq60">
+        <source>pipeline.template.hq60</source>
+        <translation>高清流畅发布 (1080p / 60fps / HEVC / 320k音频)</translation>
+    </message>
+    <message id="pipeline.template.skipIntro">
+        <source>pipeline.template.skipIntro</source>
+        <translation>片头快速跳过 (跳过前5秒 / 高清无损转码)</translation>
+    </message>
+    <message id="pipeline.template.watermark">
+        <source>pipeline.template.watermark</source>
+        <translation>1080p + 右上角水印模板</translation>
+    </message>
 </context>
 </TS>
