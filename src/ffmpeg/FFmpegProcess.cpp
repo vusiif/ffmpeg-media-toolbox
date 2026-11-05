@@ -29,10 +29,13 @@ FFmpegProcess::~FFmpegProcess()
     // Never emit from a half-destroyed object; the receiver (JobQueue) may
     // already have torn down its members.
     m_shuttingDown = true;
+    if (m_killTimer) {
+        m_killTimer->stop();
+    }
     disconnect(m_process, nullptr, this, nullptr);
     if (m_process->state() != QProcess::NotRunning) {
         m_process->kill();
-        m_process->waitForFinished(2000);
+        m_process->waitForFinished(500);
     }
 }
 
@@ -89,7 +92,7 @@ void FFmpegProcess::cancel()
 
     m_cancelRequested = true;
     setState(State::Cancelled);
-    m_process->write("q");
+    m_process->write("q\n");
     m_process->closeWriteChannel();
     m_killTimer->start();
 }
