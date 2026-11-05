@@ -46,6 +46,7 @@ public:
     bool savePersistence() const;
 
     Q_INVOKABLE void addJob(Job *job);
+    Q_INVOKABLE void addJobs(const QList<Job*> &jobs);
     Q_INVOKABLE void startNext();
     Q_INVOKABLE void cancelJob(const QString &jobId);
     Q_INVOKABLE void retryJob(const QString &jobId);

@@ -59,6 +59,14 @@ JobQueue::JobQueue(const FFmpegLocator *locator, const MediaProbeService *probeS
 
 JobQueue::~JobQueue()
 {
+    // Gracefully cancel active FFmpeg processes upon queue destruction
+    for (auto it = m_processes.begin(); it != m_processes.end(); ++it) {
+        if (FFmpegProcess *proc = it.value()) {
+            proc->disconnect(this);
+            proc->cancel();
+        }
+    }
+    m_processes.clear();
     savePersistence();
 }
 
@@ -85,6 +93,7 @@ bool JobQueue::loadPersistence()
     }
 
     const QJsonArray array = doc.array();
+    QList<Job*> loadedJobs;
     for (const QJsonValue &val : array) {
         if (!val.isObject()) continue;
         Job *job = Job::fromJson(val.toObject(), this);
@@ -92,9 +101,10 @@ bool JobQueue::loadPersistence()
             connect(job, &Job::statusChanged, this, [this]() {
                 savePersistence();
             });
-            m_model->addJob(job);
+            loadedJobs.append(job);
         }
     }
+    m_model->addJobs(loadedJobs);
     return true;
 }
 
@@ -134,10 +144,27 @@ void JobQueue::setMaxConcurrent(int max)
 
 void JobQueue::addJob(Job *job)
 {
-    m_model->addJob(job);
-    connect(job, &Job::statusChanged, this, [this]() {
-        savePersistence();
-    });
+    if (!job) return;
+    addJobs({job});
+}
+
+void JobQueue::addJobs(const QList<Job*> &jobs)
+{
+    QList<Job*> validJobs;
+    validJobs.reserve(jobs.size());
+    for (Job *job : jobs) {
+        if (job) {
+            validJobs.append(job);
+            connect(job, &Job::statusChanged, this, [this]() {
+                savePersistence();
+            });
+        }
+    }
+    if (validJobs.isEmpty()) {
+        return;
+    }
+
+    m_model->addJobs(validJobs);
     savePersistence();
     startNext();
 }

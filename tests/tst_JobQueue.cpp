@@ -19,6 +19,7 @@ private slots:
     void hardwareAccelerationFailureFallsBackToSoftware();
     void increasingMaxConcurrentImmediatelyStartsPendingJobs();
     void persistenceSaveAndReload();
+    void batchAddJobs();
 };
 
 namespace {
@@ -251,6 +252,41 @@ void JobQueueTest::persistenceSaveAndReload()
         // Reload again after clearCompleted
         JobQueue queue4(nullptr, nullptr, nullptr, storePath);
         QCOMPARE(queue4.model()->count(), 0);
+    }
+}
+
+void JobQueueTest::batchAddJobs()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString storePath = tempDir.filePath(QStringLiteral("batch_jobs.json"));
+
+    {
+        JobQueue queue(nullptr, nullptr, nullptr, storePath);
+        queue.setPaused(true); // pause scheduling to inspect model contents
+
+        auto *j1 = new Job(&queue);
+        j1->setName(QStringLiteral("batch1"));
+        auto *j2 = new Job(&queue);
+        j2->setName(QStringLiteral("batch2"));
+        auto *j3 = new Job(&queue);
+        j3->setName(QStringLiteral("batch3"));
+
+        queue.addJobs({j1, nullptr, j2, j3});
+        QCOMPARE(queue.model()->count(), 3);
+        QCOMPARE(queue.model()->getJob(0)->name(), QStringLiteral("batch1"));
+        QCOMPARE(queue.model()->getJob(1)->name(), QStringLiteral("batch2"));
+        QCOMPARE(queue.model()->getJob(2)->name(), QStringLiteral("batch3"));
+    }
+
+    // Verify persistence was saved once and properly loads
+    QVERIFY(QFile::exists(storePath));
+    {
+        JobQueue queue2(nullptr, nullptr, nullptr, storePath);
+        QCOMPARE(queue2.model()->count(), 3);
+        QCOMPARE(queue2.model()->getJob(0)->name(), QStringLiteral("batch1"));
+        QCOMPARE(queue2.model()->getJob(1)->name(), QStringLiteral("batch2"));
+        QCOMPARE(queue2.model()->getJob(2)->name(), QStringLiteral("batch3"));
     }
 }
 

@@ -713,6 +713,7 @@ void BatchPage::onWatcherFileReady(const QString &filePath, const QString &relat
     if (m_pipelineToggle->isChecked()) {
         const PipelineStep step = currentPipelineStep();
         BatchPipeline pipeline(QStringLiteral("BatchPipeline"), step);
+        QList<Job*> pipeJobs;
 
         if (m_preserveTreeCheck->isChecked() && !relativeSubDir.isEmpty()) {
             outputPath = BatchExportMatrix::resolveOutputPath(m_outputDirectory, relativeSubDir,
@@ -1033,6 +1034,7 @@ void BatchPage::addAllToQueue()
             QMessageBox::warning(this, trId("batch.matrix.title"), trId("batch.matrix.noTargetSelected"));
             return;
         }
+        QList<Job*> matrixJobs;
 
         for (const QString &inputFile : m_inputFiles) {
             const QFileInfo info(inputFile);
@@ -1065,9 +1067,10 @@ void BatchPage::addAllToQueue()
                 job->setName(QStringLiteral("%1 (%2)").arg(info.fileName(), tgt.name));
                 job->setRelativeSubPath(subDir);
                 job->setCommand(m_locator->ffmpegPath(), args);
-                m_queue->addJob(job);
+                matrixJobs.append(job);
             }
         }
+        m_queue->addJobs(matrixJobs);
         return;
     }
 
@@ -1075,6 +1078,7 @@ void BatchPage::addAllToQueue()
     if (m_pipelineToggle->isChecked()) {
         const PipelineStep step = currentPipelineStep();
         BatchPipeline pipeline(QStringLiteral("BatchPipeline"), step);
+        QList<Job*> pipeJobs;
 
         for (const QString &inputFile : m_inputFiles) {
             const QFileInfo info(inputFile);
@@ -1095,13 +1099,15 @@ void BatchPage::addAllToQueue()
             job->setName(info.fileName());
             job->setRelativeSubPath(subDir);
             job->setCommand(m_locator->ffmpegPath(), args);
-            m_queue->addJob(job);
+            pipeJobs.append(job);
         }
+        m_queue->addJobs(pipeJobs);
         return;
     }
 
     // 3. Standard Conversion Mode
     const QString format = m_formatCombo->currentText();
+    QList<Job*> stdJobs;
     for (const QString &inputFile : m_inputFiles) {
         const QFileInfo info(inputFile);
         const QString subDir = m_preserveTreeCheck->isChecked() ? m_relativeSubDirs.value(inputFile) : QString();
@@ -1125,8 +1131,9 @@ void BatchPage::addAllToQueue()
         job->setName(info.fileName());
         job->setRelativeSubPath(subDir);
         job->setCommand(m_locator->ffmpegPath(), args);
-        m_queue->addJob(job);
+        stdJobs.append(job);
     }
+    m_queue->addJobs(stdJobs);
 }
 
 void BatchPage::rebuildCodecLists()

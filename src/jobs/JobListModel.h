@@ -38,6 +38,7 @@ public:
     int indexOfJob(const QString &id) const;
 
     void addJob(Job *job);
+    void addJobs(const QList<Job*> &jobs);
     void removeJob(int index);
     void removeJobById(const QString &id);
     void clearCompleted();

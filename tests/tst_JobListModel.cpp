@@ -13,6 +13,7 @@ private slots:
     void clearCompletedKeepsActiveJobs();
     void removeJobByIdRemovesEntry();
     void removedJobsAreDeletedLater();
+    void addJobsBatch();
 };
 
 void JobListModelTest::addAndFind()
@@ -90,6 +91,35 @@ void JobListModelTest::removedJobsAreDeletedLater()
     QVERIFY(model.findJobById(job->id().toString()) == nullptr);
     QTest::qWait(1);
     QVERIFY(guard.isNull());
+}
+
+void JobListModelTest::addJobsBatch()
+{
+    JobListModel model;
+
+    // 1. Empty list
+    model.addJobs({});
+    QCOMPARE(model.count(), 0);
+
+    // 2. Batch with valid and null jobs
+    auto *j1 = new Job();
+    j1->setName(QStringLiteral("job1"));
+    auto *j2 = new Job();
+    j2->setName(QStringLiteral("job2"));
+    auto *j3 = new Job();
+    j3->setName(QStringLiteral("job3"));
+
+    model.addJobs({j1, nullptr, j2, j3});
+    QCOMPARE(model.count(), 3);
+    QCOMPARE(model.getJob(0), j1);
+    QCOMPARE(model.getJob(1), j2);
+    QCOMPARE(model.getJob(2), j3);
+
+    // Clean up
+    model.removeJob(0);
+    model.removeJob(0);
+    model.removeJob(0);
+    QCOMPARE(model.count(), 0);
 }
 
 QTEST_GUILESS_MAIN(JobListModelTest)

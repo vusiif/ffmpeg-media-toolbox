@@ -691,6 +691,8 @@ void AudioTagStudioDialog::onBatchAddToQueue()
     const QString ext = Audio::AudioTagEngine::formatToString(baseOpts.format);
     const QString ffmpegPath = m_locator ? m_locator->ffmpegPath() : QStringLiteral("ffmpeg");
 
+    QList<Job*> jobs;
+    jobs.reserve(m_items.size());
     for (const auto &item : m_items) {
         const QString output = OutputNaming::build(item.filePath, QStringLiteral("{name}.{format}"), ext);
         Audio::AudioExtractOptions itemOpts = baseOpts;
@@ -701,8 +703,9 @@ void AudioTagStudioDialog::onBatchAddToQueue()
         auto *job = new Job();
         job->setName(trId("audiotag.job.extract").arg(QFileInfo(item.filePath).fileName(), ext.toUpper()));
         job->setCommand(ffmpegPath, args);
-        m_queue->addJob(job);
+        jobs.append(job);
     }
+    m_queue->addJobs(jobs);
 
     QMessageBox::information(this, trId("common.success"), trId("audiotag.batchEnqueuedNotice").arg(m_items.size()));
 }

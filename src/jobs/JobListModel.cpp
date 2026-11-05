@@ -146,9 +146,30 @@ bool JobListModel::moveJobToBottom(int index)
 
 void JobListModel::addJob(Job *job)
 {
-    beginInsertRows(QModelIndex(), m_jobs.size(), m_jobs.size());
-    m_jobs.append(job);
-    connectJobSignals(job);
+    if (!job) return;
+    addJobs({job});
+}
+
+void JobListModel::addJobs(const QList<Job*> &jobs)
+{
+    QList<Job*> validJobs;
+    validJobs.reserve(jobs.size());
+    for (Job *job : jobs) {
+        if (job) {
+            validJobs.append(job);
+        }
+    }
+    if (validJobs.isEmpty()) {
+        return;
+    }
+
+    const int startRow = m_jobs.size();
+    const int endRow = startRow + validJobs.size() - 1;
+    beginInsertRows(QModelIndex(), startRow, endRow);
+    for (Job *job : validJobs) {
+        m_jobs.append(job);
+        connectJobSignals(job);
+    }
     endInsertRows();
     emit countChanged();
 }
