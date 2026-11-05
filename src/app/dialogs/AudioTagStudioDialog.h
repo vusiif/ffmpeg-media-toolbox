@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QFutureWatcher>
 #include <QList>
 #include <QString>
 #include <QWidget>
@@ -24,6 +25,8 @@ struct AudioFileItem {
     Audio::AudioMetadata metadata;
     double durationSec = 0.0;
     QString sourceFormat;
+    bool isProbed = false;
+    bool userModified = false;
 };
 
 class AudioTagStudioDialog : public QDialog
@@ -57,6 +60,7 @@ private slots:
 
     void onPresetChanged(int index);
     void onFormatChanged(int index);
+    void onProbeBatchFinished();
 
     void onCopyCurrentCommand();
     void onBatchAddToQueue();
@@ -71,6 +75,13 @@ private:
     FFmpegLocator *m_locator = nullptr;
     MediaProbeService *m_probeService = nullptr;
 
+    struct ProbeResult {
+        QString filePath;
+        double durationSec = 0.0;
+        Audio::AudioMetadata metadata;
+    };
+
+    QFutureWatcher<QList<ProbeResult>> *m_probeWatcher = nullptr;
     QList<AudioFileItem> m_items;
     Audio::AudioExtractOptions m_options;
 

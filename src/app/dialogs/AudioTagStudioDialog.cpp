@@ -1,4 +1,5 @@
 #include "AudioTagStudioDialog.h"
+#include <QtConcurrent>
 
 #include <QClipboard>
 #include <QDir>
@@ -297,7 +298,15 @@ AudioTagStudioDialog::AudioTagStudioDialog(JobQueue *queue, FFmpegLocator *locat
     retranslateUi();
 }
 
-AudioTagStudioDialog::~AudioTagStudioDialog() = default;
+AudioTagStudioDialog::~AudioTagStudioDialog()
+{
+    if (m_probeWatcher) {
+        m_probeWatcher->disconnect(this);
+        if (m_probeWatcher->isRunning()) {
+            m_probeWatcher->waitForFinished();
+        }
+    }
+}
 
 void AudioTagStudioDialog::retranslateUi()
 {
@@ -332,44 +341,82 @@ void AudioTagStudioDialog::retranslateUi()
 void AudioTagStudioDialog::addFile(const QString &filePath)
 {
     if (filePath.isEmpty() || !QFile::exists(filePath)) return;
-
-    AudioFileItem item;
-    item.filePath = filePath;
-    item.sourceFormat = QFileInfo(filePath).suffix().toLower();
-
-    if (m_probeService) {
-        const MediaFile media = m_probeService->probe(filePath);
-        item.durationSec = media.duration;
-        item.metadata = Audio::AudioMetadata::parseTags(media.formatMetadata);
-    }
-
-    if (item.metadata.title.isEmpty()) {
-        item.metadata = Audio::AudioMetadata::guessFromFileName(filePath);
-    }
-
-    m_items.append(item);
-    rebuildTable();
+    addFiles({filePath});
 }
 
 void AudioTagStudioDialog::addFiles(const QStringList &filePaths)
 {
+    QStringList filesToProbe;
     for (const QString &fp : filePaths) {
         if (!fp.isEmpty() && QFile::exists(fp)) {
             AudioFileItem item;
             item.filePath = fp;
             item.sourceFormat = QFileInfo(fp).suffix().toLower();
-            if (m_probeService) {
-                const MediaFile media = m_probeService->probe(fp);
-                item.durationSec = media.duration;
-                item.metadata = Audio::AudioMetadata::parseTags(media.formatMetadata);
-            }
-            if (item.metadata.title.isEmpty()) {
-                item.metadata = Audio::AudioMetadata::guessFromFileName(fp);
-            }
+            item.metadata = Audio::AudioMetadata::guessFromFileName(fp);
+            item.isProbed = false;
             m_items.append(item);
+            filesToProbe.append(fp);
         }
     }
     rebuildTable();
+
+    if (m_probeService && !filesToProbe.isEmpty()) {
+        MediaProbeService *probeService = m_probeService;
+        if (!m_probeWatcher) {
+            m_probeWatcher = new QFutureWatcher<QList<ProbeResult>>(this);
+            connect(m_probeWatcher, &QFutureWatcher<QList<ProbeResult>>::finished,
+                    this, &AudioTagStudioDialog::onProbeBatchFinished);
+        }
+        if (m_probeWatcher->isRunning()) {
+            m_probeWatcher->waitForFinished();
+        }
+        m_probeWatcher->setFuture(QtConcurrent::run([probeService, filesToProbe]() -> QList<ProbeResult> {
+            QList<ProbeResult> results;
+            results.reserve(filesToProbe.size());
+            for (const QString &fp : filesToProbe) {
+                const MediaFile media = probeService->probe(fp);
+                ProbeResult res;
+                res.filePath = fp;
+                res.durationSec = media.duration;
+                res.metadata = Audio::AudioMetadata::parseTags(media.formatMetadata);
+                results.append(res);
+            }
+            return results;
+        }));
+    }
+}
+
+void AudioTagStudioDialog::onProbeBatchFinished()
+{
+    if (!m_probeWatcher) return;
+    const QList<ProbeResult> results = m_probeWatcher->result();
+
+    QMap<QString, ProbeResult> resultMap;
+    for (const auto &res : results) {
+        resultMap[res.filePath] = res;
+    }
+
+    for (auto &item : m_items) {
+        if (!item.isProbed && resultMap.contains(item.filePath)) {
+            const auto &res = resultMap.value(item.filePath);
+            item.durationSec = res.durationSec;
+            item.isProbed = true;
+            if (!item.userModified) {
+                if (!res.metadata.title.isEmpty()) item.metadata.title = res.metadata.title;
+                if (!res.metadata.artist.isEmpty()) item.metadata.artist = res.metadata.artist;
+                if (!res.metadata.album.isEmpty()) item.metadata.album = res.metadata.album;
+                if (!res.metadata.genre.isEmpty()) item.metadata.genre = res.metadata.genre;
+                if (!res.metadata.year.isEmpty()) item.metadata.year = res.metadata.year;
+                if (!res.metadata.track.isEmpty()) item.metadata.track = res.metadata.track;
+            }
+        }
+    }
+
+    rebuildTable();
+    const int r = m_table->currentRow();
+    if (r >= 0 && r < m_items.size()) {
+        loadItemMetadataToEditor(r);
+    }
 }
 
 void AudioTagStudioDialog::onAddFiles()
@@ -431,6 +478,7 @@ void AudioTagStudioDialog::onGuessFromFilenames()
 {
     for (auto &item : m_items) {
         const auto guessed = Audio::AudioMetadata::guessFromFileName(item.filePath);
+        item.userModified = true;
         if (!guessed.title.isEmpty()) item.metadata.title = guessed.title;
         if (!guessed.artist.isEmpty()) item.metadata.artist = guessed.artist;
     }
@@ -503,6 +551,7 @@ void AudioTagStudioDialog::syncEditorToItem(int row)
 {
     if (row < 0 || row >= m_items.size() || m_isUpdatingEditor) return;
 
+    m_items[row].userModified = true;
     auto &meta = m_items[row].metadata;
     meta.title = m_titleEdit->text().trimmed();
     meta.artist = m_artistEdit->text().trimmed();
