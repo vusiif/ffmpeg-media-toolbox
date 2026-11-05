@@ -430,12 +430,18 @@ void AudioPage::dropEvent(QDropEvent *event)
 
 void AudioPage::openAudioTagStudio()
 {
-    auto *dlg = new AudioTagStudioDialog(m_queue, m_locator, m_probeService, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->addFile(m_inputFile);
+    if (m_tagStudioDialog) {
+        if (!m_inputFile.isEmpty()) m_tagStudioDialog->addFile(m_inputFile);
+        m_tagStudioDialog->raise();
+        m_tagStudioDialog->activateWindow();
+        return;
     }
-    dlg->show();
+    m_tagStudioDialog = new AudioTagStudioDialog(m_queue, m_locator, m_probeService, this);
+    m_tagStudioDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_tagStudioDialog->addFile(m_inputFile);
+    }
+    m_tagStudioDialog->show();
 }
 
 void AudioPage::processFormat()

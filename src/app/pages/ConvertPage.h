@@ -1,7 +1,10 @@
 #pragma once
 
 #include <QFutureWatcher>
+#include <QPointer>
 #include <QWidget>
+class LosslessCutDialog;
+class FilterStudioDialog;
 
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "media/MediaFile.h"
@@ -68,6 +71,8 @@ private:
     RecentFiles *m_recentFiles;
     JobQueue *m_queue;
     PresetManager *m_presets;
+    QPointer<LosslessCutDialog> m_cutDialog;
+    QPointer<FilterStudioDialog> m_filterDialog;
 
     QString m_inputFile;
     bool m_enqueueAfterProbe = false;

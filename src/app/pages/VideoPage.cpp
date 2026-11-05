@@ -718,22 +718,34 @@ VideoPage::~VideoPage()
 
 void VideoPage::openLosslessCutStudio()
 {
-    auto *dlg = new LosslessCutDialog(m_locator, m_probeService, m_queue, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->loadFile(m_inputFile);
+    if (m_cutDialog) {
+        if (!m_inputFile.isEmpty()) m_cutDialog->loadFile(m_inputFile);
+        m_cutDialog->raise();
+        m_cutDialog->activateWindow();
+        return;
     }
-    dlg->exec();
+    m_cutDialog = new LosslessCutDialog(m_locator, m_probeService, m_queue, this);
+    m_cutDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_cutDialog->loadFile(m_inputFile);
+    }
+    m_cutDialog->show();
 }
 
 void VideoPage::openFilterStudioDialog()
 {
-    auto *dlg = new FilterStudioDialog(m_locator, m_probeService, m_queue, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->loadFile(m_inputFile);
+    if (m_filterDialog) {
+        if (!m_inputFile.isEmpty()) m_filterDialog->loadFile(m_inputFile);
+        m_filterDialog->raise();
+        m_filterDialog->activateWindow();
+        return;
     }
-    dlg->exec();
+    m_filterDialog = new FilterStudioDialog(m_locator, m_probeService, m_queue, this);
+    m_filterDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_filterDialog->loadFile(m_inputFile);
+    }
+    m_filterDialog->show();
 }
 
 void VideoPage::detectKeyframes()
@@ -914,12 +926,18 @@ void VideoPage::makeGif()
 
 void VideoPage::openGifStudio()
 {
-    auto *dlg = new GifStudioDialog(m_queue, m_locator, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->setVideoFile(m_inputFile);
+    if (m_gifDialog) {
+        if (!m_inputFile.isEmpty()) m_gifDialog->setVideoFile(m_inputFile);
+        m_gifDialog->raise();
+        m_gifDialog->activateWindow();
+        return;
     }
-    dlg->show();
+    m_gifDialog = new GifStudioDialog(m_queue, m_locator, this);
+    m_gifDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_gifDialog->setVideoFile(m_inputFile);
+    }
+    m_gifDialog->show();
 }
 
 void VideoPage::joinVideos()
@@ -966,25 +984,38 @@ void VideoPage::watermark()
 
 void VideoPage::openSubtitleStudio()
 {
-    auto *dlg = new SubtitleStudioDialog(m_queue, m_locator, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->setVideoFile(m_inputFile);
+    if (m_subDialog) {
+        if (!m_inputFile.isEmpty()) m_subDialog->setVideoFile(m_inputFile);
+        m_subDialog->raise();
+        m_subDialog->activateWindow();
+        return;
     }
-    dlg->show();
+    m_subDialog = new SubtitleStudioDialog(m_queue, m_locator, this);
+    m_subDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_subDialog->setVideoFile(m_inputFile);
+    }
+    m_subDialog->show();
 }
 
 void VideoPage::openPipCompositorStudio()
 {
-    auto *dlg = new PipCompositorDialog(m_queue, m_locator, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (m_pipDialog) {
+        if (!m_inputFile.isEmpty()) m_pipDialog->setMainVideo(m_inputFile);
+        if (!m_pipFile.isEmpty()) m_pipDialog->setPipVideo(m_pipFile);
+        m_pipDialog->raise();
+        m_pipDialog->activateWindow();
+        return;
+    }
+    m_pipDialog = new PipCompositorDialog(m_queue, m_locator, this);
+    m_pipDialog->setAttribute(Qt::WA_DeleteOnClose);
     if (!m_inputFile.isEmpty()) {
-        dlg->setMainVideo(m_inputFile);
+        m_pipDialog->setMainVideo(m_inputFile);
     }
     if (!m_pipFile.isEmpty()) {
-        dlg->setPipVideo(m_pipFile);
+        m_pipDialog->setPipVideo(m_pipFile);
     }
-    dlg->show();
+    m_pipDialog->show();
 }
 
 void VideoPage::subtitleMux()

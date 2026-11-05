@@ -2,7 +2,13 @@
 
 #include <QProcess>
 #include <QVector>
+#include <QPointer>
 #include <QWidget>
+class LosslessCutDialog;
+class FilterStudioDialog;
+class GifStudioDialog;
+class SubtitleStudioDialog;
+class PipCompositorDialog;
 #include "cut/SmartCutEngine.h"
 
 class FFmpegLocator;
@@ -229,4 +235,10 @@ private:
     ElaPushButton *m_seqButton = nullptr;
 
     QStringList m_joinFiles;
+
+    QPointer<LosslessCutDialog> m_cutDialog;
+    QPointer<FilterStudioDialog> m_filterDialog;
+    QPointer<GifStudioDialog> m_gifDialog;
+    QPointer<SubtitleStudioDialog> m_subDialog;
+    QPointer<PipCompositorDialog> m_pipDialog;
 };

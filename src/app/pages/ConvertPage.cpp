@@ -774,28 +774,40 @@ void ConvertPage::openQualityDialog()
 
 void ConvertPage::openLosslessCutDialog()
 {
-    auto *dlg = new LosslessCutDialog(m_locator, m_probe, m_queue, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    if (!m_inputFile.isEmpty()) {
-        dlg->loadFile(m_inputFile);
+    if (m_cutDialog) {
+        if (!m_inputFile.isEmpty()) m_cutDialog->loadFile(m_inputFile);
+        m_cutDialog->raise();
+        m_cutDialog->activateWindow();
+        return;
     }
-    dlg->exec();
+    m_cutDialog = new LosslessCutDialog(m_locator, m_probe, m_queue, this);
+    m_cutDialog->setAttribute(Qt::WA_DeleteOnClose);
+    if (!m_inputFile.isEmpty()) {
+        m_cutDialog->loadFile(m_inputFile);
+    }
+    m_cutDialog->show();
 }
 
 void ConvertPage::openFilterStudioDialog()
 {
-    auto *dlg = new FilterStudioDialog(m_locator, m_probe, m_queue, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    connect(dlg, &FilterStudioDialog::filtersApplied, this, [this](const QString &vf, const QString &af) {
+    if (m_filterDialog) {
+        if (!m_inputFile.isEmpty()) m_filterDialog->loadFile(m_inputFile);
+        m_filterDialog->raise();
+        m_filterDialog->activateWindow();
+        return;
+    }
+    m_filterDialog = new FilterStudioDialog(m_locator, m_probe, m_queue, this);
+    m_filterDialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(m_filterDialog, &FilterStudioDialog::filtersApplied, this, [this](const QString &vf, const QString &af) {
         if (!vf.isEmpty()) m_vfEdit->setText(vf);
         if (!af.isEmpty()) m_afEdit->setText(af);
         m_advToggle->setChecked(true);
         updateCommandPreview();
     });
     if (!m_inputFile.isEmpty()) {
-        dlg->loadFile(m_inputFile);
+        m_filterDialog->loadFile(m_inputFile);
     }
-    dlg->exec();
+    m_filterDialog->show();
 }
 
 void ConvertPage::addToQueue()

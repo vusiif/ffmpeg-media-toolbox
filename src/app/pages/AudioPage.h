@@ -1,6 +1,8 @@
 #pragma once
 
+#include <QPointer>
 #include <QWidget>
+class AudioTagStudioDialog;
 
 class FFmpegLocator;
 class FFmpegCommandBuilder;
@@ -47,6 +49,7 @@ private:
     FFmpegCommandBuilder *m_builder;
     JobQueue *m_queue;
     MediaProbeService *m_probeService = nullptr;
+    QPointer<AudioTagStudioDialog> m_tagStudioDialog;
 
     QString m_inputFile;
 
