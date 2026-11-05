@@ -4,6 +4,7 @@
 #include "media/CorruptedVideoScanner.h"
 #include "media/PlayerNavigationHelper.h"
 
+#include <QPointer>
 #include <QWidget>
 
 class QMediaPlayer;
@@ -101,7 +102,7 @@ private:
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QVideoWidget *m_videoWidget = nullptr;
-    QWidget *m_placeholderWidget = nullptr;
+    QPointer<QWidget> m_placeholderWidget;
     QWidget *m_controlBarWidget = nullptr;
 
     DamageTimelineSlider *m_timeline = nullptr;
@@ -131,7 +132,8 @@ private:
 
     // Fullscreen state
     bool m_isFullscreen = false;
-    QWidget *m_normalParent = nullptr;
+    QPointer<QWidget> m_normalParent;
+    QMetaObject::Connection m_parentDestroyedConn;
     QRect m_normalGeometry;
     QTimer *m_idleTimer = nullptr;
 };

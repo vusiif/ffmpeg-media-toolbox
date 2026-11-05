@@ -161,9 +161,36 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
 
 VideoPlayerWidget::~VideoPlayerWidget()
 {
-    stop();
+    // Disconnect host parent destruction watcher
+    QObject::disconnect(m_parentDestroyedConn);
+
+    // Stop timer and disconnect to prevent late timeout events during teardown
+    if (m_idleTimer) {
+        m_idleTimer->stop();
+        m_idleTimer->disconnect(this);
+    }
+
+    // Stop player and disconnect signals
+    if (m_player) {
+        m_player->disconnect(this);
+        m_player->stop();
+    }
+
+    // Safely exit fullscreen state without invoking interactive toggleFullscreen()
+    // or emitting signals during destruction
     if (m_isFullscreen) {
-        toggleFullscreen();
+        unsetCursor();
+        if (m_normalParent && m_placeholderWidget) {
+            if (auto *box = qobject_cast<QBoxLayout *>(m_normalParent->layout())) {
+                box->removeWidget(m_placeholderWidget.data());
+            }
+        }
+        m_isFullscreen = false;
+    }
+
+    if (m_placeholderWidget) {
+        delete m_placeholderWidget.data();
+        m_placeholderWidget = nullptr;
     }
 }
 
@@ -173,7 +200,11 @@ void VideoPlayerWidget::loadMedia(const QString &filePath)
     clearSegments();
     clearKeyframes();
     clearCutSegments();
-    m_player->setSource(QUrl::fromLocalFile(filePath));
+    if (filePath.isEmpty()) {
+        m_player->setSource(QUrl());
+    } else {
+        m_player->setSource(QUrl::fromLocalFile(filePath));
+    }
 }
 
 void VideoPlayerWidget::setCorruptedSegments(const QVector<CorruptedSegment> &segments)
@@ -405,11 +436,26 @@ void VideoPlayerWidget::toggleFullscreen()
             if (box) {
                 const int idx = box->indexOf(this);
                 if (idx >= 0) {
-                    m_placeholderWidget->setParent(m_normalParent);
-                    box->insertWidget(idx, m_placeholderWidget);
+                    if (!m_placeholderWidget) {
+                        m_placeholderWidget = new QWidget();
+                    }
+                    m_placeholderWidget->setParent(m_normalParent.data());
+                    m_placeholderWidget->setGeometry(m_normalGeometry);
+                    box->insertWidget(idx, m_placeholderWidget.data());
                     box->removeWidget(this);
                 }
             }
+        }
+
+        // Host window destruction watcher: if original host window is destroyed
+        // while player is in fullscreen, gracefully self-destruct rather than leaving
+        // a detached dangling window.
+        if (m_normalParent) {
+            m_parentDestroyedConn = connect(m_normalParent.data(), &QObject::destroyed, this, [this]() {
+                m_normalParent = nullptr;
+                m_placeholderWidget = nullptr;
+                deleteLater();
+            });
         }
 
         setParent(nullptr);
@@ -422,29 +468,41 @@ void VideoPlayerWidget::toggleFullscreen()
 
         emit fullscreenToggled(true);
         setFocus();
-        m_idleTimer->start(2500);
+        if (m_idleTimer) {
+            m_idleTimer->start(2500);
+        }
     } else {
-        m_idleTimer->stop();
+        // Disconnect host parent watcher since we are returning to normal parentage
+        QObject::disconnect(m_parentDestroyedConn);
+
+        if (m_idleTimer) {
+            m_idleTimer->stop();
+        }
         unsetCursor();
         showNormal();
         setWindowFlags(Qt::Widget);
 
-        if (m_normalParent) {
+        if (m_normalParent && !m_normalParent.isNull()) {
             auto *box = qobject_cast<QBoxLayout *>(m_normalParent->layout());
-            if (box && m_placeholderWidget->parent() == m_normalParent) {
-                const int idx = box->indexOf(m_placeholderWidget);
+            if (box && m_placeholderWidget && m_placeholderWidget->parent() == m_normalParent.data()) {
+                const int idx = box->indexOf(m_placeholderWidget.data());
                 if (idx >= 0) {
                     box->insertWidget(idx, this);
-                    box->removeWidget(m_placeholderWidget);
+                    box->removeWidget(m_placeholderWidget.data());
                     m_placeholderWidget->setParent(this);
+                    m_placeholderWidget->hide();
                 }
             } else if (box) {
                 box->addWidget(this);
             }
-            setParent(m_normalParent);
+            setParent(m_normalParent.data());
+            show();
+        } else {
+            // Host parent was destroyed; keep detached or hide
+            setParent(nullptr);
+            hide();
         }
 
-        show();
         m_controlBarWidget->show();
         m_timeline->show();
 
