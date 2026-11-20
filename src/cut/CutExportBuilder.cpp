@@ -78,6 +78,15 @@ Job *CutExportBuilder::createJob(const QString &ffmpeg, const MediaFile &media,
         } else {
             args << QStringLiteral("-map") << QStringLiteral("0:a?")
                  << QStringLiteral("-c:v") << videoEncoder << QStringLiteral("-c:a") << audioEncoder;
+            if (std::abs(segment.audioOffsetSec) > 0.001) {
+                if (segment.audioOffsetSec > 0) {
+                    const int ms = static_cast<int>(std::round(segment.audioOffsetSec * 1000.0));
+                    args << QStringLiteral("-af") << QStringLiteral("adelay=%1|%1").arg(ms);
+                } else {
+                    const double adv = -segment.audioOffsetSec;
+                    args << QStringLiteral("-af") << QStringLiteral("atrim=start=%1,asetpts=PTS-STARTPTS").arg(adv, 0, 'f', 3);
+                }
+            }
         }
         args << QStringLiteral("-crf") << QStringLiteral("18");
         if (videoOnly) args << QStringLiteral("-muxdelay") << QStringLiteral("0") << QStringLiteral("-muxpreload") << QStringLiteral("0");
@@ -91,10 +100,29 @@ Job *CutExportBuilder::createJob(const QString &ffmpeg, const MediaFile &media,
         const QString target = segments.size() == 1 ? stagedOutput : workspacePath(segmentName);
         segmentFiles << segmentName;
         if (effectiveMode == CutMode::KeyframeLossless) {
-            addStep(SmartCutEngine::buildLosslessCut(media.path, target, segment.startSec, segment.endSec), segment.duration());
+            if (std::abs(segment.audioOffsetSec) > 0.001) {
+                QStringList args{QStringLiteral("-n"), QStringLiteral("-ss"), SmartCutEngine::formatTime(segment.startSec),
+                                 QStringLiteral("-i"), media.path, QStringLiteral("-t"),
+                                 SmartCutEngine::formatTime(segment.duration()),
+                                 QStringLiteral("-map"), QStringLiteral("0:v:0"),
+                                 QStringLiteral("-map"), QStringLiteral("0:a?"),
+                                 QStringLiteral("-c:v"), QStringLiteral("copy"),
+                                 QStringLiteral("-c:a"), audioEncoder};
+                if (segment.audioOffsetSec > 0) {
+                    const int ms = static_cast<int>(std::round(segment.audioOffsetSec * 1000.0));
+                    args << QStringLiteral("-af") << QStringLiteral("adelay=%1|%1").arg(ms);
+                } else {
+                    const double adv = -segment.audioOffsetSec;
+                    args << QStringLiteral("-af") << QStringLiteral("atrim=start=%1,asetpts=PTS-STARTPTS").arg(adv, 0, 'f', 3);
+                }
+                args << target;
+                addStep(args, segment.duration());
+            } else {
+                addStep(SmartCutEngine::buildLosslessCut(media.path, target, segment.startSec, segment.endSec), segment.duration());
+            }
             continue;
         }
-        if (effectiveMode == CutMode::AccurateReencode) {
+        if (effectiveMode == CutMode::AccurateReencode || std::abs(segment.audioOffsetSec) > 0.001) {
             accurate(segment, target, false);
             continue;
         }

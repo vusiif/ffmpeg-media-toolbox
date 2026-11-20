@@ -2547,5 +2547,73 @@
         <source>cut.export.publishFailed</source>
         <translation>无法发布已完成的导出（目标文件可能已存在）。</translation>
     </message>
+    <message id="video.card.bgm">
+        <source>video.card.bgm</source>
+        <translation>背景音乐与伴奏混音</translation>
+    </message>
+    <message id="video.bgm.selectAudio">
+        <source>video.bgm.selectAudio</source>
+        <translation>音频文件:</translation>
+    </message>
+    <message id="video.bgm.mode">
+        <source>video.bgm.mode</source>
+        <translation>模式:</translation>
+    </message>
+    <message id="video.bgm.modeReplace">
+        <source>video.bgm.modeReplace</source>
+        <translation>完全替换原声 (移除原音轨)</translation>
+    </message>
+    <message id="video.bgm.modeMix">
+        <source>video.bgm.modeMix</source>
+        <translation>与原声混音 (保留原声+添加伴奏)</translation>
+    </message>
+    <message id="video.bgm.origVol">
+        <source>video.bgm.origVol</source>
+        <translation>原声音量:</translation>
+    </message>
+    <message id="video.bgm.musicVol">
+        <source>video.bgm.musicVol</source>
+        <translation>背景音乐音量:</translation>
+    </message>
+    <message id="video.bgm.addQueue">
+        <source>video.bgm.addQueue</source>
+        <translation>生成伴奏/替换视频并加入队列</translation>
+    </message>
+    <message id="video.card.sync">
+        <source>video.card.sync</source>
+        <translation>音画同步校准与音量增强</translation>
+    </message>
+    <message id="video.sync.offset">
+        <source>video.sync.offset</source>
+        <translation>声音偏差校准:</translation>
+    </message>
+    <message id="video.sync.offsetTip">
+        <source>video.sync.offsetTip</source>
+        <translation>负数=声音提前(解决声音慢了)；正数=声音推迟(解决声音抢先)</translation>
+    </message>
+    <message id="video.sync.volume">
+        <source>video.sync.volume</source>
+        <translation>音量调节 (%):</translation>
+    </message>
+    <message id="video.sync.addQueue">
+        <source>video.sync.addQueue</source>
+        <translation>校准并加入队列</translation>
+    </message>
+    <message id="cut.action.split">
+        <source>cut.action.split</source>
+        <translation>✂ 在当前播放位置切开</translation>
+    </message>
+    <message id="cut.table.colAudioOffset">
+        <source>cut.table.colAudioOffset</source>
+        <translation>声音校准</translation>
+    </message>
+    <message id="cut.segment.audioOffset">
+        <source>cut.segment.audioOffset</source>
+        <translation>选中片段声音校准:</translation>
+    </message>
+    <message id="cut.segment.audioOffsetTip">
+        <source>cut.segment.audioOffsetTip</source>
+        <translation>(后半段声音错位时，可在此单独推迟或提前声音)</translation>
+    </message>
 </context>
 </TS>

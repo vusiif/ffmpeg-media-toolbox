@@ -2547,5 +2547,73 @@
         <source>cut.export.publishFailed</source>
         <translation>Could not publish the completed export (the destination may already exist).</translation>
     </message>
+    <message id="video.card.bgm">
+        <source>video.card.bgm</source>
+        <translation>Background Music &amp; Mixing</translation>
+    </message>
+    <message id="video.bgm.selectAudio">
+        <source>video.bgm.selectAudio</source>
+        <translation>Audio File:</translation>
+    </message>
+    <message id="video.bgm.mode">
+        <source>video.bgm.mode</source>
+        <translation>Mode:</translation>
+    </message>
+    <message id="video.bgm.modeReplace">
+        <source>video.bgm.modeReplace</source>
+        <translation>Replace Original Audio</translation>
+    </message>
+    <message id="video.bgm.modeMix">
+        <source>video.bgm.modeMix</source>
+        <translation>Mix with Original Audio</translation>
+    </message>
+    <message id="video.bgm.origVol">
+        <source>video.bgm.origVol</source>
+        <translation>Original Volume:</translation>
+    </message>
+    <message id="video.bgm.musicVol">
+        <source>video.bgm.musicVol</source>
+        <translation>BGM Volume:</translation>
+    </message>
+    <message id="video.bgm.addQueue">
+        <source>video.bgm.addQueue</source>
+        <translation>Add BGM Video to Queue</translation>
+    </message>
+    <message id="video.card.sync">
+        <source>video.card.sync</source>
+        <translation>Audio Sync &amp; Volume Adjustment</translation>
+    </message>
+    <message id="video.sync.offset">
+        <source>video.sync.offset</source>
+        <translation>Audio Sync Offset:</translation>
+    </message>
+    <message id="video.sync.offsetTip">
+        <source>video.sync.offsetTip</source>
+        <translation>Negative = advance audio; Positive = delay audio</translation>
+    </message>
+    <message id="video.sync.volume">
+        <source>video.sync.volume</source>
+        <translation>Volume Adjustment (%):</translation>
+    </message>
+    <message id="video.sync.addQueue">
+        <source>video.sync.addQueue</source>
+        <translation>Apply Sync &amp; Add to Queue</translation>
+    </message>
+    <message id="cut.action.split">
+        <source>cut.action.split</source>
+        <translation>✂ Split at Playhead</translation>
+    </message>
+    <message id="cut.table.colAudioOffset">
+        <source>cut.table.colAudioOffset</source>
+        <translation>Audio Sync</translation>
+    </message>
+    <message id="cut.segment.audioOffset">
+        <source>cut.segment.audioOffset</source>
+        <translation>Segment Audio Sync:</translation>
+    </message>
+    <message id="cut.segment.audioOffsetTip">
+        <source>cut.segment.audioOffsetTip</source>
+        <translation>(Fine-tune audio delay/advance for this segment)</translation>
+    </message>
 </context>
 </TS>

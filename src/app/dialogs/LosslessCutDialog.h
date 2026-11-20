@@ -49,6 +49,8 @@ private slots:
     void onPreviewRangeClicked();
     void onAddSegmentClicked();
     void onClearSegmentsClicked();
+    void onSplitAtCurrentPosition();
+    void onAudioOffsetChanged(double val);
     void onTableItemClicked(int row, int column);
     void onExportClicked();
 
@@ -95,8 +97,12 @@ private:
 
     // Segments Table
     QTableWidget *m_segmentTable = nullptr;
+    ElaPushButton *m_splitBtn = nullptr;
     ElaPushButton *m_clearSegmentsBtn = nullptr;
     ElaText *m_segmentsSummaryLabel = nullptr;
+    ElaText *m_audioOffsetLabel = nullptr;
+    ElaDoubleSpinBox *m_audioOffsetSpin = nullptr;
+    ElaText *m_audioOffsetTip = nullptr;
 
     // Export Options
     ElaComboBox *m_cutModeCombo = nullptr;

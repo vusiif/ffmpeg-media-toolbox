@@ -28,6 +28,7 @@ private slots:
     void bFramesAndWebmUseAccurateEncoding();
     void immediateRetryAndQueueTeardown();
     void cancelDuringFinalEncodeCanRetry();
+    void segmentAudioOffsetExport();
 private:
     QByteArray run(const QString &program, const QStringList &args, int *exit = nullptr);
     void verifyOutput(const QString &path, double duration, int frames);
@@ -361,6 +362,24 @@ void CutExportTest::cancelDuringFinalEncodeCanRetry()
     QTRY_VERIFY_WITH_TIMEOUT(!queue.hasRunningJobs(), 15000);
     QVERIFY2(job->status() == JobStatus::Completed, qPrintable(job->errorMessage()));
     verifyOutput(output, 3.36, 84);
+}
+
+void CutExportTest::segmentAudioOffsetExport()
+{
+    const QString output = m_dir->filePath("audio-offset.mp4");
+    JobQueue queue(m_locator.get(), nullptr, nullptr, QString());
+    CutSegment seg;
+    seg.startSec = 1.0;
+    seg.endSec = 3.0;
+    seg.audioOffsetSec = 0.5; // Delay audio by 500ms
+    Job *job = CutExportBuilder::createJob(m_locator->ffmpegPath(), m_media, output,
+        {seg}, CutMode::KeyframeLossless, m_keyframes);
+    QVERIFY(job);
+    queue.addJob(job);
+    QTRY_VERIFY_WITH_TIMEOUT(!queue.hasRunningJobs(), 15000);
+    QVERIFY2(job->status() == JobStatus::Completed, qPrintable(job->errorMessage()));
+    QVERIFY(QFileInfo::exists(output));
+    verifyOutput(output, 2.0, 50);
 }
 
 QTEST_GUILESS_MAIN(CutExportTest)

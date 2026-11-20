@@ -202,6 +202,12 @@ LosslessCutDialog::LosslessCutDialog(FFmpegLocator *locator, MediaProbeService *
     tableTitle->setStyleSheet(QStringLiteral("font-weight: bold;"));
     m_segmentsSummaryLabel = new ElaText(QString(), 12, tableCard);
     m_segmentsSummaryLabel->setStyleSheet(QStringLiteral("color: #0078d4; font-weight: bold;"));
+
+    m_splitBtn = new ElaPushButton(trId("cut.action.split"), tableCard);
+    m_splitBtn->setFixedHeight(26);
+    m_splitBtn->setStyleSheet(QStringLiteral("font-weight: bold; background-color: #0078d4; color: white;"));
+    connect(m_splitBtn, &ElaPushButton::clicked, this, &LosslessCutDialog::onSplitAtCurrentPosition);
+
     m_clearSegmentsBtn = new ElaPushButton(trId("cut.table.clear"), tableCard);
     m_clearSegmentsBtn->setFixedHeight(26);
     connect(m_clearSegmentsBtn, &ElaPushButton::clicked, this, &LosslessCutDialog::onClearSegmentsClicked);
@@ -209,15 +215,17 @@ LosslessCutDialog::LosslessCutDialog(FFmpegLocator *locator, MediaProbeService *
     tableHeaderRow->addWidget(tableTitle);
     tableHeaderRow->addWidget(m_segmentsSummaryLabel);
     tableHeaderRow->addStretch();
+    tableHeaderRow->addWidget(m_splitBtn);
     tableHeaderRow->addWidget(m_clearSegmentsBtn);
     tableLayout->addLayout(tableHeaderRow);
 
-    m_segmentTable = new QTableWidget(0, 5, tableCard);
+    m_segmentTable = new QTableWidget(0, 6, tableCard);
     m_segmentTable->setHorizontalHeaderLabels({
         trId("cut.table.colIndex"),
         trId("cut.table.colStart"),
         trId("cut.table.colEnd"),
         trId("cut.table.colDuration"),
+        trId("cut.table.colAudioOffset"),
         trId("cut.table.colAction")
     });
     m_segmentTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -225,11 +233,34 @@ LosslessCutDialog::LosslessCutDialog(FFmpegLocator *locator, MediaProbeService *
     m_segmentTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     m_segmentTable->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
     m_segmentTable->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    m_segmentTable->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     m_segmentTable->setFixedHeight(140);
     m_segmentTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_segmentTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     connect(m_segmentTable, &QTableWidget::cellClicked, this, &LosslessCutDialog::onTableItemClicked);
     tableLayout->addWidget(m_segmentTable);
+
+    auto *syncRow = new QHBoxLayout();
+    syncRow->setSpacing(8);
+    m_audioOffsetLabel = new ElaText(trId("cut.segment.audioOffset"), 12, tableCard);
+    m_audioOffsetLabel->setStyleSheet(QStringLiteral("font-weight: bold;"));
+    m_audioOffsetSpin = new ElaDoubleSpinBox(tableCard);
+    m_audioOffsetSpin->setRange(-10.0, 10.0);
+    m_audioOffsetSpin->setSingleStep(0.05);
+    m_audioOffsetSpin->setDecimals(2);
+    m_audioOffsetSpin->setValue(0.0);
+    m_audioOffsetSpin->setSuffix(QStringLiteral(" s"));
+    m_audioOffsetSpin->setFixedWidth(100);
+    connect(m_audioOffsetSpin, QOverload<double>::of(&ElaDoubleSpinBox::valueChanged), this, &LosslessCutDialog::onAudioOffsetChanged);
+
+    m_audioOffsetTip = new ElaText(trId("cut.segment.audioOffsetTip"), 11, tableCard);
+    m_audioOffsetTip->setStyleSheet(QStringLiteral("color: #888888;"));
+
+    syncRow->addWidget(m_audioOffsetLabel);
+    syncRow->addWidget(m_audioOffsetSpin);
+    syncRow->addWidget(m_audioOffsetTip);
+    syncRow->addStretch();
+    tableLayout->addLayout(syncRow);
 
     bodyLayout->addWidget(tableCard);
 
@@ -538,6 +569,18 @@ void LosslessCutDialog::refreshSegmentsTable()
         auto *itemDur = new QTableWidgetItem(SmartCutEngine::formatDuration(seg.duration()));
         itemDur->setTextAlignment(Qt::AlignCenter);
 
+        QString offsetText = QStringLiteral("0.00s");
+        if (std::abs(seg.audioOffsetSec) > 0.001) {
+            offsetText = QStringLiteral("%1%2s")
+                             .arg(seg.audioOffsetSec > 0 ? QStringLiteral("+") : QString())
+                             .arg(seg.audioOffsetSec, 0, 'f', 2);
+        }
+        auto *itemOffset = new QTableWidgetItem(offsetText);
+        itemOffset->setTextAlignment(Qt::AlignCenter);
+        if (std::abs(seg.audioOffsetSec) > 0.001) {
+            itemOffset->setForeground(QBrush(QColor(0, 120, 212)));
+        }
+
         auto *delBtn = new ElaPushButton(QStringLiteral("✕"), m_segmentTable);
         delBtn->setFixedSize(28, 22);
         delBtn->setProperty("segIndex", i);
@@ -559,12 +602,77 @@ void LosslessCutDialog::refreshSegmentsTable()
         m_segmentTable->setItem(i, 1, itemStart);
         m_segmentTable->setItem(i, 2, itemEnd);
         m_segmentTable->setItem(i, 3, itemDur);
-        m_segmentTable->setCellWidget(i, 4, btnContainer);
+        m_segmentTable->setItem(i, 4, itemOffset);
+        m_segmentTable->setCellWidget(i, 5, btnContainer);
     }
 
     m_segmentsSummaryLabel->setText(trId("cut.table.summary")
                                         .arg(m_segments.size())
                                         .arg(SmartCutEngine::formatDuration(totalSec)));
+}
+
+void LosslessCutDialog::onSplitAtCurrentPosition()
+{
+    if (!m_player) return;
+    const double pos = m_player->currentPositionSec();
+    if (pos <= 0.05) return;
+
+    // Case 1: If m_segments is empty, take the full media and split it into [0, pos] and [pos, duration]
+    if (m_segments.isEmpty()) {
+        const double total = m_media.duration > 0 ? m_media.duration : m_player->durationSec();
+        if (total > pos + 0.05) {
+            CutSegment seg1;
+            seg1.startSec = 0.0;
+            seg1.endSec = pos;
+            CutSegment seg2;
+            seg2.startSec = pos;
+            seg2.endSec = total;
+            m_segments.append(seg1);
+            m_segments.append(seg2);
+            refreshSegmentsTable();
+            updateTimelineSegments();
+            m_segmentTable->selectRow(1);
+            onTableItemClicked(1, 0);
+            return;
+        }
+    }
+
+    // Case 2: Split the segment containing pos
+    for (int i = 0; i < m_segments.size(); ++i) {
+        auto &seg = m_segments[i];
+        if (pos > seg.startSec + 0.05 && pos < seg.endSec - 0.05) {
+            const double originalEnd = seg.endSec;
+            seg.endSec = pos;
+            CutSegment nextSeg;
+            nextSeg.startSec = pos;
+            nextSeg.endSec = originalEnd;
+            nextSeg.audioOffsetSec = 0.0;
+            m_segments.insert(i + 1, nextSeg);
+            refreshSegmentsTable();
+            updateTimelineSegments();
+            m_segmentTable->selectRow(i + 1);
+            onTableItemClicked(i + 1, 0);
+            return;
+        }
+    }
+}
+
+void LosslessCutDialog::onAudioOffsetChanged(double val)
+{
+    const int row = m_segmentTable->currentRow();
+    if (row >= 0 && row < m_segments.size()) {
+        m_segments[row].audioOffsetSec = val;
+        QString offsetText = QStringLiteral("0.00s");
+        if (std::abs(val) > 0.001) {
+            offsetText = QStringLiteral("%1%2s")
+                             .arg(val > 0 ? QStringLiteral("+") : QString())
+                             .arg(val, 0, 'f', 2);
+        }
+        if (auto *item = m_segmentTable->item(row, 4)) {
+            item->setText(offsetText);
+            item->setForeground(std::abs(val) > 0.001 ? QBrush(QColor(0, 120, 212)) : QBrush(QColor(136, 136, 136)));
+        }
+    }
 }
 
 void LosslessCutDialog::onTableItemClicked(int row, int /*column*/)
@@ -573,6 +681,11 @@ void LosslessCutDialog::onTableItemClicked(int row, int /*column*/)
         const auto &seg = m_segments[row];
         m_startSpin->setValue(seg.startSec);
         m_endSpin->setValue(seg.endSec);
+        if (m_audioOffsetSpin) {
+            m_audioOffsetSpin->blockSignals(true);
+            m_audioOffsetSpin->setValue(seg.audioOffsetSec);
+            m_audioOffsetSpin->blockSignals(false);
+        }
         m_player->setMarkRange(seg.startSec, seg.endSec);
         m_player->seekToSec(seg.startSec);
     }
@@ -656,9 +769,20 @@ void LosslessCutDialog::retranslateUi()
     m_markOutBtn->setText(trId("cut.range.markOut"));
     m_previewBtn->setText(trId("cut.range.preview"));
     m_addSegmentBtn->setText(trId("cut.range.addSegment"));
+    if (m_splitBtn) m_splitBtn->setText(trId("cut.action.split"));
+    if (m_audioOffsetLabel) m_audioOffsetLabel->setText(trId("cut.segment.audioOffset"));
+    if (m_audioOffsetTip) m_audioOffsetTip->setText(trId("cut.segment.audioOffsetTip"));
     m_clearSegmentsBtn->setText(trId("cut.table.clear"));
     m_exportBtn->setText(trId("cut.action.export"));
     m_closeBtn->setText(trId("dialog.close"));
+    m_segmentTable->setHorizontalHeaderLabels({
+        trId("cut.table.colIndex"),
+        trId("cut.table.colStart"),
+        trId("cut.table.colEnd"),
+        trId("cut.table.colDuration"),
+        trId("cut.table.colAudioOffset"),
+        trId("cut.table.colAction")
+    });
     updateKeyframeStatus();
     refreshSegmentsTable();
 }

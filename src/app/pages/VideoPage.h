@@ -58,6 +58,8 @@ private:
 
     void extractAudio();
     void mute();
+    void applyBgm();
+    void applyAudioSync();
     void screenshot();
     void makeGif();
     void openGifStudio();
@@ -156,6 +158,30 @@ private:
     ElaText *m_muteFormatCaption = nullptr;
     ElaComboBox *m_muteFormat = nullptr;
     ElaPushButton *m_muteButton = nullptr;
+
+    // BGM Card
+    ElaScrollPageArea *m_bgmCard = nullptr;
+    ElaText *m_bgmTitleLabel = nullptr;
+    ElaText *m_bgmPathCaption = nullptr;
+    ElaLineEdit *m_bgmPath = nullptr;
+    ElaPushButton *m_bgmBrowseButton = nullptr;
+    ElaText *m_bgmModeCaption = nullptr;
+    ElaComboBox *m_bgmMode = nullptr;
+    ElaText *m_bgmOrigVolCaption = nullptr;
+    ElaSpinBox *m_bgmOrigVol = nullptr;
+    ElaText *m_bgmMusicVolCaption = nullptr;
+    ElaSpinBox *m_bgmMusicVol = nullptr;
+    ElaPushButton *m_bgmButton = nullptr;
+
+    // Audio Sync & Volume Card
+    ElaScrollPageArea *m_syncCard = nullptr;
+    ElaText *m_syncTitleLabel = nullptr;
+    ElaText *m_syncOffsetCaption = nullptr;
+    ElaDoubleSpinBox *m_syncOffset = nullptr;
+    ElaText *m_syncOffsetTip = nullptr;
+    ElaText *m_syncVolumeCaption = nullptr;
+    ElaSpinBox *m_syncVolume = nullptr;
+    ElaPushButton *m_syncButton = nullptr;
 
     // Tab 3: Overlay & Subtitles
     ElaScrollPageArea *m_filterStudioCard = nullptr;

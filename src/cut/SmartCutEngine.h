@@ -21,6 +21,7 @@ struct CutSegment {
     double startSec = 0.0;
     double endSec = 0.0;
     QString label;
+    double audioOffsetSec = 0.0; // Audio delay or advance in seconds (+: delay audio, -: advance audio)
 
     double duration() const { return (endSec > startSec) ? (endSec - startSec) : 0.0; }
     bool isValid() const { return endSec > startSec; }
