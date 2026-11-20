@@ -49,6 +49,7 @@ private slots:
     void onBrowseSalvageOutput();
     void onSalvageModeChanged(int index);
     void onStartSalvage();
+    void onQueueSalvage();
     void onCancelSalvage();
     void onSalvageProgress(double fraction);
     void onSalvageLog(const QString &line);
@@ -129,6 +130,7 @@ private:
     ElaLineEdit *m_salvageOutputEdit = nullptr;
     ElaPushButton *m_salvageOutputBrowseBtn = nullptr;
     ElaPushButton *m_startSalvageBtn = nullptr;
+    ElaPushButton *m_queueSalvageBtn = nullptr;
     ElaPushButton *m_cancelSalvageBtn = nullptr;
     ElaProgressBar *m_salvageProgressBar = nullptr;
     ElaText *m_salvageStatusLabel = nullptr;

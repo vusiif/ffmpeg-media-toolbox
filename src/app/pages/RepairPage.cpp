@@ -212,12 +212,19 @@ void RepairPage::setupSalvageTab(QWidget *tab)
     m_startSalvageBtn->setEnabled(false);
     connect(m_startSalvageBtn, &ElaPushButton::clicked, this, &RepairPage::onStartSalvage);
 
+    m_queueSalvageBtn = new ElaPushButton(m_salvageControlCard);
+    m_queueSalvageBtn->setFixedHeight(36);
+    m_queueSalvageBtn->setMinimumWidth(120);
+    m_queueSalvageBtn->setEnabled(false);
+    connect(m_queueSalvageBtn, &ElaPushButton::clicked, this, &RepairPage::onQueueSalvage);
+
     m_cancelSalvageBtn = new ElaPushButton(m_salvageControlCard);
     m_cancelSalvageBtn->setFixedHeight(36);
     m_cancelSalvageBtn->setEnabled(false);
     connect(m_cancelSalvageBtn, &ElaPushButton::clicked, this, &RepairPage::onCancelSalvage);
 
     actionRow->addWidget(m_startSalvageBtn);
+    actionRow->addWidget(m_queueSalvageBtn);
     actionRow->addWidget(m_cancelSalvageBtn);
     actionRow->addStretch();
     leftLayout->addLayout(actionRow);
@@ -625,6 +632,7 @@ void RepairPage::dropEvent(QDropEvent *event)
             m_salvageAssessLabel->setStyleSheet(QStringLiteral("color: #0078d4;"));
         }
         m_startSalvageBtn->setEnabled(true);
+        m_queueSalvageBtn->setEnabled(true);
         m_salvageResultBar->setVisible(false);
     } else if (idx == 1) {
         m_scanFilePath = local;
@@ -687,6 +695,7 @@ void RepairPage::onBrowseSalvageInput()
     }
 
     m_startSalvageBtn->setEnabled(true);
+    m_queueSalvageBtn->setEnabled(true);
     m_salvageResultBar->setVisible(false);
 }
 
@@ -718,6 +727,7 @@ void RepairPage::onStartSalvage()
     if (m_salvageInputPath.isEmpty() || m_salvageOutputPath.isEmpty()) return;
 
     m_startSalvageBtn->setEnabled(false);
+    m_queueSalvageBtn->setEnabled(false);
     m_cancelSalvageBtn->setEnabled(true);
     m_salvageProgressBar->setVisible(true);
     m_salvageProgressBar->setValue(0);
@@ -733,10 +743,34 @@ void RepairPage::onStartSalvage()
     m_salvageEngine->start(m_salvageInputPath, m_salvageOutputPath, mode, m_salvageDuration);
 }
 
+void RepairPage::onQueueSalvage()
+{
+    if (m_salvageInputPath.isEmpty() || m_salvageOutputPath.isEmpty() || !m_jobQueue) return;
+
+    const auto mode = (m_salvageModeCombo->currentIndex() == 1)
+                          ? MediaSalvageEngine::SalvageMode::ForceTranscode
+                          : MediaSalvageEngine::SalvageMode::FastRemux;
+    const QStringList args = MediaSalvageEngine::buildArguments(
+        m_salvageInputPath, m_salvageOutputPath, mode);
+
+    auto *job = new Job();
+    const QString modeTag = (mode == MediaSalvageEngine::SalvageMode::FastRemux)
+                                ? QStringLiteral("[Fast Salvage]")
+                                : QStringLiteral("[Transcode Salvage]");
+    job->setName(modeTag + QStringLiteral(" ") + QFileInfo(m_salvageInputPath).fileName());
+    job->setCommand(m_ffmpegLocator->ffmpegPath(), args);
+    job->setTotalDuration(m_salvageDuration);
+    m_jobQueue->addJob(job);
+
+    m_salvageStatusLabel->setVisible(true);
+    m_salvageStatusLabel->setText(trId("repair.salvage.enqueued"));
+}
+
 void RepairPage::onCancelSalvage()
 {
     m_salvageEngine->cancel();
     m_startSalvageBtn->setEnabled(true);
+    m_queueSalvageBtn->setEnabled(true);
     m_cancelSalvageBtn->setEnabled(false);
     m_salvageProgressBar->setValue(0);
     m_salvageProgressBar->setVisible(false);
@@ -758,6 +792,7 @@ void RepairPage::onSalvageLog(const QString &line)
 void RepairPage::onSalvageFinished(bool success, const QString &outputPath, const QString &errorMsg)
 {
     m_startSalvageBtn->setEnabled(true);
+    m_queueSalvageBtn->setEnabled(true);
     m_cancelSalvageBtn->setEnabled(false);
     m_salvageProgressBar->setVisible(false);
 
@@ -1149,6 +1184,7 @@ void RepairPage::retranslateUi()
     m_salvageOutputCaption->setText(trId("repair.salvage.output") + QStringLiteral(":"));
     m_salvageOutputBrowseBtn->setText(trId("common.browse"));
     m_startSalvageBtn->setText(trId("repair.salvage.start"));
+    m_queueSalvageBtn->setText(trId("repair.salvage.queue"));
     m_cancelSalvageBtn->setText(trId("common.cancel"));
     m_salvageOpenFolderBtn->setText(trId("repair.openFolder"));
     m_salvagePlayBtn->setText(trId("queue.play"));

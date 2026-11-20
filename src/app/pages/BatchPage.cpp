@@ -177,8 +177,9 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_formatCaption = new ElaText(QString(), 13, baseCard);
     m_formatCombo = new ElaComboBox(baseCard);
     m_formatCombo->addItems({QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
-                             QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("mp3"),
-                             QStringLiteral("aac"), QStringLiteral("flac"), QStringLiteral("wav")});
+                             QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("ts"),
+                             QStringLiteral("mp3"), QStringLiteral("m4a"), QStringLiteral("aac"),
+                             QStringLiteral("flac"), QStringLiteral("wav"), QStringLiteral("ogg")});
     baseForm->addRow(m_formatCaption, m_formatCombo);
     right->addWidget(baseCard);
 
@@ -302,6 +303,31 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         m_speedPresetCombo->addItem(p, p);
     }
     advForm->addRow(m_speedPresetCaption, m_speedPresetCombo);
+
+    // Resolution Scaling
+    m_resolutionCaption = new ElaText(QString(), 13, m_advContainer);
+    m_resolutionCombo = new ElaComboBox(m_advContainer);
+    m_resolutionCombo->addItem(QString(), QString());
+    m_resolutionCombo->addItem(QStringLiteral("3840x2160 (4K UHD)"), QStringLiteral("3840:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("2560x1440 (2K QHD)"), QStringLiteral("2560:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("1920x1080 (1080p FHD)"), QStringLiteral("1920:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("1280x720 (720p HD)"), QStringLiteral("1280:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("854x480 (480p SD)"), QStringLiteral("854:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("640x360 (360p)"), QStringLiteral("640:-2"));
+    advForm->addRow(m_resolutionCaption, m_resolutionCombo);
+
+    // Frame Rate (FPS)
+    m_fpsCaption = new ElaText(QString(), 13, m_advContainer);
+    m_fpsCombo = new ElaComboBox(m_advContainer);
+    m_fpsCombo->addItem(QString(), QString());
+    m_fpsCombo->addItem(QStringLiteral("60 fps"), QStringLiteral("60"));
+    m_fpsCombo->addItem(QStringLiteral("50 fps"), QStringLiteral("50"));
+    m_fpsCombo->addItem(QStringLiteral("30 fps"), QStringLiteral("30"));
+    m_fpsCombo->addItem(QStringLiteral("29.97 fps (NTSC)"), QStringLiteral("29.97"));
+    m_fpsCombo->addItem(QStringLiteral("25 fps (PAL)"), QStringLiteral("25"));
+    m_fpsCombo->addItem(QStringLiteral("24 fps (Cinema)"), QStringLiteral("24"));
+    m_fpsCombo->addItem(QStringLiteral("23.976 fps"), QStringLiteral("23.976"));
+    advForm->addRow(m_fpsCaption, m_fpsCombo);
 
     m_pixFmtCaption = new ElaText(QString(), 13, m_advContainer);
     m_pixFmtCombo = new ElaComboBox(m_advContainer);
@@ -990,7 +1016,22 @@ FFmpegCommandBuilder::ConversionOptions BatchPage::currentOptions(
     }
 
     opts.hdrTonemap = m_hdrTonemapCombo->currentData().toString();
-    opts.videoFilter = m_vfEdit->text().trimmed();
+
+    QStringList vFilters;
+    const QString res = m_resolutionCombo ? m_resolutionCombo->currentData().toString() : QString();
+    if (!res.isEmpty()) {
+        vFilters << QStringLiteral("scale=%1").arg(res);
+    }
+    const QString fpsVal = m_fpsCombo ? m_fpsCombo->currentData().toString() : QString();
+    if (!fpsVal.isEmpty()) {
+        vFilters << QStringLiteral("fps=%1").arg(fpsVal);
+    }
+    if (!m_vfEdit->text().trimmed().isEmpty()) {
+        vFilters << m_vfEdit->text().trimmed();
+    }
+    if (!vFilters.isEmpty()) {
+        opts.videoFilter = vFilters.join(QLatin1Char(','));
+    }
     opts.audioFilter = m_afEdit->text().trimmed();
 
     return opts;
@@ -1268,6 +1309,10 @@ void BatchPage::retranslateUi()
     m_audioNormalizeCheck->setText(trId("convert.adv.loudnorm"));
     m_speedPresetCaption->setText(trId("convert.adv.preset") + QStringLiteral(":"));
     m_speedPresetCombo->setItemText(0, trId("common.auto"));
+    m_resolutionCaption->setText(trId("convert.adv.resolution") + QStringLiteral(":"));
+    m_resolutionCombo->setItemText(0, trId("common.auto"));
+    m_fpsCaption->setText(trId("convert.adv.fps") + QStringLiteral(":"));
+    m_fpsCombo->setItemText(0, trId("common.auto"));
     m_pixFmtCaption->setText(trId("convert.adv.pixFmt") + QStringLiteral(":"));
     m_pixFmtCombo->setItemText(0, trId("common.auto"));
     m_colorSpaceCaption->setText(trId("convert.adv.colorSpace") + QStringLiteral(":"));

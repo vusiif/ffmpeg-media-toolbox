@@ -118,6 +118,16 @@ private:
     ElaPushButton *m_preset50Btn = nullptr;
     ElaPushButton *m_preset100Btn = nullptr;
     ElaCheckBox *m_twoPassCheck = nullptr;
+
+    ElaText *m_videoBitrateCaption = nullptr;
+    QWidget *m_videoBitrateWidget = nullptr;
+    ElaSpinBox *m_videoBitrateSpin = nullptr;
+    ElaPushButton *m_preset1500kBtn = nullptr;
+    ElaPushButton *m_preset3000kBtn = nullptr;
+    ElaPushButton *m_preset6000kBtn = nullptr;
+    ElaPushButton *m_preset10000kBtn = nullptr;
+    ElaCheckBox *m_bitrateTwoPassCheck = nullptr;
+
     ElaCheckBox *m_smartCopyCheck = nullptr;
     ElaCheckBox *m_preserveAllStreamsCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
@@ -139,6 +149,10 @@ private:
 
     ElaText *m_speedPresetCaption = nullptr;
     ElaComboBox *m_speedPresetCombo = nullptr;
+    ElaText *m_resolutionCaption = nullptr;
+    ElaComboBox *m_resolutionCombo = nullptr;
+    ElaText *m_fpsCaption = nullptr;
+    ElaComboBox *m_fpsCombo = nullptr;
     ElaText *m_pixFmtCaption = nullptr;
     ElaComboBox *m_pixFmtCombo = nullptr;
     ElaText *m_colorSpaceCaption = nullptr;

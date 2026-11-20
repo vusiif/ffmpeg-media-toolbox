@@ -183,6 +183,22 @@
         <source>convert.rateControl.crf</source>
         <translation>CRF 恒定质量</translation>
     </message>
+    <message id="convert.rateControl.bitrate">
+        <source>convert.rateControl.bitrate</source>
+        <translation>自定义视频码率</translation>
+    </message>
+    <message id="convert.videoBitrate">
+        <source>convert.videoBitrate</source>
+        <translation>视频码率</translation>
+    </message>
+    <message id="convert.adv.resolution">
+        <source>convert.adv.resolution</source>
+        <translation>分辨率缩放</translation>
+    </message>
+    <message id="convert.adv.fps">
+        <source>convert.adv.fps</source>
+        <translation>帧率转换</translation>
+    </message>
     <message id="convert.rateControl.targetSize">
         <source>convert.rateControl.targetSize</source>
         <translation>定向目标体积</translation>
@@ -1034,6 +1050,14 @@
     <message id="repair.salvage.start">
         <source>repair.salvage.start</source>
         <translation>开始智能抢救</translation>
+    </message>
+    <message id="repair.salvage.queue">
+        <source>repair.salvage.queue</source>
+        <translation>➕ 加入任务队列</translation>
+    </message>
+    <message id="repair.salvage.enqueued">
+        <source>repair.salvage.enqueued</source>
+        <translation>✔ 抢救任务已成功提交至任务队列后台执行！</translation>
     </message>
     <message id="repair.salvage.starting">
         <source>repair.salvage.starting</source>

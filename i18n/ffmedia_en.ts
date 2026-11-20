@@ -183,6 +183,22 @@
         <source>convert.rateControl.crf</source>
         <translation>CRF (Constant Quality)</translation>
     </message>
+    <message id="convert.rateControl.bitrate">
+        <source>convert.rateControl.bitrate</source>
+        <translation>Target Video Bitrate</translation>
+    </message>
+    <message id="convert.videoBitrate">
+        <source>convert.videoBitrate</source>
+        <translation>Video Bitrate</translation>
+    </message>
+    <message id="convert.adv.resolution">
+        <source>convert.adv.resolution</source>
+        <translation>Resolution Scaling</translation>
+    </message>
+    <message id="convert.adv.fps">
+        <source>convert.adv.fps</source>
+        <translation>Frame Rate (FPS)</translation>
+    </message>
     <message id="convert.rateControl.targetSize">
         <source>convert.rateControl.targetSize</source>
         <translation>Target File Size</translation>
@@ -1034,6 +1050,14 @@
     <message id="repair.salvage.start">
         <source>repair.salvage.start</source>
         <translation>Start Smart Salvage</translation>
+    </message>
+    <message id="repair.salvage.queue">
+        <source>repair.salvage.queue</source>
+        <translation>➕ Add to Queue</translation>
+    </message>
+    <message id="repair.salvage.enqueued">
+        <source>repair.salvage.enqueued</source>
+        <translation>✔ Salvage job has been added to the task queue!</translation>
     </message>
     <message id="repair.salvage.starting">
         <source>repair.salvage.starting</source>

@@ -172,8 +172,9 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_formatCaption = new ElaText(QString(), 13, m_codecCard);
     m_formatCombo = new ElaComboBox(m_codecCard);
     m_formatCombo->addItems({QStringLiteral("mp4"), QStringLiteral("mkv"), QStringLiteral("mov"),
-                             QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("mp3"),
-                             QStringLiteral("aac"), QStringLiteral("flac"), QStringLiteral("wav")});
+                             QStringLiteral("webm"), QStringLiteral("avi"), QStringLiteral("ts"),
+                             QStringLiteral("mp3"), QStringLiteral("m4a"), QStringLiteral("aac"),
+                             QStringLiteral("flac"), QStringLiteral("wav"), QStringLiteral("ogg")});
 
     m_codecCaption = new ElaText(QString(), 13, m_codecCard);
     m_codecCombo = new ElaComboBox(m_codecCard);
@@ -184,12 +185,52 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_rateControlCaption = new ElaText(QString(), 13, m_codecCard);
     m_rateControlCombo = new ElaComboBox(m_codecCard);
     m_rateControlCombo->addItem(trId("convert.rateControl.crf"));
+    m_rateControlCombo->addItem(trId("convert.rateControl.bitrate"));
     m_rateControlCombo->addItem(trId("convert.rateControl.targetSize"));
 
     m_qualityCaption = new ElaText(QString(), 13, m_codecCard);
     m_qualitySpin = new ElaSpinBox(m_codecCard);
     m_qualitySpin->setRange(0, 51);
     m_qualitySpin->setValue(23);
+
+    // Video Bitrate Control
+    m_videoBitrateCaption = new ElaText(QString(), 13, m_codecCard);
+    m_videoBitrateWidget = new QWidget(m_codecCard);
+    auto *videoBitrateLayout = new QHBoxLayout(m_videoBitrateWidget);
+    videoBitrateLayout->setContentsMargins(0, 0, 0, 0);
+    videoBitrateLayout->setSpacing(6);
+    m_videoBitrateSpin = new ElaSpinBox(m_videoBitrateWidget);
+    m_videoBitrateSpin->setRange(100, 200000);
+    m_videoBitrateSpin->setSingleStep(500);
+    m_videoBitrateSpin->setValue(4000);
+    m_videoBitrateSpin->setSuffix(QStringLiteral(" kbps"));
+
+    m_preset1500kBtn = new ElaPushButton(QStringLiteral("1.5M"), m_videoBitrateWidget);
+    m_preset3000kBtn = new ElaPushButton(QStringLiteral("3M"), m_videoBitrateWidget);
+    m_preset6000kBtn = new ElaPushButton(QStringLiteral("6M"), m_videoBitrateWidget);
+    m_preset10000kBtn = new ElaPushButton(QStringLiteral("10M"), m_videoBitrateWidget);
+    m_preset1500kBtn->setMaximumWidth(50);
+    m_preset3000kBtn->setMaximumWidth(50);
+    m_preset6000kBtn->setMaximumWidth(50);
+    m_preset10000kBtn->setMaximumWidth(50);
+    connect(m_preset1500kBtn, &ElaPushButton::clicked, this, [this]() { m_videoBitrateSpin->setValue(1500); });
+    connect(m_preset3000kBtn, &ElaPushButton::clicked, this, [this]() { m_videoBitrateSpin->setValue(3000); });
+    connect(m_preset6000kBtn, &ElaPushButton::clicked, this, [this]() { m_videoBitrateSpin->setValue(6000); });
+    connect(m_preset10000kBtn, &ElaPushButton::clicked, this, [this]() { m_videoBitrateSpin->setValue(10000); });
+
+    videoBitrateLayout->addWidget(m_videoBitrateSpin, 1);
+    videoBitrateLayout->addWidget(m_preset1500kBtn);
+    videoBitrateLayout->addWidget(m_preset3000kBtn);
+    videoBitrateLayout->addWidget(m_preset6000kBtn);
+    videoBitrateLayout->addWidget(m_preset10000kBtn);
+
+    m_bitrateTwoPassCheck = new ElaCheckBox(m_videoBitrateWidget);
+    videoBitrateLayout->addWidget(m_bitrateTwoPassCheck);
+    connect(m_bitrateTwoPassCheck, &ElaCheckBox::toggled, this, &ConvertPage::updateCommandPreview);
+    connect(m_videoBitrateSpin, QOverload<int>::of(&ElaSpinBox::valueChanged), this, &ConvertPage::updateCommandPreview);
+
+    m_videoBitrateCaption->setVisible(false);
+    m_videoBitrateWidget->setVisible(false);
 
     m_targetSizeCaption = new ElaText(QString(), 13, m_codecCard);
     m_targetSizeWidget = new QWidget(m_codecCard);
@@ -226,11 +267,12 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     m_targetSizeWidget->setVisible(false);
 
     connect(m_rateControlCombo, QOverload<int>::of(&ElaComboBox::currentIndexChanged), this, [this](int idx) {
-        const bool isTarget = (idx == 1);
-        m_qualityCaption->setVisible(!isTarget);
-        m_qualitySpin->setVisible(!isTarget);
-        m_targetSizeCaption->setVisible(isTarget);
-        m_targetSizeWidget->setVisible(isTarget);
+        m_qualityCaption->setVisible(idx == 0);
+        m_qualitySpin->setVisible(idx == 0);
+        m_videoBitrateCaption->setVisible(idx == 1);
+        m_videoBitrateWidget->setVisible(idx == 1);
+        m_targetSizeCaption->setVisible(idx == 2);
+        m_targetSizeWidget->setVisible(idx == 2);
         updateCommandPreview();
     });
 
@@ -277,6 +319,7 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     form->addRow(m_audioCodecCaption, m_audioCodecCombo);
     form->addRow(m_rateControlCaption, m_rateControlCombo);
     form->addRow(m_qualityCaption, m_qualitySpin);
+    form->addRow(m_videoBitrateCaption, m_videoBitrateWidget);
     form->addRow(m_targetSizeCaption, m_targetSizeWidget);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_smartCopyCheck);
     form->addRow(new ElaText(QString(), 13, m_codecCard), m_preserveAllStreamsCheck);
@@ -351,6 +394,33 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         m_speedPresetCombo->addItem(p, p);
     }
     advForm->addRow(m_speedPresetCaption, m_speedPresetCombo);
+
+    // Resolution Scaling
+    m_resolutionCaption = new ElaText(QString(), 13, m_advContainer);
+    m_resolutionCombo = new ElaComboBox(m_advContainer);
+    m_resolutionCombo->addItem(QString(), QString());
+    m_resolutionCombo->addItem(QStringLiteral("3840x2160 (4K UHD)"), QStringLiteral("3840:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("2560x1440 (2K QHD)"), QStringLiteral("2560:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("1920x1080 (1080p FHD)"), QStringLiteral("1920:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("1280x720 (720p HD)"), QStringLiteral("1280:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("854x480 (480p SD)"), QStringLiteral("854:-2"));
+    m_resolutionCombo->addItem(QStringLiteral("640x360 (360p)"), QStringLiteral("640:-2"));
+    advForm->addRow(m_resolutionCaption, m_resolutionCombo);
+    connect(m_resolutionCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
+
+    // Frame Rate (FPS)
+    m_fpsCaption = new ElaText(QString(), 13, m_advContainer);
+    m_fpsCombo = new ElaComboBox(m_advContainer);
+    m_fpsCombo->addItem(QString(), QString());
+    m_fpsCombo->addItem(QStringLiteral("60 fps"), QStringLiteral("60"));
+    m_fpsCombo->addItem(QStringLiteral("50 fps"), QStringLiteral("50"));
+    m_fpsCombo->addItem(QStringLiteral("30 fps"), QStringLiteral("30"));
+    m_fpsCombo->addItem(QStringLiteral("29.97 fps (NTSC)"), QStringLiteral("29.97"));
+    m_fpsCombo->addItem(QStringLiteral("25 fps (PAL)"), QStringLiteral("25"));
+    m_fpsCombo->addItem(QStringLiteral("24 fps (Cinema)"), QStringLiteral("24"));
+    m_fpsCombo->addItem(QStringLiteral("23.976 fps"), QStringLiteral("23.976"));
+    advForm->addRow(m_fpsCaption, m_fpsCombo);
+    connect(m_fpsCombo, &ElaComboBox::currentIndexChanged, this, &ConvertPage::updateCommandPreview);
 
     // Pixel Format
     m_pixFmtCaption = new ElaText(QString(), 13, m_advContainer);
@@ -615,6 +685,11 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
     opts.videoCodec = m_codecCombo->currentText();
     opts.audioCodec = m_audioCodecCombo->currentText();
     if (m_rateControlCombo && m_rateControlCombo->currentIndex() == 1) {
+        opts.videoBitrateKbps = m_videoBitrateSpin->value();
+        opts.crf = -1;
+        opts.targetSizeMB = -1.0;
+        opts.twoPass = m_bitrateTwoPassCheck->isChecked();
+    } else if (m_rateControlCombo && m_rateControlCombo->currentIndex() == 2) {
         opts.targetSizeMB = m_targetSizeSpin->value();
         opts.durationSeconds = m_probeInfo.duration;
         opts.crf = -1;
@@ -622,6 +697,7 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
         opts.twoPass = m_twoPassCheck->isChecked();
     } else {
         opts.crf = m_qualitySpin->value();
+        opts.videoBitrateKbps = -1;
         opts.targetSizeMB = -1.0;
     }
     opts.copyStreams = copy;
@@ -684,7 +760,21 @@ FFmpegCommandBuilder::ConversionOptions ConvertPage::currentOptions(const QStrin
         opts.colorTrc = QStringLiteral("bt709");
     }
 
-    opts.videoFilter = m_vfEdit->text().trimmed();
+    QStringList vFilters;
+    const QString res = m_resolutionCombo ? m_resolutionCombo->currentData().toString() : QString();
+    if (!res.isEmpty()) {
+        vFilters << QStringLiteral("scale=%1").arg(res);
+    }
+    const QString fpsVal = m_fpsCombo ? m_fpsCombo->currentData().toString() : QString();
+    if (!fpsVal.isEmpty()) {
+        vFilters << QStringLiteral("fps=%1").arg(fpsVal);
+    }
+    if (!m_vfEdit->text().trimmed().isEmpty()) {
+        vFilters << m_vfEdit->text().trimmed();
+    }
+    if (!vFilters.isEmpty()) {
+        opts.videoFilter = vFilters.join(QLatin1Char(','));
+    }
     opts.audioFilter = m_afEdit->text().trimmed();
 
     return opts;
@@ -955,6 +1045,8 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("videoCodec"), m_codecCombo->currentText());
     values.insert(QStringLiteral("audioCodec"), m_audioCodecCombo->currentText());
     values.insert(QStringLiteral("rateControl"), m_rateControlCombo->currentIndex());
+    values.insert(QStringLiteral("videoBitrate"), m_videoBitrateSpin->value());
+    values.insert(QStringLiteral("bitrateTwoPass"), m_bitrateTwoPassCheck->isChecked());
     values.insert(QStringLiteral("targetSizeMB"), m_targetSizeSpin->value());
     values.insert(QStringLiteral("twoPass"), m_twoPassCheck->isChecked());
     values.insert(QStringLiteral("crf"), m_qualitySpin->value());
@@ -967,6 +1059,8 @@ void ConvertPage::savePreset()
     values.insert(QStringLiteral("audioChannels"), m_audioChannelsCombo->currentData().toString());
     values.insert(QStringLiteral("audioNormalize"), m_audioNormalizeCheck->isChecked());
     values.insert(QStringLiteral("speedPreset"), m_speedPresetCombo->currentData().toString());
+    values.insert(QStringLiteral("resolution"), m_resolutionCombo->currentData().toString());
+    values.insert(QStringLiteral("fps"), m_fpsCombo->currentData().toString());
     values.insert(QStringLiteral("pixFmt"), m_pixFmtCombo->currentData().toString());
     values.insert(QStringLiteral("colorProfile"), m_colorSpaceCombo->currentData().toString());
     values.insert(QStringLiteral("hdrTonemap"), m_hdrTonemapCombo->currentData().toString());
@@ -999,6 +1093,12 @@ void ConvertPage::loadPreset(const QString &name)
     setCombo(m_audioCodecCombo, values.value(QStringLiteral("audioCodec")).toString());
     const int rcIdx = values.value(QStringLiteral("rateControl"), 0).toInt();
     m_rateControlCombo->setCurrentIndex(rcIdx);
+    if (values.contains(QStringLiteral("videoBitrate"))) {
+        m_videoBitrateSpin->setValue(values.value(QStringLiteral("videoBitrate"), 4000).toInt());
+    }
+    if (values.contains(QStringLiteral("bitrateTwoPass"))) {
+        m_bitrateTwoPassCheck->setChecked(values.value(QStringLiteral("bitrateTwoPass"), false).toBool());
+    }
     m_targetSizeSpin->setValue(values.value(QStringLiteral("targetSizeMB"), 25.0).toDouble());
     m_twoPassCheck->setChecked(values.value(QStringLiteral("twoPass"), false).toBool());
     m_qualitySpin->setValue(values.value(QStringLiteral("crf"), 23).toInt());
@@ -1013,6 +1113,12 @@ void ConvertPage::loadPreset(const QString &name)
     setComboData(m_audioChannelsCombo, values.value(QStringLiteral("audioChannels")).toString());
     m_audioNormalizeCheck->setChecked(values.value(QStringLiteral("audioNormalize"), false).toBool());
     setComboData(m_speedPresetCombo, values.value(QStringLiteral("speedPreset")).toString());
+    if (values.contains(QStringLiteral("resolution"))) {
+        setComboData(m_resolutionCombo, values.value(QStringLiteral("resolution")).toString());
+    }
+    if (values.contains(QStringLiteral("fps"))) {
+        setComboData(m_fpsCombo, values.value(QStringLiteral("fps")).toString());
+    }
     setComboData(m_pixFmtCombo, values.value(QStringLiteral("pixFmt")).toString());
     setComboData(m_colorSpaceCombo, values.value(QStringLiteral("colorProfile")).toString());
     setComboData(m_hdrTonemapCombo, values.value(QStringLiteral("hdrTonemap")).toString());
@@ -1067,8 +1173,11 @@ void ConvertPage::retranslateUi()
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
     m_rateControlCaption->setText(trId("convert.rateControl") + QStringLiteral(":"));
     m_rateControlCombo->setItemText(0, trId("convert.rateControl.crf"));
-    m_rateControlCombo->setItemText(1, trId("convert.rateControl.targetSize"));
+    m_rateControlCombo->setItemText(1, trId("convert.rateControl.bitrate"));
+    m_rateControlCombo->setItemText(2, trId("convert.rateControl.targetSize"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_videoBitrateCaption->setText(trId("convert.videoBitrate") + QStringLiteral(":"));
+    m_bitrateTwoPassCheck->setText(trId("convert.twoPass"));
     m_targetSizeCaption->setText(trId("convert.targetSize") + QStringLiteral(":"));
     m_twoPassCheck->setText(trId("convert.twoPass"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
@@ -1097,6 +1206,10 @@ void ConvertPage::retranslateUi()
 
     m_speedPresetCaption->setText(trId("convert.adv.preset") + QStringLiteral(":"));
     m_speedPresetCombo->setItemText(0, trId("common.auto"));
+    m_resolutionCaption->setText(trId("convert.adv.resolution") + QStringLiteral(":"));
+    m_resolutionCombo->setItemText(0, trId("common.auto"));
+    m_fpsCaption->setText(trId("convert.adv.fps") + QStringLiteral(":"));
+    m_fpsCombo->setItemText(0, trId("common.auto"));
     m_pixFmtCaption->setText(trId("convert.adv.pixFmt") + QStringLiteral(":"));
     m_pixFmtCombo->setItemText(0, trId("common.auto"));
     m_colorSpaceCaption->setText(trId("convert.adv.colorSpace") + QStringLiteral(":"));

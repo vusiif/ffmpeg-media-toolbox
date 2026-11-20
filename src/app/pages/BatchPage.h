@@ -120,6 +120,10 @@ private:
     ElaCheckBox *m_audioNormalizeCheck = nullptr;
     ElaText *m_speedPresetCaption = nullptr;
     ElaComboBox *m_speedPresetCombo = nullptr;
+    ElaText *m_resolutionCaption = nullptr;
+    ElaComboBox *m_resolutionCombo = nullptr;
+    ElaText *m_fpsCaption = nullptr;
+    ElaComboBox *m_fpsCombo = nullptr;
     ElaText *m_pixFmtCaption = nullptr;
     ElaComboBox *m_pixFmtCombo = nullptr;
     ElaText *m_colorSpaceCaption = nullptr;
