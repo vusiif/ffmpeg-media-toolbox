@@ -1,7 +1,6 @@
 #include "SmartCutEngine.h"
 
 #include <QFileInfo>
-#include <QRegularExpression>
 #include <algorithm>
 #include <cmath>
 
@@ -26,13 +25,12 @@ QStringList SmartCutEngine::buildKeyframeProbeCommand(const QString &ffprobePath
 QVector<double> SmartCutEngine::parseKeyframeOutput(const QString &output)
 {
     QVector<double> keyframes;
-    const static QRegularExpression re(QStringLiteral(R"((\d+(?:\.\d+)?))"));
-    QRegularExpressionMatchIterator it = re.globalMatch(output);
-    while (it.hasNext()) {
-        const QRegularExpressionMatch match = it.next();
+    for (const QString &line : output.split(QLatin1Char('\n'))) {
+        // ffprobe CSV may append side-data such as "H.26[45]". Only the
+        // timestamp column is a keyframe; digits in side-data are not times.
         bool ok = false;
-        const double val = match.captured(1).toDouble(&ok);
-        if (ok && val >= 0.0) {
+        const double val = line.section(QLatin1Char(','), 0, 0).trimmed().toDouble(&ok);
+        if (ok && std::isfinite(val) && val >= 0.0) {
             keyframes.append(val);
         }
     }
@@ -159,7 +157,7 @@ SmartCutPlan SmartCutEngine::planSmartCut(const QString &inputPath, const QStrin
     const QString ext = QFileInfo(outputPath).suffix().isEmpty() ? QStringLiteral("mp4") : QFileInfo(outputPath).suffix();
 
     // 1. If keyframes list is empty, or both start and end are already aligned to keyframes:
-    if (keyframes.isEmpty() || (isKeyframeAligned(startSec, keyframes) && isKeyframeAligned(endSec, keyframes))) {
+    if (!keyframes.isEmpty() && (isKeyframeAligned(startSec, keyframes, 0.000001) && isKeyframeAligned(endSec, keyframes, 0.000001))) {
         SmartChunk chunk;
         chunk.type = SmartChunk::ChunkType::StreamCopy;
         chunk.startSec = startSec;
@@ -167,6 +165,12 @@ SmartCutPlan SmartCutEngine::planSmartCut(const QString &inputPath, const QStrin
         chunk.tempOutput = outputPath;
         plan.chunks.append(chunk);
         plan.needsConcat = false;
+        plan.isValid = true;
+        return plan;
+    }
+
+    if (keyframes.isEmpty()) {
+        plan.chunks.append({SmartChunk::ChunkType::Reencode, startSec, endSec, outputPath});
         plan.isValid = true;
         return plan;
     }
@@ -189,7 +193,7 @@ SmartCutPlan SmartCutEngine::planSmartCut(const QString &inputPath, const QStrin
 
     // 3. Multi-GOP Smart Cut:
     // Head: decode & re-encode from startSec up to the next keyframe
-    if (!isKeyframeAligned(startSec, keyframes) && nextKeyAfterStart > startSec) {
+    if (!isKeyframeAligned(startSec, keyframes, 0.000001) && nextKeyAfterStart > startSec) {
         SmartChunk head;
         head.type = SmartChunk::ChunkType::Reencode;
         head.startSec = startSec;
@@ -199,8 +203,8 @@ SmartCutPlan SmartCutEngine::planSmartCut(const QString &inputPath, const QStrin
     }
 
     // Body: lossless stream copy from aligned keyframe to last aligned keyframe
-    const double bodyStart = isKeyframeAligned(startSec, keyframes) ? startSec : nextKeyAfterStart;
-    const double bodyEnd = isKeyframeAligned(endSec, keyframes) ? endSec : prevKeyBeforeEnd;
+    const double bodyStart = isKeyframeAligned(startSec, keyframes, 0.000001) ? startSec : nextKeyAfterStart;
+    const double bodyEnd = isKeyframeAligned(endSec, keyframes, 0.000001) ? endSec : prevKeyBeforeEnd;
     if (bodyEnd > bodyStart) {
         SmartChunk body;
         body.type = SmartChunk::ChunkType::StreamCopy;
@@ -211,7 +215,7 @@ SmartCutPlan SmartCutEngine::planSmartCut(const QString &inputPath, const QStrin
     }
 
     // Tail: decode & re-encode from last keyframe up to endSec
-    if (!isKeyframeAligned(endSec, keyframes) && endSec > prevKeyBeforeEnd) {
+    if (!isKeyframeAligned(endSec, keyframes, 0.000001) && endSec > prevKeyBeforeEnd) {
         SmartChunk tail;
         tail.type = SmartChunk::ChunkType::Reencode;
         tail.startSec = prevKeyBeforeEnd;

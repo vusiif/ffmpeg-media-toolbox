@@ -54,8 +54,36 @@ void Job::setTotalDuration(double duration) { m_totalDuration = duration; emit c
 
 void Job::setCommand(const QString &program, const QStringList &arguments)
 {
+    m_commandSteps.clear();
+    m_workspaceFiles.clear();
+    m_executionWorkspace.clear();
+    m_stagedOutputFile.clear();
     m_commandProgram = program;
     m_commandArguments = arguments;
+    emit commandChanged();
+}
+
+void Job::setCommandSequence(const QString &program, const QList<JobStep> &steps,
+                             const QMap<QString, QString> &workspaceFiles)
+{
+    m_commandProgram = program;
+    m_commandSteps = steps;
+    m_workspaceFiles = workspaceFiles;
+    m_executionWorkspace.clear();
+    m_stagedOutputFile.clear();
+    m_commandArguments = steps.isEmpty() ? QStringList() : steps.last().arguments;
+    emit commandChanged();
+}
+
+QList<JobStep> Job::commandSteps() const { return m_commandSteps; }
+QMap<QString, QString> Job::workspaceFiles() const { return m_workspaceFiles; }
+QString Job::workspaceToken() { return QStringLiteral("{ffmedia_workspace}"); }
+QString Job::executionWorkspace() const { return m_executionWorkspace; }
+QString Job::stagedOutputFile() const { return m_stagedOutputFile; }
+void Job::setStagedOutputFile(const QString &fileName) { m_stagedOutputFile = fileName; }
+void Job::setExecutionWorkspace(const QString &path)
+{
+    m_executionWorkspace = path;
     emit commandChanged();
 }
 
@@ -63,16 +91,23 @@ QString Job::commandDisplayString() const
 {
     // Preview must match what JobQueue/FFmpegProcess actually executes,
     // progress plumbing included (AI_PLAN §34).
-    QStringList parts;
-    parts << m_commandProgram;
-    for (const QString &arg : FFmpegProcess::buildInvocationArguments(m_commandArguments)) {
-        if (arg.contains(QLatin1Char(' '))) {
-            parts << QStringLiteral("\"%1\"").arg(arg);
-        } else {
-            parts << arg;
+    QStringList commands;
+    const QList<JobStep> steps = m_commandSteps.isEmpty()
+        ? QList<JobStep>{{m_commandArguments, m_totalDuration}} : m_commandSteps;
+    for (const JobStep &step : steps) {
+        QStringList parts;
+        parts << m_commandProgram;
+        for (QString arg : FFmpegProcess::buildInvocationArguments(step.arguments)) {
+            if (!m_executionWorkspace.isEmpty()) arg.replace(workspaceToken(), m_executionWorkspace);
+            if (arg.contains(QLatin1Char(' '))) {
+                parts << QStringLiteral("\"%1\"").arg(arg);
+            } else {
+                parts << arg;
+            }
         }
+        commands << parts.join(QLatin1Char(' '));
     }
-    return parts.join(QLatin1Char(' '));
+    return commands.join(QLatin1Char('\n'));
 }
 
 QStringList Job::inputFiles() const { return m_inputFiles; }
@@ -129,6 +164,18 @@ QJsonObject Job::toJson() const
     }
     obj[QStringLiteral("commandArguments")] = args;
     obj[QStringLiteral("totalDuration")] = m_totalDuration;
+    QJsonArray steps;
+    for (const JobStep &step : m_commandSteps) {
+        steps.append(QJsonObject{{QStringLiteral("arguments"), QJsonArray::fromStringList(step.arguments)},
+                                 {QStringLiteral("duration"), step.duration}});
+    }
+    obj[QStringLiteral("commandSteps")] = steps;
+    QJsonObject files;
+    for (auto it = m_workspaceFiles.cbegin(); it != m_workspaceFiles.cend(); ++it) {
+        files[it.key()] = it.value();
+    }
+    obj[QStringLiteral("workspaceFiles")] = files;
+    obj[QStringLiteral("stagedOutputFile")] = m_stagedOutputFile;
 
     QJsonArray inputs;
     for (const QString &in : m_inputFiles) {
@@ -210,6 +257,24 @@ Job* Job::fromJson(const QJsonObject &obj, QObject *parent)
         args.append(val.toString());
     }
     job->setCommand(prog, args);
+    QList<JobStep> steps;
+    for (const QJsonValue &value : obj.value(QStringLiteral("commandSteps")).toArray()) {
+        const QJsonObject step = value.toObject();
+        QStringList arguments;
+        for (const QJsonValue &arg : step.value(QStringLiteral("arguments")).toArray()) {
+            arguments << arg.toString();
+        }
+        steps.append({arguments, step.value(QStringLiteral("duration")).toDouble()});
+    }
+    if (!steps.isEmpty()) {
+        QMap<QString, QString> files;
+        const auto jsonFiles = obj.value(QStringLiteral("workspaceFiles")).toObject();
+        for (auto it = jsonFiles.begin(); it != jsonFiles.end(); ++it) {
+            files[it.key()] = it.value().toString();
+        }
+        job->setCommandSequence(prog, steps, files);
+    }
+    job->setStagedOutputFile(obj.value(QStringLiteral("stagedOutputFile")).toString());
 
     if (obj.contains(QStringLiteral("startTime"))) {
         job->setStartTime(QDateTime::fromString(obj.value(QStringLiteral("startTime")).toString(), Qt::ISODate));

@@ -4,6 +4,8 @@
 #include <QMap>
 #include <QObject>
 #include <QString>
+#include <QTemporaryDir>
+#include <memory>
 #include "Job.h"
 #include "JobListModel.h"
 
@@ -83,6 +85,7 @@ private slots:
 
 private:
     void startJob(Job *job);
+    void startStep(Job *job, FFmpegProcess *process);
     int runningJobCount() const;
 
     const FFmpegLocator *m_locator;
@@ -95,4 +98,9 @@ private:
     PostQueueAction m_postAction = PostQueueAction::None;
     QString m_storagePath;
     QMap<QUuid, FFmpegProcess*> m_processes;
+    struct SequenceState {
+        int index = 0;
+        std::shared_ptr<QTemporaryDir> workspace;
+    };
+    QMap<QUuid, SequenceState> m_sequences;
 };

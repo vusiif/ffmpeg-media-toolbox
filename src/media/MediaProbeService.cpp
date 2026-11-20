@@ -82,6 +82,19 @@ MediaFile MediaProbeService::parseProbeJson(const QString &json, const QString &
             vs.width = stream.value(QStringLiteral("width")).toInt();
             vs.height = stream.value(QStringLiteral("height")).toInt();
             vs.pixelFormat = stream.value(QStringLiteral("pix_fmt")).toString();
+            vs.hasBFrames = stream.value(QStringLiteral("has_b_frames")).toInt(-1);
+            bool hasStartTime = false;
+            const double startTime = stream.value(QStringLiteral("start_time")).toString().toDouble(&hasStartTime);
+            vs.zeroStartTime = hasStartTime && qAbs(startTime) < 0.000001;
+            vs.fieldOrder = stream.value(QStringLiteral("field_order")).toString();
+            const auto rate = [](const QString &text) {
+                const auto parts = text.split(QLatin1Char('/'));
+                return parts.size() == 2 && parts[1].toDouble() > 0
+                    ? parts[0].toDouble() / parts[1].toDouble() : 0.0;
+            };
+            const double nominal = rate(stream.value(QStringLiteral("r_frame_rate")).toString());
+            const double average = rate(stream.value(QStringLiteral("avg_frame_rate")).toString());
+            vs.constantFrameRate = nominal > 0 && qAbs(nominal - average) < 0.000001;
             vs.bitrate = stream.value(QStringLiteral("bit_rate")).toString().toLongLong();
             vs.colorSpace = stream.value(QStringLiteral("color_space")).toString();
             vs.colorTransfer = stream.value(QStringLiteral("color_transfer")).toString();

@@ -15,6 +15,16 @@ set(CMAKE_AUTOUIC ON)
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+if(MSVC)
+    # Ninja parses /showIncludes byte-for-byte. Localized compiler output can
+    # leave empty dependency records and link objects with incompatible ABIs.
+    # Apply the language only to the compiler, preserving any existing launcher.
+    set(CMAKE_CXX_CL_SHOWINCLUDES_PREFIX "Note: including file: ")
+    set(CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: ")
+    list(PREPEND CMAKE_CXX_COMPILER_LAUNCHER
+        "${CMAKE_COMMAND}" -E env VSLANG=1033)
+endif()
+
 if(NOT DEFINED CMAKE_PREFIX_PATH)
     if(DEFINED ENV{Qt6_DIR})
         set(CMAKE_PREFIX_PATH "$ENV{Qt6_DIR}")
@@ -88,6 +98,8 @@ set(FFMEDIA_CORE_SOURCES
     src/quality/VideoQualityEvaluator.cpp
     src/cut/SmartCutEngine.h
     src/cut/SmartCutEngine.cpp
+    src/cut/CutExportBuilder.h
+    src/cut/CutExportBuilder.cpp
     src/filters/MediaFilterStudio.h
     src/filters/MediaFilterStudio.cpp
     src/batch/BatchExportMatrix.h
@@ -211,7 +223,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor AnimatedImageEngine PlayerNavigation AudioTagEngine)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine CutExport MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor AnimatedImageEngine PlayerNavigation AudioTagEngine)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

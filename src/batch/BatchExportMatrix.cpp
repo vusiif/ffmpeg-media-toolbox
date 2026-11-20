@@ -149,6 +149,18 @@ QList<BatchScannedFile> BatchExportMatrix::scanDirectory(const QString &rootDir,
             subDir = relPath.left(slashIdx);
         }
 
+        // Cut exports publish only after completion. Never ingest their
+        // intermediate media while recursively monitoring an output folder.
+        const auto directories = subDir.split(QLatin1Char('/'));
+        bool internalExport = false;
+        for (const QString &directory : directories) {
+            if (directory.startsWith(QLatin1String(".ffmedia-cut-"))) {
+                internalExport = true;
+                break;
+            }
+        }
+        if (internalExport) continue;
+
         BatchScannedFile item;
         item.fullPath = fullPath;
         item.relativeSubDir = sanitizeSubPath(subDir);

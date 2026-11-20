@@ -19,6 +19,10 @@ struct VideoStream {
     int height = 0;
     double frameRate = 0;
     QString pixelFormat;
+    int hasBFrames = -1;
+    bool constantFrameRate = false;
+    bool zeroStartTime = false;
+    QString fieldOrder;
     qint64 bitrate = 0;
     QString colorSpace;
     QString colorTransfer;

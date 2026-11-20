@@ -3,6 +3,7 @@
 #include <QDateTime>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -34,6 +35,11 @@ enum class JobPriority {
 struct JobLog {
     QDateTime timestamp;
     QString message;
+};
+
+struct JobStep {
+    QStringList arguments;
+    double duration = 0;
 };
 
 class Job : public QObject
@@ -72,6 +78,15 @@ public:
     void setTotalDuration(double duration);
 
     Q_INVOKABLE void setCommand(const QString &program, const QStringList &arguments);
+    void setCommandSequence(const QString &program, const QList<JobStep> &steps,
+                            const QMap<QString, QString> &workspaceFiles = {});
+    QList<JobStep> commandSteps() const;
+    QMap<QString, QString> workspaceFiles() const;
+    static QString workspaceToken();
+    void setExecutionWorkspace(const QString &path);
+    QString executionWorkspace() const;
+    QString stagedOutputFile() const;
+    void setStagedOutputFile(const QString &fileName);
     Q_INVOKABLE QString commandDisplayString() const;
 
     QStringList inputFiles() const;
@@ -121,6 +136,10 @@ private:
     QString m_outputFile;
     QString m_commandProgram;
     QStringList m_commandArguments;
+    QList<JobStep> m_commandSteps;
+    QMap<QString, QString> m_workspaceFiles;
+    QString m_executionWorkspace;
+    QString m_stagedOutputFile;
     double m_totalDuration = 0;
     bool m_autoSoftwareFallback = true;
     bool m_fallbackAttempted = false;

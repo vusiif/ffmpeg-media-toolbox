@@ -3,6 +3,7 @@
 #include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegProcess.h"
 #include "media/MediaProbeService.h"
+#include "i18n/TrId.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -18,6 +19,15 @@
 #include <QUrl>
 
 #include <algorithm>
+
+namespace {
+bool isWorkspaceFileName(const QString &name)
+{
+    return !name.isEmpty() && name != QLatin1String(".") && name != QLatin1String("..") &&
+        !name.contains(QLatin1Char('/')) && !name.contains(QLatin1Char('\\')) &&
+        !name.contains(QLatin1Char(':')) && !name.contains(QChar::Null);
+}
+}
 
 QString JobQueue::defaultStoragePath()
 {
@@ -63,10 +73,11 @@ JobQueue::~JobQueue()
     for (auto it = m_processes.begin(); it != m_processes.end(); ++it) {
         if (FFmpegProcess *proc = it.value()) {
             proc->disconnect(this);
-            proc->cancel();
+            delete proc;
         }
     }
     m_processes.clear();
+    m_sequences.clear();
     savePersistence();
 }
 
@@ -355,12 +366,54 @@ void JobQueue::startJob(Job *job)
     }
 
     QString program = job->commandProgram();
-    QStringList arguments = job->commandArguments();
 
-    if (program.isEmpty()) {
+    if (program.isEmpty() || (!job->stagedOutputFile().isEmpty() && job->commandSteps().isEmpty())) {
         job->setStatus(JobStatus::Failed);
         job->setErrorMessage(QStringLiteral("Invalid command"));
         return;
+    }
+
+    if (!job->commandSteps().isEmpty()) {
+        const QString stagedFile = job->stagedOutputFile();
+        if (!stagedFile.isEmpty() && (!isWorkspaceFileName(stagedFile) || job->outputFile().isEmpty())) {
+            job->setErrorMessage(trId("cut.export.invalidInput"));
+            job->setStatus(JobStatus::Failed);
+            return;
+        }
+        // A staged result shares a filesystem with its destination, allowing
+        // publish-after-success without exposing a partial output or replacing
+        // any existing file. QTemporaryDir owns only this newly created folder.
+        const QString root = stagedFile.isEmpty() ? QDir::tempPath() : QFileInfo(job->outputFile()).absolutePath();
+        auto workspace = std::make_shared<QTemporaryDir>(
+            root + QStringLiteral("/.ffmedia-cut-XXXXXX"));
+        QString error;
+        if (!workspace->isValid()) {
+            error = QStringLiteral("Cannot create export workspace");
+        } else {
+            const auto files = job->workspaceFiles();
+            for (auto it = files.cbegin(); it != files.cend(); ++it) {
+                if (!isWorkspaceFileName(it.key())) {
+                    error = QStringLiteral("Invalid export workspace filename");
+                    break;
+                }
+                QFile file(workspace->filePath(it.key()));
+                QString content = it.value();
+                content.replace(Job::workspaceToken(), workspace->path());
+                const QByteArray bytes = content.toUtf8();
+                if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size() || !file.flush()) {
+                    error = QStringLiteral("Cannot prepare export workspace: %1").arg(file.errorString());
+                    break;
+                }
+            }
+        }
+        if (!error.isEmpty()) {
+            job->setErrorMessage(error);
+            job->addLog(error);
+            job->setStatus(JobStatus::Failed);
+            return;
+        }
+        m_sequences[job->id()] = {0, workspace};
+        job->setExecutionWorkspace(workspace->path());
     }
 
     job->setStatus(JobStatus::Running);
@@ -380,8 +433,12 @@ void JobQueue::startJob(Job *job)
     // The job can be cleared while its process is still winding down
     // (cancel + clear), so the handlers must not assume it is alive.
     const QPointer<Job> guard = job;
-    connect(process, &FFmpegProcess::progressChanged, this, [guard, process]() {
-        if (guard) guard->setProgress(process->progress());
+    connect(process, &FFmpegProcess::progressChanged, this, [this, guard, process]() {
+        if (!guard || guard->status() != JobStatus::Running) return;
+        const auto steps = guard->commandSteps();
+        const double progress = steps.isEmpty() ? process->progress()
+            : (m_sequences.value(guard->id()).index + process->progress()) / steps.size();
+        guard->setProgress(progress);
     });
 
     connect(process, &FFmpegProcess::logMessage, this, [guard](const QString &msg) {
@@ -392,7 +449,25 @@ void JobQueue::startJob(Job *job)
 
     m_processes[job->id()] = process;
 
-    process->start(program, arguments, job->totalDuration());
+    startStep(job, process);
+}
+
+void JobQueue::startStep(Job *job, FFmpegProcess *process)
+{
+    const auto steps = job->commandSteps();
+    if (steps.isEmpty()) {
+        process->start(job->commandProgram(), job->commandArguments(), job->totalDuration());
+        return;
+    }
+    const auto state = m_sequences.value(job->id());
+    QStringList arguments = steps.at(state.index).arguments;
+    for (QString &argument : arguments) {
+        argument.replace(Job::workspaceToken(), state.workspace->path());
+    }
+    job->addLog(QStringLiteral("Step %1/%2: %3 %4")
+                    .arg(state.index + 1).arg(steps.size())
+                    .arg(job->commandProgram(), arguments.join(QLatin1Char(' '))));
+    process->start(job->commandProgram(), arguments, steps.at(state.index).duration);
 }
 
 void JobQueue::onJobFinished(bool success)
@@ -410,6 +485,22 @@ void JobQueue::onJobFinished(bool success)
     const QUuid jobId = it.key();
 
     Job *job = m_model->findJobById(jobId.toString());
+    if (job && success && job->status() == JobStatus::Running &&
+        m_sequences.contains(jobId) &&
+        m_sequences[jobId].index + 1 < job->commandSteps().size()) {
+        ++m_sequences[jobId].index;
+        startStep(job, process);
+        return;
+    }
+    QString publicationError;
+    if (job && success && job->status() == JobStatus::Running && !job->stagedOutputFile().isEmpty()) {
+        const auto state = m_sequences.value(jobId);
+        QFile result(state.workspace->filePath(job->stagedOutputFile()));
+        if (!result.rename(job->outputFile())) {
+            success = false;
+            publicationError = trId("cut.export.publishFailed") + QLatin1Char('\n') + result.errorString();
+        }
+    }
     if (job) {
         const JobStatus status = job->status();
         if (status == JobStatus::Cancelled) {
@@ -423,7 +514,7 @@ void JobQueue::onJobFinished(bool success)
             job->setProgress(1.0);
             job->addLog(QStringLiteral("Completed successfully"));
         } else {
-            if (job->autoSoftwareFallback() && !job->fallbackAttempted()) {
+            if (job->commandSteps().isEmpty() && job->autoSoftwareFallback() && !job->fallbackAttempted()) {
                 QStringList fallbackArgs;
                 if (FFmpegCommandBuilder::canFallbackToSoftware(job->commandArguments(), &fallbackArgs)) {
                     job->setFallbackAttempted(true);
@@ -442,13 +533,14 @@ void JobQueue::onJobFinished(bool success)
             }
 
             job->setStatus(JobStatus::Failed);
-            job->setErrorMessage(process->stderrOutput());
-            job->addLog(QStringLiteral("Failed: %1").arg(process->stderrOutput()));
+            job->setErrorMessage(publicationError.isEmpty() ? process->stderrOutput() : publicationError);
+            job->addLog(QStringLiteral("Failed: %1").arg(job->errorMessage()));
         }
     }
 
     const QString jobName = job ? job->name() : QString();
     m_processes.remove(jobId);
+    m_sequences.remove(jobId);
     process->deleteLater();
 
     emit runningCountChanged();

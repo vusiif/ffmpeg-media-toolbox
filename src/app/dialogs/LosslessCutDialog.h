@@ -5,6 +5,7 @@
 #include <QPair>
 
 #include "cut/SmartCutEngine.h"
+#include "media/MediaFile.h"
 
 class FFmpegLocator;
 class MediaProbeService;
@@ -61,6 +62,7 @@ private:
     JobQueue *m_queue;
 
     QString m_inputFile;
+    MediaFile m_media;
     QVector<double> m_keyframes;
     QVector<CutSegment> m_segments;
     QProcess *m_probeProcess = nullptr;

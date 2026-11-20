@@ -83,6 +83,13 @@ void BatchProcessingTest::matrixRecursiveDirectoryScan()
     QDir().mkpath(root + QStringLiteral("/Season1"));
     QDir().mkpath(root + QStringLiteral("/Season2/Bonus"));
 
+    // Internal cut workspaces must not become recursive batch inputs.
+    QVERIFY(QDir().mkpath(root + QStringLiteral("/Season1/.ffmedia-cut-test/nested")));
+    QFile intermediate(root + QStringLiteral("/Season1/.ffmedia-cut-test/nested/result.mp4"));
+    QVERIFY(intermediate.open(QIODevice::WriteOnly));
+    intermediate.write("partial export");
+    intermediate.close();
+
     // Create dummy files
     QFile f1(root + QStringLiteral("/root_clip.mp4"));
     QVERIFY(f1.open(QIODevice::WriteOnly));

@@ -2507,5 +2507,45 @@
         <source>audiotag.notice.enqueued</source>
         <translation>Successfully added %1 audio extraction task(s) to the queue!</translation>
     </message>
+    <message id="cut.export.invalidInput">
+        <source>cut.export.invalidInput</source>
+        <translation>Choose a valid video and wait for FFmpeg detection before exporting.</translation>
+    </message>
+    <message id="cut.export.outputExists">
+        <source>cut.export.outputExists</source>
+        <translation>The output already exists or matches the input. Choose another output name.</translation>
+    </message>
+    <message id="cut.export.unsupportedFormat">
+        <source>cut.export.unsupportedFormat</source>
+        <translation>Choose MP4, MKV, MOV or WebM for cut exports.</translation>
+    </message>
+    <message id="cut.export.invalidRange">
+        <source>cut.export.invalidRange</source>
+        <translation>A selected range is invalid or exceeds the video duration.</translation>
+    </message>
+    <message id="cut.export.incompatibleCopy">
+        <source>cut.export.incompatibleCopy</source>
+        <translation>The video codec cannot be copied to this container. Choose accurate encoding.</translation>
+    </message>
+    <message id="cut.export.accurateFallback">
+        <source>cut.export.accurateFallback</source>
+        <translation>Smart splicing is not safe for this stream or multi-range export; using accurate encoding to preserve the selected boundaries.</translation>
+    </message>
+    <message id="cut.export.accurateFallbackLabel">
+        <source>cut.export.accurateFallbackLabel</source>
+        <translation>Accurate encoding (smart fallback)</translation>
+    </message>
+    <message id="cut.export.job">
+        <source>cut.export.job</source>
+        <translation>Cut %1: %2</translation>
+    </message>
+    <message id="cut.export.mergedJob">
+        <source>cut.export.mergedJob</source>
+        <translation>Merge cuts: %1 (%2 ranges)</translation>
+    </message>
+    <message id="cut.export.publishFailed">
+        <source>cut.export.publishFailed</source>
+        <translation>Could not publish the completed export (the destination may already exist).</translation>
+    </message>
 </context>
 </TS>

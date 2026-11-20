@@ -23,6 +23,7 @@
 #include "ElaText.h"
 #include "app/widgets/VideoPlayerWidget.h"
 #include "cut/SmartCutEngine.h"
+#include "cut/CutExportBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "output/OutputNaming.h"
 #include "i18n/TrId.h"
@@ -329,6 +330,7 @@ void LosslessCutDialog::loadFile(const QString &filePath)
 {
     if (filePath.isEmpty()) return;
     m_inputFile = filePath;
+    m_media = {};
     m_filePathEdit->setText(filePath);
 
     m_player->loadMedia(filePath);
@@ -336,6 +338,7 @@ void LosslessCutDialog::loadFile(const QString &filePath)
     // Probe metadata
     if (m_probeService) {
         const MediaFile meta = m_probeService->probe(filePath);
+        m_media = meta;
         if (meta.isValid()) {
             const VideoStream v = meta.primaryVideo();
             m_metaInfoLabel->setText(QStringLiteral("%1x%2 | %3 fps | Codec: %4 | Duration: %5s")
@@ -363,6 +366,7 @@ void LosslessCutDialog::onDetectKeyframes()
         m_probeProcess->waitForFinished(500);
     }
 
+    m_keyframes.clear();
     m_keyframeStatusLabel->setText(trId("cut.keyframe.detecting"));
     m_detectKeyframesBtn->setEnabled(false);
 
@@ -600,83 +604,40 @@ void LosslessCutDialog::onExportClicked()
     const QString formatExt = m_formatCombo->currentText().isEmpty()
                                   ? QFileInfo(m_inputFile).suffix()
                                   : m_formatCombo->currentText();
-    const QString baseStem = QFileInfo(m_inputFile).completeBaseName();
-    const QString dir = QFileInfo(m_inputFile).absolutePath();
-    const QString ffmpegPath = m_locator ? m_locator->ffmpegPath() : QStringLiteral("ffmpeg");
-
-    if (exportMode == ExportMode::SeparateFiles || segmentsToExport.size() == 1) {
-        // Export each segment independently
-        for (int i = 0; i < segmentsToExport.size(); ++i) {
-            const auto &seg = segmentsToExport[i];
-            const QString outName = OutputNaming::build(m_inputFile,
-                                                        QStringLiteral("{name}_cut_%1.{format}").arg(i + 1, 2, 10, QLatin1Char('0')),
-                                                        formatExt);
-
-            QStringList args;
-            if (cutMode == CutMode::KeyframeLossless) {
-                args = SmartCutEngine::buildLosslessCut(m_inputFile, outName, seg.startSec, seg.endSec, formatExt);
-            } else if (cutMode == CutMode::AccurateReencode) {
-                args = SmartCutEngine::buildAccurateReencode(m_inputFile, outName, seg.startSec, seg.endSec, QString(), 18, formatExt);
-            } else { // SmartCut
-                SmartCutPlan plan = SmartCutEngine::planSmartCut(m_inputFile, outName, seg.startSec, seg.endSec, m_keyframes);
-                if (plan.isValid && !plan.needsConcat) {
-                    args = SmartCutEngine::buildChunkCommand(m_inputFile, plan.chunks.first());
-                } else {
-                    // Fallback to lossless cut if no concat script needed
-                    args = SmartCutEngine::buildLosslessCut(m_inputFile, outName, seg.startSec, seg.endSec, formatExt);
-                }
-            }
-
-            if (!args.isEmpty()) {
-                auto *job = new Job();
-                job->setName(QStringLiteral("Cut [%1] %2 (%3s)")
-                                 .arg(i + 1)
-                                 .arg(QFileInfo(m_inputFile).fileName())
-                                 .arg(QString::number(seg.duration(), 'f', 1)));
-                job->setCommand(ffmpegPath, args);
-                job->setTotalDuration(seg.duration());
-                m_queue->addJob(job);
-            }
-        }
-    } else {
-        // MergeAll: Concat all segments into one output
-        const QString mergedOutput = OutputNaming::build(m_inputFile,
-                                                         QStringLiteral("{name}_merged.{format}"),
-                                                         formatExt);
-
-        QStringList tempFiles;
-        for (int i = 0; i < segmentsToExport.size(); ++i) {
-            const auto &seg = segmentsToExport[i];
-            const QString tempPart = QStringLiteral("%1/%2_seg_%3.%4")
-                                         .arg(dir, baseStem)
-                                         .arg(i + 1, 2, 10, QLatin1Char('0'))
-                                         .arg(formatExt);
-            tempFiles.append(tempPart);
-
-            QStringList args = SmartCutEngine::buildLosslessCut(m_inputFile, tempPart, seg.startSec, seg.endSec, formatExt);
-            auto *job = new Job();
-            job->setName(QStringLiteral("Prep Segment %1/%2").arg(i + 1).arg(segmentsToExport.size()));
-            job->setCommand(ffmpegPath, args);
-            job->setTotalDuration(seg.duration());
-            m_queue->addJob(job);
-        }
-
-        // Concat list file
-        const QString listFile = QStringLiteral("%1/%2_concat_list.txt").arg(dir, baseStem);
-        QFile file(listFile);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            file.write(SmartCutEngine::generateConcatFileList(tempFiles).toUtf8());
-            file.close();
-        }
-
-        auto *concatJob = new Job();
-        concatJob->setName(QStringLiteral("Merge %1 Segments -> %2").arg(segmentsToExport.size()).arg(QFileInfo(mergedOutput).fileName()));
-        concatJob->setCommand(ffmpegPath, SmartCutEngine::buildConcatDemuxer(listFile, mergedOutput));
-        m_queue->addJob(concatJob);
+    if (!m_queue || !m_locator || !m_locator->isValid()) {
+        QMessageBox::warning(this, trId("cut.dialog.title"), trId("cut.export.invalidInput"));
+        return;
     }
 
+    QList<Job *> jobs;
+    const bool separate = exportMode == ExportMode::SeparateFiles;
+    const int count = separate ? segmentsToExport.size() : 1;
+    for (int i = 0; i < count; ++i) {
+        const QString nameTemplate = separate
+            ? QStringLiteral("{name}_cut_%1.{format}").arg(i + 1, 2, 10, QLatin1Char('0'))
+            : QStringLiteral("{name}_merged.{format}");
+        const QString output = OutputNaming::build(m_inputFile, nameTemplate, formatExt);
+        const QVector<CutSegment> segments = separate
+            ? QVector<CutSegment>{segmentsToExport[i]} : segmentsToExport;
+        QString error;
+        Job *job = CutExportBuilder::createJob(m_locator->ffmpegPath(), m_media,
+                                               output, segments, cutMode, m_keyframes, &error);
+        if (!job) {
+            qDeleteAll(jobs);
+            QMessageBox::warning(this, trId("cut.dialog.title"), error);
+            return;
+        }
+        const QString strategy = job->name();
+        const QString name = separate
+            ? trId("cut.export.job").arg(i + 1).arg(QFileInfo(m_inputFile).fileName())
+            : trId("cut.export.mergedJob").arg(QFileInfo(m_inputFile).fileName()).arg(segments.size());
+        job->setName(strategy.isEmpty() ? name : name + QStringLiteral(" — ") + strategy);
+        jobs << job;
+    }
+    m_queue->addJobs(jobs);
+
     QMessageBox::information(this, trId("cut.dialog.title"),
-                            trId("cut.success.enqueued").arg(segmentsToExport.size()));
+                            trId("cut.success.enqueued").arg(jobs.size()));
     accept();
 }
 

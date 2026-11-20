@@ -2507,5 +2507,45 @@
         <source>audiotag.notice.enqueued</source>
         <translation>已成功将 %1 个音频提取任务添加至工作队列！</translation>
     </message>
+    <message id="cut.export.invalidInput">
+        <source>cut.export.invalidInput</source>
+        <translation>请选择有效视频，并等待 FFmpeg 检测完成后导出。</translation>
+    </message>
+    <message id="cut.export.outputExists">
+        <source>cut.export.outputExists</source>
+        <translation>输出文件已存在或与输入相同，请使用其他输出名称。</translation>
+    </message>
+    <message id="cut.export.unsupportedFormat">
+        <source>cut.export.unsupportedFormat</source>
+        <translation>剪辑导出请选择 MP4、MKV、MOV 或 WebM。</translation>
+    </message>
+    <message id="cut.export.invalidRange">
+        <source>cut.export.invalidRange</source>
+        <translation>所选区间无效或超出视频时长。</translation>
+    </message>
+    <message id="cut.export.incompatibleCopy">
+        <source>cut.export.incompatibleCopy</source>
+        <translation>视频编码与目标容器不兼容，请选择精确重编码。</translation>
+    </message>
+    <message id="cut.export.accurateFallback">
+        <source>cut.export.accurateFallback</source>
+        <translation>此视频流或多区间导出不适合安全智能拼接，已采用精确重编码以保证所选切点。</translation>
+    </message>
+    <message id="cut.export.accurateFallbackLabel">
+        <source>cut.export.accurateFallbackLabel</source>
+        <translation>精确重编码（智能模式回退）</translation>
+    </message>
+    <message id="cut.export.job">
+        <source>cut.export.job</source>
+        <translation>剪辑 %1：%2</translation>
+    </message>
+    <message id="cut.export.mergedJob">
+        <source>cut.export.mergedJob</source>
+        <translation>合并剪辑：%1（%2 个区间）</translation>
+    </message>
+    <message id="cut.export.publishFailed">
+        <source>cut.export.publishFailed</source>
+        <translation>无法发布已完成的导出（目标文件可能已存在）。</translation>
+    </message>
 </context>
 </TS>
