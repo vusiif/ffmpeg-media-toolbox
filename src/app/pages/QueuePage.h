@@ -53,6 +53,8 @@ private:
         ElaPushButton *topButton = nullptr;
         ElaPushButton *upButton = nullptr;
         ElaPushButton *downButton = nullptr;
+        ElaPushButton *openFolderButton = nullptr;
+        ElaPushButton *playButton = nullptr;
         ElaPushButton *cancelButton = nullptr;
         ElaPushButton *retryButton = nullptr;
         ElaPushButton *removeButton = nullptr;

@@ -20,6 +20,7 @@
 #include "ElaComboBox.h"
 #include "ElaDoubleSpinBox.h"
 #include "ElaLineEdit.h"
+#include "ElaMessageBar.h"
 #include "ElaPivot.h"
 #include "ElaPushButton.h"
 #include "ElaScrollArea.h"
@@ -908,6 +909,10 @@ void VideoPage::enqueue(const QString &name, const QStringList &args)
     job->setName(name);
     job->setCommand(m_locator->ffmpegPath(), args);
     m_queue->addJob(job);
+    ElaMessageBar::success(ElaMessageBarType::TopRight,
+                           trId("video.title"),
+                           trId("common.taskAdded") + QStringLiteral(": ") + name,
+                           2500, this);
 }
 
 void VideoPage::dragEnterEvent(QDragEnterEvent *event)

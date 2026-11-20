@@ -2615,5 +2615,41 @@
         <source>cut.segment.audioOffsetTip</source>
         <translation>(后半段声音错位时，可在此单独推迟或提前声音)</translation>
     </message>
+    <message id="error.human.diskFull">
+        <source>error.human.diskFull</source>
+        <translation>磁盘剩余空间不足，请清理存储空间后重试</translation>
+    </message>
+    <message id="error.human.permissionDenied">
+        <source>error.human.permissionDenied</source>
+        <translation>无法写入输出文件：没有权限或文件被其他程序占用</translation>
+    </message>
+    <message id="error.human.corruptedInput">
+        <source>error.human.corruptedInput</source>
+        <translation>源媒体文件损坏或编码格式无法解析</translation>
+    </message>
+    <message id="error.human.unknownEncoder">
+        <source>error.human.unknownEncoder</source>
+        <translation>系统缺少对应的音视频编码器</translation>
+    </message>
+    <message id="error.human.fileExists">
+        <source>error.human.fileExists</source>
+        <translation>输出文件已存在且未被允许覆盖</translation>
+    </message>
+    <message id="error.human.noStreams">
+        <source>error.human.noStreams</source>
+        <translation>源文件内未检测到有效的音视频流</translation>
+    </message>
+    <message id="queue.openFolder">
+        <source>queue.openFolder</source>
+        <translation>📁 打开文件夹</translation>
+    </message>
+    <message id="queue.play">
+        <source>queue.play</source>
+        <translation>▶ 播放</translation>
+    </message>
+    <message id="common.taskAdded">
+        <source>common.taskAdded</source>
+        <translation>已加入任务队列</translation>
+    </message>
 </context>
 </TS>

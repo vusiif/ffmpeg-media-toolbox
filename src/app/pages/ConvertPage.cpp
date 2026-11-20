@@ -24,6 +24,7 @@
 #include "ElaComboBox.h"
 #include "ElaDoubleSpinBox.h"
 #include "ElaLineEdit.h"
+#include "ElaMessageBar.h"
 #include "ElaPushButton.h"
 #include "ElaScrollArea.h"
 #include "ElaScrollPageArea.h"
@@ -731,6 +732,11 @@ void ConvertPage::enqueueJob(const MediaFile &info)
         m_previewEdit->setText(m_locator->ffmpegPath() + QStringLiteral(" ")
                                + args.join(QLatin1Char(' ')));
     }
+
+    ElaMessageBar::success(ElaMessageBarType::TopRight,
+                           trId("convert.dialog.title"),
+                           trId("common.taskAdded") + QStringLiteral(": ") + QFileInfo(m_inputFile).fileName(),
+                           2500, this);
 }
 
 void ConvertPage::enqueueSample()
@@ -901,6 +907,10 @@ void ConvertPage::rebuildCodecLists()
     const int videoIndex = m_codecCombo->findText(videoCodec);
     if (videoIndex >= 0) {
         m_codecCombo->setCurrentIndex(videoIndex);
+    } else {
+        int defIdx = m_codecCombo->findText(QStringLiteral("libx264"));
+        if (defIdx < 0 && m_codecCombo->count() > 2) defIdx = 2;
+        if (defIdx >= 0) m_codecCombo->setCurrentIndex(defIdx);
     }
     m_codecCombo->blockSignals(false);
 
@@ -912,10 +922,17 @@ void ConvertPage::rebuildCodecLists()
     const int audioIndex = m_audioCodecCombo->findText(audioCodec);
     if (audioIndex >= 0) {
         m_audioCodecCombo->setCurrentIndex(audioIndex);
+    } else {
+        int defIdx = m_audioCodecCombo->findText(QStringLiteral("aac"));
+        if (defIdx < 0 && m_audioCodecCombo->count() > 2) defIdx = 2;
+        if (defIdx >= 0) m_audioCodecCombo->setCurrentIndex(defIdx);
     }
+    m_audioCodecCombo->blockSignals(false);
+
     if (m_caps->hasHwAcceleration()) {
         m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(m_caps->primaryHwDeviceName()));
         m_hwAccelCheck->setEnabled(true);
+        m_hwAccelCheck->setChecked(true);
     } else {
         m_hwDeviceLabel->setText(QStringLiteral("(%1)").arg(trId("convert.hwAccel.none")));
         m_hwAccelCheck->setEnabled(false);

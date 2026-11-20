@@ -2615,5 +2615,41 @@
         <source>cut.segment.audioOffsetTip</source>
         <translation>(Fine-tune audio delay/advance for this segment)</translation>
     </message>
+    <message id="error.human.diskFull">
+        <source>error.human.diskFull</source>
+        <translation>Insufficient disk space. Please free up space and retry.</translation>
+    </message>
+    <message id="error.human.permissionDenied">
+        <source>error.human.permissionDenied</source>
+        <translation>Permission denied or file is locked by another program.</translation>
+    </message>
+    <message id="error.human.corruptedInput">
+        <source>error.human.corruptedInput</source>
+        <translation>Source file is corrupted or format cannot be parsed.</translation>
+    </message>
+    <message id="error.human.unknownEncoder">
+        <source>error.human.unknownEncoder</source>
+        <translation>Required audio/video encoder is not available.</translation>
+    </message>
+    <message id="error.human.fileExists">
+        <source>error.human.fileExists</source>
+        <translation>Output file already exists.</translation>
+    </message>
+    <message id="error.human.noStreams">
+        <source>error.human.noStreams</source>
+        <translation>No valid audio/video streams found in source.</translation>
+    </message>
+    <message id="queue.openFolder">
+        <source>queue.openFolder</source>
+        <translation>📁 Open Folder</translation>
+    </message>
+    <message id="queue.play">
+        <source>queue.play</source>
+        <translation>▶ Play</translation>
+    </message>
+    <message id="common.taskAdded">
+        <source>common.taskAdded</source>
+        <translation>Added to Task Queue</translation>
+    </message>
 </context>
 </TS>

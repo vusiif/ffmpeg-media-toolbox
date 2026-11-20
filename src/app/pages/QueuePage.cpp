@@ -4,10 +4,16 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QProcess>
 #include <QTextCursor>
+#include <QUrl>
 #include <QVBoxLayout>
 
 #include "ElaComboBox.h"
@@ -320,6 +326,33 @@ QFrame* QueuePage::createRow(Job *job)
     buttonRow->addWidget(downButton);
     buttonRow->addStretch();
 
+    auto *openFolderButton = new ElaPushButton(row);
+    openFolderButton->setFixedHeight(30);
+    openFolderButton->setStyleSheet(QStringLiteral("font-weight: bold; background-color: #107c41; color: white;"));
+    connect(openFolderButton, &ElaPushButton::clicked, this, [job]() {
+        const QString path = job->outputFile();
+        if (path.isEmpty()) return;
+        const QFileInfo fi(path);
+#ifdef Q_OS_WIN
+        if (fi.exists()) {
+            const QString winPath = QDir::toNativeSeparators(fi.absoluteFilePath());
+            QProcess::startDetached(QStringLiteral("explorer.exe"), {QStringLiteral("/select,"), winPath});
+            return;
+        }
+#endif
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fi.absolutePath()));
+    });
+
+    auto *playButton = new ElaPushButton(row);
+    playButton->setFixedHeight(30);
+    playButton->setStyleSheet(QStringLiteral("font-weight: bold; background-color: #0078d4; color: white;"));
+    connect(playButton, &ElaPushButton::clicked, this, [job]() {
+        const QString path = job->outputFile();
+        if (!path.isEmpty() && QFile::exists(path)) {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+        }
+    });
+
     auto *detailsButton = new ElaPushButton(row);
     auto *cancelButton = new ElaPushButton(row);
     auto *retryButton = new ElaPushButton(row);
@@ -348,6 +381,8 @@ QFrame* QueuePage::createRow(Job *job)
         m_queue->model()->removeJobById(job->id().toString());
     });
 
+    buttonRow->addWidget(openFolderButton);
+    buttonRow->addWidget(playButton);
     buttonRow->addWidget(detailsButton);
     buttonRow->addWidget(cancelButton);
     buttonRow->addWidget(retryButton);
@@ -372,6 +407,8 @@ QFrame* QueuePage::createRow(Job *job)
     rw.topButton = topButton;
     rw.upButton = upButton;
     rw.downButton = downButton;
+    rw.openFolderButton = openFolderButton;
+    rw.playButton = playButton;
     rw.cancelButton = cancelButton;
     rw.retryButton = retryButton;
     rw.removeButton = removeButton;
@@ -381,6 +418,31 @@ QFrame* QueuePage::createRow(Job *job)
     setDetailsTexts(rw.details);
     updateRow(job);
     return row;
+}
+
+static QString humanizeError(const QString &raw)
+{
+    if (raw.isEmpty()) return QString();
+    if (raw.contains(QStringLiteral("No space left on device"), Qt::CaseInsensitive)) {
+        return trId("error.human.diskFull");
+    }
+    if (raw.contains(QStringLiteral("Permission denied"), Qt::CaseInsensitive)) {
+        return trId("error.human.permissionDenied");
+    }
+    if (raw.contains(QStringLiteral("Invalid data found"), Qt::CaseInsensitive)) {
+        return trId("error.human.corruptedInput");
+    }
+    if (raw.contains(QStringLiteral("Unknown encoder"), Qt::CaseInsensitive)) {
+        return trId("error.human.unknownEncoder");
+    }
+    if (raw.contains(QStringLiteral("already exists"), Qt::CaseInsensitive)) {
+        return trId("error.human.fileExists");
+    }
+    if (raw.contains(QStringLiteral("does not contain any stream"), Qt::CaseInsensitive)) {
+        return trId("error.human.noStreams");
+    }
+    const auto lines = raw.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    return lines.isEmpty() ? raw : lines.last().trimmed();
 }
 
 void QueuePage::updateJobRow()
@@ -402,7 +464,7 @@ void QueuePage::updateRow(Job *job)
     rw.progressBar->setVisible(status == static_cast<int>(JobStatus::Running));
 
     const bool failed = status == static_cast<int>(JobStatus::Failed);
-    rw.errorLabel->setText(job->errorMessage());
+    rw.errorLabel->setText(humanizeError(job->errorMessage()));
     rw.errorLabel->setVisible(failed && !job->errorMessage().isEmpty());
 
     rw.priorityCombo->setCurrentIndex(static_cast<int>(job->priority()));
@@ -410,6 +472,13 @@ void QueuePage::updateRow(Job *job)
     if (rw.details.open) {
         refreshLogView(job);
     }
+
+    const bool isCompleted = (status == static_cast<int>(JobStatus::Completed));
+    const bool hasOutput = !job->outputFile().isEmpty() && QFile::exists(job->outputFile());
+    rw.openFolderButton->setVisible(isCompleted && hasOutput);
+    rw.playButton->setVisible(isCompleted && hasOutput);
+    rw.openFolderButton->setText(trId("queue.openFolder"));
+    rw.playButton->setText(trId("queue.play"));
 
     rw.cancelButton->setVisible(status == static_cast<int>(JobStatus::Pending)
                                 || status == static_cast<int>(JobStatus::Running));
