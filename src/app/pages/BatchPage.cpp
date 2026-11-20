@@ -143,10 +143,11 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     // Right Column: Settings inside ElaScrollArea
     auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
+    scroll->setIsGrabGesture(false);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(scroll);
-    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    scrollBody->setAttribute(Qt::WA_TranslucentBackground);
     auto *right = new QVBoxLayout(scrollBody);
     right->setContentsMargins(0, 0, 10, 0);
     right->setSpacing(12);

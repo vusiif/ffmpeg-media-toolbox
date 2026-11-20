@@ -111,10 +111,11 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
     // 3. Scrollable Rows Container
     auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
+    scroll->setIsGrabGesture(false);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     m_rowsContainer = new QWidget(scroll);
-    m_rowsContainer->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    m_rowsContainer->setAttribute(Qt::WA_TranslucentBackground);
     m_rowsLayout = new QVBoxLayout(m_rowsContainer);
     m_rowsLayout->setContentsMargins(0, 0, 0, 0);
     m_rowsLayout->setSpacing(8);

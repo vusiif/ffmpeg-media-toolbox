@@ -18,6 +18,74 @@ ElaCheckBoxStyle::~ElaCheckBoxStyle()
 {
 }
 
+void ElaCheckBoxStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
+{
+    switch (element)
+    {
+    case QStyle::PE_IndicatorCheckBox:
+    {
+        if (const QStyleOptionButton* bopt = qstyleoption_cast<const QStyleOptionButton*>(option))
+        {
+            painter->save();
+            painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+            QRect checkRect = bopt->rect;
+            checkRect.adjust(1, 1, -1, -1);
+            painter->setPen(Qt::NoPen);
+            if (bopt->state.testFlag(QStyle::State_On) || bopt->state.testFlag(QStyle::State_NoChange))
+            {
+                if (bopt->state.testFlag(QStyle::State_Sunken))
+                {
+                    painter->setBrush(ElaThemeColor(_themeMode, PrimaryPress));
+                }
+                else if (bopt->state.testFlag(QStyle::State_MouseOver))
+                {
+                    painter->setBrush(ElaThemeColor(_themeMode, PrimaryHover));
+                }
+                else
+                {
+                    painter->setBrush(ElaThemeColor(_themeMode, PrimaryNormal));
+                }
+            }
+            else
+            {
+                painter->setPen(ElaThemeColor(_themeMode, BasicBorderDeep));
+                if (bopt->state.testFlag(QStyle::State_MouseOver))
+                {
+                    painter->setBrush(ElaThemeColor(_themeMode, BasicHover));
+                }
+                else
+                {
+                    painter->setBrush(ElaThemeColor(_themeMode, BasicBase));
+                }
+            }
+            painter->drawRoundedRect(checkRect, 2, 2);
+
+            painter->setPen(ElaThemeColor(ElaThemeType::Dark, BasicText));
+            if (bopt->state.testFlag(QStyle::State_On))
+            {
+                painter->save();
+                QFont iconFont = QFont("ElaAwesome");
+                iconFont.setPixelSize(checkRect.width() * 0.75);
+                painter->setFont(iconFont);
+                painter->drawText(checkRect, Qt::AlignCenter, QChar(char16_t(ElaIconType::Check)));
+                painter->restore();
+            }
+            else if (bopt->state.testFlag(QStyle::State_NoChange))
+            {
+                QLine checkLine(checkRect.x() + 3, checkRect.center().y(), checkRect.right() - 3, checkRect.center().y());
+                painter->drawLine(checkLine);
+            }
+            painter->restore();
+            return;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    QProxyStyle::drawPrimitive(element, option, painter, widget);
+}
+
 void ElaCheckBoxStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
 {
     // qDebug() << element << option->rect;
@@ -31,7 +99,8 @@ void ElaCheckBoxStyle::drawControl(ControlElement element, const QStyleOption* o
             painter->save();
             painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
             QRect checkBoxRect = bopt->rect;
-            QRect checkRect(checkBoxRect.x(), checkBoxRect.y(), _pCheckIndicatorWidth, _pCheckIndicatorWidth);
+            int indicatorY = checkBoxRect.y() + (checkBoxRect.height() - _pCheckIndicatorWidth) / 2;
+            QRect checkRect(checkBoxRect.x(), indicatorY, _pCheckIndicatorWidth, _pCheckIndicatorWidth);
             checkRect.adjust(1, 1, -1, -1);
             //复选框绘制
             painter->setPen(Qt::NoPen);
@@ -80,7 +149,7 @@ void ElaCheckBoxStyle::drawControl(ControlElement element, const QStyleOption* o
             {
                 painter->save();
                 QFont iconFont = QFont("ElaAwesome");
-                iconFont.setPixelSize(_pCheckIndicatorWidth * 0.75);
+                iconFont.setPixelSize(checkRect.width() * 0.75);
                 painter->setFont(iconFont);
                 painter->drawText(checkRect, Qt::AlignCenter, QChar(char16_t(ElaIconType::Check)));
                 painter->restore();
@@ -97,6 +166,20 @@ void ElaCheckBoxStyle::drawControl(ControlElement element, const QStyleOption* o
             painter->restore();
         }
         return;
+    }
+    case QStyle::CE_CheckBoxLabel:
+    {
+        if (const QStyleOptionButton* bopt = qstyleoption_cast<const QStyleOptionButton*>(option))
+        {
+            bool isEnabled = bopt->state.testFlag(QStyle::State_Enabled);
+            painter->save();
+            painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+            painter->setPen(isEnabled ? ElaThemeColor(_themeMode, BasicText) : ElaThemeColor(_themeMode, BasicTextDisable));
+            painter->drawText(bopt->rect, Qt::AlignLeft | Qt::AlignVCenter, bopt->text);
+            painter->restore();
+            return;
+        }
+        break;
     }
     default:
     {

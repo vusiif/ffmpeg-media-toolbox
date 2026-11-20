@@ -83,11 +83,11 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     m_scrollArea = new ElaScrollArea(this);
     m_scrollArea->setWidgetResizable(true);
-    m_scrollArea->setIsGrabGesture(true);
+    m_scrollArea->setIsGrabGesture(false);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(m_scrollArea);
-    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    scrollBody->setAttribute(Qt::WA_TranslucentBackground);
     auto *bodyLayout = new QVBoxLayout(scrollBody);
     bodyLayout->setContentsMargins(0, 0, 10, 0);
     bodyLayout->setSpacing(14);

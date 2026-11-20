@@ -108,11 +108,11 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
         auto *scroll = new ElaScrollArea(tab);
         scroll->setWidgetResizable(true);
-        scroll->setIsGrabGesture(true);
+        scroll->setIsGrabGesture(false);
         scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
         bodyWidget = new QWidget(scroll);
-        bodyWidget->setStyleSheet(QStringLiteral("background-color: transparent;"));
+        bodyWidget->setAttribute(Qt::WA_TranslucentBackground);
         bodyLayout = new QVBoxLayout(bodyWidget);
         bodyLayout->setContentsMargins(0, 0, 10, 0);
         bodyLayout->setSpacing(14);

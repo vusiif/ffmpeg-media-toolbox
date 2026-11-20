@@ -51,11 +51,11 @@ FilterStudioDialog::FilterStudioDialog(FFmpegLocator *locator, MediaProbeService
 
     auto *scroll = new ElaScrollArea(this);
     scroll->setWidgetResizable(true);
-    scroll->setIsGrabGesture(true);
+    scroll->setIsGrabGesture(false);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *body = new QWidget(scroll);
-    body->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    body->setAttribute(Qt::WA_TranslucentBackground);
     auto *bodyLayout = new QVBoxLayout(body);
     bodyLayout->setContentsMargins(0, 0, 10, 0);
     bodyLayout->setSpacing(12);

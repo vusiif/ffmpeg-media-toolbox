@@ -42,12 +42,12 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
 
     auto *scrollArea = new ElaScrollArea(this);
     scrollArea->setWidgetResizable(true);
-    scrollArea->setIsGrabGesture(true);
+    scrollArea->setIsGrabGesture(false);
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scrollArea->setStyleSheet(QStringLiteral("QScrollArea { background: transparent; border: none; }"));
+    scrollArea->setFrameShape(QFrame::NoFrame);
 
     auto *container = new QWidget(scrollArea);
-    container->setStyleSheet(QStringLiteral("background: transparent;"));
+    container->setAttribute(Qt::WA_TranslucentBackground);
     auto *containerLayout = new QVBoxLayout(container);
     containerLayout->setContentsMargins(0, 0, 16, 0);
     containerLayout->setSpacing(16);

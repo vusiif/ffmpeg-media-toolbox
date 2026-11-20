@@ -28,11 +28,11 @@ HomePage::HomePage(FFmpegLocator *locator, FFmpegCapabilities *caps,
 
     m_scrollArea = new ElaScrollArea(this);
     m_scrollArea->setWidgetResizable(true);
-    m_scrollArea->setIsGrabGesture(true);
+    m_scrollArea->setIsGrabGesture(false);
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(m_scrollArea);
-    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
+    scrollBody->setAttribute(Qt::WA_TranslucentBackground);
     auto *body = new QVBoxLayout(scrollBody);
     body->setContentsMargins(30, 26, 30, 26);
     body->setSpacing(18);
