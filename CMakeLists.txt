@@ -77,6 +77,8 @@ set(FFMEDIA_CORE_SOURCES
     src/repair/UntruncLocator.cpp
     src/repair/UntruncProcess.h
     src/repair/UntruncProcess.cpp
+    src/repair/MediaSalvageEngine.h
+    src/repair/MediaSalvageEngine.cpp
     src/jobs/Job.h
     src/jobs/Job.cpp
     src/jobs/JobListModel.h
@@ -223,7 +225,7 @@ endif()
 
 enable_testing()
 
-foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine CutExport MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor AnimatedImageEngine PlayerNavigation AudioTagEngine)
+foreach(test_name IN ITEMS FFmpegCommandBuilder FFmpegProcess JobListModel OutputEstimate OutputNaming Parsers RecentFiles RemuxPolicy Job JobQueue PresetManager BatchPipeline UntruncProcess CorruptedVideoScanner VideoQualityEvaluator SmartCutEngine CutExport MediaFilterStudio BatchProcessing SubtitleEngine MultiTrackCompositor AnimatedImageEngine PlayerNavigation AudioTagEngine MediaSalvageEngine)
     add_executable(tst_${test_name} tests/tst_${test_name}.cpp)
     target_link_libraries(tst_${test_name} PRIVATE ffmedia-core Qt6::Test)
     add_test(NAME ${test_name} COMMAND tst_${test_name})

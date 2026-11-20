@@ -995,9 +995,77 @@
         <source>player.autoSkip</source>
         <translation>Auto-skip damaged parts</translation>
     </message>
+    <message id="repair.tab.salvage">
+        <source>repair.tab.salvage</source>
+        <translation>Smart Salvage</translation>
+    </message>
+    <message id="repair.salvage.title">
+        <source>repair.salvage.title</source>
+        <translation>Smart Fault-Tolerant Salvage</translation>
+    </message>
+    <message id="repair.salvage.desc">
+        <source>repair.salvage.desc</source>
+        <translation>No reference video required. Uses FFmpeg fault tolerance and PTS reconstruction to salvage corrupted videos into a standard playable file.</translation>
+    </message>
+    <message id="repair.salvage.input">
+        <source>repair.salvage.input</source>
+        <translation>Corrupted Input</translation>
+    </message>
+    <message id="repair.salvage.selectInput">
+        <source>repair.salvage.selectInput</source>
+        <translation>Select Corrupted Video</translation>
+    </message>
+    <message id="repair.salvage.output">
+        <source>repair.salvage.output</source>
+        <translation>Output Path</translation>
+    </message>
+    <message id="repair.salvage.mode">
+        <source>repair.salvage.mode</source>
+        <translation>Salvage Strategy</translation>
+    </message>
+    <message id="repair.salvage.mode.remux">
+        <source>repair.salvage.mode.remux</source>
+        <translation>⚡ Fast Lossless Remux (Rebuild index &amp; PTS, keep quality)</translation>
+    </message>
+    <message id="repair.salvage.mode.transcode">
+        <source>repair.salvage.mode.transcode</source>
+        <translation>🛡️ Force Transcode (Extract surviving frames &amp; re-encode)</translation>
+    </message>
+    <message id="repair.salvage.start">
+        <source>repair.salvage.start</source>
+        <translation>Start Smart Salvage</translation>
+    </message>
+    <message id="repair.salvage.starting">
+        <source>repair.salvage.starting</source>
+        <translation>Salvaging media stream...</translation>
+    </message>
+    <message id="repair.salvage.cancelled">
+        <source>repair.salvage.cancelled</source>
+        <translation>Salvage cancelled</translation>
+    </message>
+    <message id="repair.salvage.success">
+        <source>repair.salvage.success</source>
+        <translation>Salvage succeeded! Playable video generated.</translation>
+    </message>
+    <message id="repair.salvage.failed">
+        <source>repair.salvage.failed</source>
+        <translation>Salvage failed: Unable to extract valid media frames.</translation>
+    </message>
+    <message id="repair.salvage.resultText">
+        <source>repair.salvage.resultText</source>
+        <translation>Generated: %1</translation>
+    </message>
+    <message id="repair.salvage.assess.probed">
+        <source>repair.salvage.assess.probed</source>
+        <translation>✔ Stream detected. Recommend 'Fast Lossless Remux' first; switch to 'Force Transcode' if needed.</translation>
+    </message>
+    <message id="repair.salvage.assess.unprobed">
+        <source>repair.salvage.assess.unprobed</source>
+        <translation>⚠️ Missing container header (abrupt power loss or crash). Recommend 'Force Transcode' or 'Untrunc Deep Repair'.</translation>
+    </message>
     <message id="repair.tab.scan">
         <source>repair.tab.scan</source>
-        <translation>Damage Scan &amp; Preview</translation>
+        <translation>Damage Scan &amp; Excise</translation>
     </message>
     <message id="repair.tab.untrunc">
         <source>repair.tab.untrunc</source>
@@ -1266,6 +1334,22 @@
     <message id="repair.qc.col.desc">
         <source>repair.qc.col.desc</source>
         <translation>Description</translation>
+    </message>
+    <message id="repair.qc.excise">
+        <source>repair.qc.excise</source>
+        <translation>✂ Cut Out Damaged Parts &amp; Export</translation>
+    </message>
+    <message id="repair.qc.exciseJobName">
+        <source>repair.qc.exciseJobName</source>
+        <translation>Excise Damaged Parts - %1</translation>
+    </message>
+    <message id="repair.qc.exciseEnqueued">
+        <source>repair.qc.exciseEnqueued</source>
+        <translation>Damaged parts excision task added to queue</translation>
+    </message>
+    <message id="repair.qc.noCleanContent">
+        <source>repair.qc.noCleanContent</source>
+        <translation>Entire video is corrupted; no surviving clean content to export.</translation>
     </message>
     <message id="convert.qualityEval">
         <source>convert.qualityEval</source>

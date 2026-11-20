@@ -1,6 +1,7 @@
 #pragma once
 
 #include "media/CorruptedVideoScanner.h"
+#include "repair/MediaSalvageEngine.h"
 
 #include <QWidget>
 
@@ -8,6 +9,7 @@ class FFmpegLocator;
 class MediaProbeService;
 class UntruncLocator;
 class UntruncProcess;
+class JobQueue;
 class VideoPlayerWidget;
 class ElaText;
 class ElaLineEdit;
@@ -16,6 +18,7 @@ class ElaProgressBar;
 class ElaPivot;
 class ElaScrollPageArea;
 class ElaCheckBox;
+class ElaComboBox;
 class ElaTableView;
 class QStackedWidget;
 class QPlainTextEdit;
@@ -30,6 +33,7 @@ public:
     explicit RepairPage(FFmpegLocator *ffmpegLocator,
                         MediaProbeService *probeService,
                         UntruncLocator *untruncLocator,
+                        JobQueue *jobQueue = nullptr,
                         QWidget *parent = nullptr);
     ~RepairPage() override;
 
@@ -40,6 +44,18 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
 private slots:
+    // Tab 0: Smart Salvage (Reference-free)
+    void onBrowseSalvageInput();
+    void onBrowseSalvageOutput();
+    void onSalvageModeChanged(int index);
+    void onStartSalvage();
+    void onCancelSalvage();
+    void onSalvageProgress(double fraction);
+    void onSalvageLog(const QString &line);
+    void onSalvageFinished(bool success, const QString &outputPath, const QString &errorMsg);
+    void onOpenSalvageFolder();
+    void onPlaySalvagedVideo();
+
     // Tab 1: Scan & Preview (QC)
     void onBrowseScanInput();
     void onStartScan();
@@ -49,6 +65,7 @@ private slots:
     void onQcTableClicked(const QModelIndex &index);
     void onJumpToSelectedIssue();
     void onExportReport();
+    void onExciseCorruptedSegments();
 
     // Tab 2: Deep Repair (Untrunc)
     void onBrowseCorrupted();
@@ -62,20 +79,31 @@ private slots:
     void onPreviewFixedVideo();
 
 private:
+    void setupSalvageTab(QWidget *tab);
     void setupScanTab(QWidget *tab);
     void setupRepairTab(QWidget *tab);
 
     FFmpegLocator *m_ffmpegLocator = nullptr;
     MediaProbeService *m_probeService = nullptr;
     UntruncLocator *m_untruncLocator = nullptr;
+    JobQueue *m_jobQueue = nullptr;
     CorruptedVideoScanner *m_scanner = nullptr;
     UntruncProcess *m_repairProcess = nullptr;
+    MediaSalvageEngine *m_salvageEngine = nullptr;
 
+    // Smart Salvage State
+    QString m_salvageInputPath;
+    QString m_salvageOutputPath;
+    double m_salvageDuration = 0.0;
+    QString m_lastSalvagedPath;
+
+    // Scan State
     QString m_scanFilePath;
     double m_scanDuration = 0.0;
     bool m_hasVideo = true;
     bool m_hasAudio = true;
 
+    // Untrunc State
     QString m_corruptedPath;
     QString m_referencePath;
     QString m_lastFixedPath;
@@ -83,10 +111,38 @@ private:
     ElaText *m_pageTitleLabel = nullptr;
     ElaPivot *m_pivot = nullptr;
     QStackedWidget *m_stackedWidget = nullptr;
+    QString m_salvageTabTitle;
     QString m_scanTabTitle;
     QString m_repairTabTitle;
 
-    // Scan Tab UI
+    // Tab 0: Smart Salvage UI
+    ElaScrollPageArea *m_salvageControlCard = nullptr;
+    ElaText *m_salvageTitleLabel = nullptr;
+    ElaText *m_salvageDescLabel = nullptr;
+    ElaText *m_salvageInputCaption = nullptr;
+    ElaLineEdit *m_salvageInputEdit = nullptr;
+    ElaPushButton *m_salvageBrowseBtn = nullptr;
+    ElaText *m_salvageAssessLabel = nullptr;
+    ElaText *m_salvageModeCaption = nullptr;
+    ElaComboBox *m_salvageModeCombo = nullptr;
+    ElaText *m_salvageOutputCaption = nullptr;
+    ElaLineEdit *m_salvageOutputEdit = nullptr;
+    ElaPushButton *m_salvageOutputBrowseBtn = nullptr;
+    ElaPushButton *m_startSalvageBtn = nullptr;
+    ElaPushButton *m_cancelSalvageBtn = nullptr;
+    ElaProgressBar *m_salvageProgressBar = nullptr;
+    ElaText *m_salvageStatusLabel = nullptr;
+    QWidget *m_salvageResultBar = nullptr;
+    ElaText *m_salvageResultLabel = nullptr;
+    ElaPushButton *m_salvageOpenFolderBtn = nullptr;
+    ElaPushButton *m_salvagePlayBtn = nullptr;
+
+    ElaScrollPageArea *m_salvageConsoleCard = nullptr;
+    ElaText *m_salvageConsoleCaption = nullptr;
+    ElaPushButton *m_clearSalvageConsoleBtn = nullptr;
+    QPlainTextEdit *m_salvageConsole = nullptr;
+
+    // Tab 1: Scan Tab UI
     ElaScrollPageArea *m_scanControlCard = nullptr;
     ElaText *m_scanTitleLabel = nullptr;
     ElaText *m_scanDescLabel = nullptr;
@@ -115,8 +171,9 @@ private:
     ElaTableView *m_qcTableView = nullptr;
     QStandardItemModel *m_qcModel = nullptr;
     ElaPushButton *m_jumpBtn = nullptr;
+    ElaPushButton *m_exciseCleanBtn = nullptr;
 
-    // Repair Tab UI
+    // Tab 2: Repair Tab UI
     ElaScrollPageArea *m_repairControlCard = nullptr;
     ElaText *m_repairTitleLabel = nullptr;
     ElaText *m_repairDescLabel = nullptr;

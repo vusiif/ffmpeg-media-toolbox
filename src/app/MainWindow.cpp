@@ -203,7 +203,7 @@ void MainWindow::initPages()
     m_joinPage = new JoinPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, this);
     m_videoPage = new VideoPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, m_mediaProbe, this);
     m_audioPage = new AudioPage(m_ffmpegLocator, m_commandBuilder, m_jobQueue, m_mediaProbe, this);
-    m_repairPage = new RepairPage(m_ffmpegLocator, m_mediaProbe, m_untruncLocator, this);
+    m_repairPage = new RepairPage(m_ffmpegLocator, m_mediaProbe, m_untruncLocator, m_jobQueue, this);
     m_batchPage = new BatchPage(m_ffmpegLocator, m_commandBuilder, m_ffmpegCaps, m_jobQueue,
                                 this);
     m_queuePage = new QueuePage(m_jobQueue, this);

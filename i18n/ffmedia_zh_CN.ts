@@ -995,9 +995,77 @@
         <source>player.autoSkip</source>
         <translation>自动跳过损坏片段</translation>
     </message>
+    <message id="repair.tab.salvage">
+        <source>repair.tab.salvage</source>
+        <translation>免样本·智能抢救</translation>
+    </message>
+    <message id="repair.salvage.title">
+        <source>repair.salvage.title</source>
+        <translation>免样本·智能容错抢救</translation>
+    </message>
+    <message id="repair.salvage.desc">
+        <source>repair.salvage.desc</source>
+        <translation>无需提供参考视频，利用 FFmpeg 智能容错与时间戳重建技术，一键修复损坏卡死、拖动崩溃的视频，或强行抢救提取所有能播放的画面内容。</translation>
+    </message>
+    <message id="repair.salvage.input">
+        <source>repair.salvage.input</source>
+        <translation>待抢救视频</translation>
+    </message>
+    <message id="repair.salvage.selectInput">
+        <source>repair.salvage.selectInput</source>
+        <translation>选择待抢救损坏视频</translation>
+    </message>
+    <message id="repair.salvage.output">
+        <source>repair.salvage.output</source>
+        <translation>抢救导出路径</translation>
+    </message>
+    <message id="repair.salvage.mode">
+        <source>repair.salvage.mode</source>
+        <translation>抢救策略</translation>
+    </message>
+    <message id="repair.salvage.mode.remux">
+        <source>repair.salvage.mode.remux</source>
+        <translation>⚡ 极速无损修复（重建索引与时间戳，保留原画质，几秒完成）</translation>
+    </message>
+    <message id="repair.salvage.mode.transcode">
+        <source>repair.salvage.mode.transcode</source>
+        <translation>🛡️ 强力解码抢救（逐帧强行提取幸存画面，跳过坏块重编码）</translation>
+    </message>
+    <message id="repair.salvage.start">
+        <source>repair.salvage.start</source>
+        <translation>开始智能抢救</translation>
+    </message>
+    <message id="repair.salvage.starting">
+        <source>repair.salvage.starting</source>
+        <translation>正在智能抢救中...</translation>
+    </message>
+    <message id="repair.salvage.cancelled">
+        <source>repair.salvage.cancelled</source>
+        <translation>抢救已取消</translation>
+    </message>
+    <message id="repair.salvage.success">
+        <source>repair.salvage.success</source>
+        <translation>抢救成功！已生成可正常播放的视频文件</translation>
+    </message>
+    <message id="repair.salvage.failed">
+        <source>repair.salvage.failed</source>
+        <translation>抢救失败：未能提取出有效媒体流</translation>
+    </message>
+    <message id="repair.salvage.resultText">
+        <source>repair.salvage.resultText</source>
+        <translation>已抢救生成：%1</translation>
+    </message>
+    <message id="repair.salvage.assess.probed">
+        <source>repair.salvage.assess.probed</source>
+        <translation>✔ 成功识别视频流，推荐使用【极速无损修复】；如仍卡顿可切换【强力解码抢救】。</translation>
+    </message>
+    <message id="repair.salvage.assess.unprobed">
+        <source>repair.salvage.assess.unprobed</source>
+        <translation>⚠️ 媒体流头部损坏（可能因录制中途断电/崩溃引起），推荐使用【强力解码抢救】或前往【Untrunc 深度重构】。</translation>
+    </message>
     <message id="repair.tab.scan">
         <source>repair.tab.scan</source>
-        <translation>损坏扫描与预览</translation>
+        <translation>坏段扫描与剔除</translation>
     </message>
     <message id="repair.tab.untrunc">
         <source>repair.tab.untrunc</source>
@@ -1266,6 +1334,22 @@
     <message id="repair.qc.col.desc">
         <source>repair.qc.col.desc</source>
         <translation>详细说明</translation>
+    </message>
+    <message id="repair.qc.excise">
+        <source>repair.qc.excise</source>
+        <translation>✂ 剔除损坏片段并导出</translation>
+    </message>
+    <message id="repair.qc.exciseJobName">
+        <source>repair.qc.exciseJobName</source>
+        <translation>剔除坏段合并导出 - %1</translation>
+    </message>
+    <message id="repair.qc.exciseEnqueued">
+        <source>repair.qc.exciseEnqueued</source>
+        <translation>已将剔除损坏片段导出任务加入队列</translation>
+    </message>
+    <message id="repair.qc.noCleanContent">
+        <source>repair.qc.noCleanContent</source>
+        <translation>整个视频均处于损坏状态，无可保留的健康片段</translation>
     </message>
     <message id="convert.qualityEval">
         <source>convert.qualityEval</source>
