@@ -53,6 +53,9 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 {
     setAcceptDrops(true);
 
+    m_mediaProbeWatcher = new QFutureWatcher<MediaFile>(this);
+    connect(m_mediaProbeWatcher, &QFutureWatcher<MediaFile>::finished, this, &VideoPage::onMediaProbeFinished);
+
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(30, 30, 30, 30);
     root->setSpacing(14);
@@ -77,12 +80,7 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         const QString path = browseFile(trId("nav.video"),
                                         QStringLiteral("Video files (*.mp4 *.mkv *.mov *.webm *.avi *.flv *.wmv);;All files (*)"));
         if (!path.isEmpty()) {
-            m_inputFile = path;
-            m_inputEdit->setText(path);
-            if (m_trimPlayer) {
-                m_trimPlayer->loadMedia(path);
-            }
-            detectKeyframes();
+            loadInputVideo(path);
         }
     });
     inputCardLayout->addWidget(m_inputCaption);
@@ -701,6 +699,42 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     subBtnRow->addWidget(m_subButton);
     qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subBtnRow);
 
+    // Subtitle Extraction Section
+    auto *subExtractSep = new QFrame(m_subCard);
+    subExtractSep->setFrameShape(QFrame::HLine);
+    subExtractSep->setFrameShadow(QFrame::Sunken);
+    subExtractSep->setStyleSheet(QStringLiteral("color: rgba(255, 255, 255, 0.15); margin-top: 10px; margin-bottom: 6px;"));
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addWidget(subExtractSep);
+
+    m_subExtractSectionCaption = new ElaText(trId("video.sub.extractSection"), 13, m_subCard);
+    m_subExtractSectionCaption->setTextPixelSize(14);
+    m_subExtractSectionCaption->setStyleSheet(QStringLiteral("font-weight: bold; color: #3b82f6;"));
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addWidget(m_subExtractSectionCaption);
+
+    auto *subExtractForm = new QFormLayout();
+    subExtractForm->setSpacing(8);
+    m_subStreamCaption = makeCaption(m_subCard);
+    m_subStreamCombo = new ElaComboBox(m_subCard);
+    m_subStreamCombo->addItem(trId("video.sub.noTracks"));
+    m_subStreamCombo->setEnabled(false);
+    subExtractForm->addRow(m_subStreamCaption, m_subStreamCombo);
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subExtractForm);
+
+    auto *subExtractBtnRow = new QHBoxLayout();
+    m_subExtractToStudioButton = new ElaPushButton(trId("video.sub.extractToStudio"), m_subCard);
+    m_subExtractToStudioButton->setFixedHeight(36);
+    m_subExtractToStudioButton->setEnabled(false);
+    connect(m_subExtractToStudioButton, &ElaPushButton::clicked, this, &VideoPage::extractSubtitleToStudio);
+
+    m_subExtractButton = new ElaPushButton(trId("video.sub.extractBtn"), m_subCard);
+    m_subExtractButton->setFixedHeight(36);
+    m_subExtractButton->setEnabled(false);
+    connect(m_subExtractButton, &ElaPushButton::clicked, this, &VideoPage::extractSubtitle);
+
+    subExtractBtnRow->addWidget(m_subExtractToStudioButton);
+    subExtractBtnRow->addWidget(m_subExtractButton);
+    qobject_cast<QVBoxLayout *>(m_subCard->layout())->addLayout(subExtractBtnRow);
+
     bodyEffectsLayout->addWidget(m_subCard);
 
     bodyEffectsLayout->addStretch();
@@ -926,12 +960,7 @@ void VideoPage::dropEvent(QDropEvent *event)
 {
     const QList<QUrl> urls = event->mimeData()->urls();
     if (urls.isEmpty()) return;
-    m_inputFile = urls.first().toLocalFile();
-    m_inputEdit->setText(m_inputFile);
-    if (m_trimPlayer && !m_inputFile.isEmpty()) {
-        m_trimPlayer->loadMedia(m_inputFile);
-    }
-    detectKeyframes();
+    loadInputVideo(urls.first().toLocalFile());
     event->acceptProposedAction();
 }
 
@@ -1222,6 +1251,121 @@ void VideoPage::subtitleMux()
                                         *codec));
 }
 
+void VideoPage::extractSubtitle()
+{
+    if (m_inputFile.isEmpty() || m_mediaInfo.subtitleStreams.isEmpty()) {
+        QMessageBox::information(this, trId("video.sub.extractSection"), trId("video.sub.noTracks"));
+        return;
+    }
+
+    const int streamIdx = m_subStreamCombo->currentData().toInt();
+    if (streamIdx < 0 || streamIdx >= m_mediaInfo.subtitleStreams.size()) return;
+
+    const auto &stream = m_mediaInfo.subtitleStreams[streamIdx];
+    QString defaultExt = QStringLiteral("srt");
+    if (stream.codec.contains(QLatin1String("ass"), Qt::CaseInsensitive) ||
+        stream.codec.contains(QLatin1String("ssa"), Qt::CaseInsensitive)) {
+        defaultExt = QStringLiteral("ass");
+    } else if (stream.codec.contains(QLatin1String("vtt"), Qt::CaseInsensitive)) {
+        defaultExt = QStringLiteral("vtt");
+    }
+
+    const QString defaultName = OutputNaming::build(
+        m_inputFile,
+        QStringLiteral("{name}_track%1.{format}").arg(streamIdx),
+        defaultExt);
+
+    const QString savePath = QFileDialog::getSaveFileName(
+        this,
+        trId("video.sub.saveExtractedTitle"),
+        defaultName,
+        QStringLiteral("SubRip Subtitle (*.srt);;WebVTT Subtitle (*.vtt);;Advanced SubStation Alpha (*.ass);;All Files (*.*)"));
+    if (savePath.isEmpty()) return;
+
+    const QStringList args = m_builder->buildSubtitleExtract(m_inputFile, streamIdx, savePath);
+    enqueue(trId("video.job.extractSub").arg(QFileInfo(savePath).fileName()), args);
+}
+
+void VideoPage::extractSubtitleToStudio()
+{
+    if (m_inputFile.isEmpty() || m_mediaInfo.subtitleStreams.isEmpty()) {
+        QMessageBox::information(this, trId("video.sub.extractSection"), trId("video.sub.noTracks"));
+        return;
+    }
+
+    const int streamIdx = m_subStreamCombo->currentData().toInt();
+    if (streamIdx < 0 || streamIdx >= m_mediaInfo.subtitleStreams.size()) return;
+
+    if (!m_subDialog) {
+        m_subDialog = new SubtitleStudioDialog(m_queue, m_locator, this);
+        m_subDialog->setAttribute(Qt::WA_DeleteOnClose);
+    }
+    m_subDialog->setVideoFile(m_inputFile);
+    m_subDialog->show();
+    m_subDialog->raise();
+    m_subDialog->activateWindow();
+    m_subDialog->extractAndLoadStream(streamIdx);
+}
+
+void VideoPage::loadInputVideo(const QString &path)
+{
+    if (path.isEmpty()) return;
+    m_inputFile = path;
+    m_inputEdit->setText(path);
+    if (m_trimPlayer) {
+        m_trimPlayer->loadMedia(path);
+    }
+    detectKeyframes();
+    probeMediaFile(path);
+}
+
+void VideoPage::probeMediaFile(const QString &path)
+{
+    if (path.isEmpty() || !m_probeService) return;
+    if (m_mediaProbeWatcher->isRunning()) {
+        m_mediaProbeWatcher->cancel();
+        m_mediaProbeWatcher->waitForFinished();
+    }
+    MediaProbeService *probe = m_probeService;
+    m_mediaProbeWatcher->setFuture(QtConcurrent::run([probe, path]() {
+        return probe->probe(path);
+    }));
+}
+
+void VideoPage::onMediaProbeFinished()
+{
+    m_mediaInfo = m_mediaProbeWatcher->result();
+    updateSubtitleStreamsUI();
+}
+
+void VideoPage::updateSubtitleStreamsUI()
+{
+    if (!m_subStreamCombo) return;
+
+    m_subStreamCombo->clear();
+    if (m_mediaInfo.subtitleStreams.isEmpty()) {
+        m_subStreamCombo->addItem(trId("video.sub.noTracks"));
+        m_subStreamCombo->setEnabled(false);
+        if (m_subExtractButton) m_subExtractButton->setEnabled(false);
+        if (m_subExtractToStudioButton) m_subExtractToStudioButton->setEnabled(false);
+    } else {
+        for (int i = 0; i < m_mediaInfo.subtitleStreams.size(); ++i) {
+            const auto &s = m_mediaInfo.subtitleStreams[i];
+            QString label = QStringLiteral("Track %1: %2").arg(i).arg(s.codec.isEmpty() ? QStringLiteral("sub") : s.codec);
+            if (!s.language.isEmpty()) {
+                label += QStringLiteral(" [%1]").arg(s.language);
+            }
+            if (!s.title.isEmpty()) {
+                label += QStringLiteral(" - %1").arg(s.title);
+            }
+            m_subStreamCombo->addItem(label, i);
+        }
+        m_subStreamCombo->setEnabled(true);
+        if (m_subExtractButton) m_subExtractButton->setEnabled(true);
+        if (m_subExtractToStudioButton) m_subExtractToStudioButton->setEnabled(true);
+    }
+}
+
 void VideoPage::adjust()
 {
     if (m_inputFile.isEmpty()) return;
@@ -1428,6 +1572,11 @@ void VideoPage::retranslateUi()
     m_openSubStudioBtn->setText(trId("video.sub.openStudio"));
     m_subQualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
     m_subButton->setText(trId("convert.addToQueue"));
+    if (m_subExtractSectionCaption) m_subExtractSectionCaption->setText(trId("video.sub.extractSection"));
+    if (m_subStreamCaption) m_subStreamCaption->setText(trId("video.sub.stream") + QStringLiteral(":"));
+    if (m_subExtractToStudioButton) m_subExtractToStudioButton->setText(trId("video.sub.extractToStudio"));
+    if (m_subExtractButton) m_subExtractButton->setText(trId("video.sub.extractBtn"));
+    updateSubtitleStreamsUI();
 
     m_adjTitleLabel->setText(trId("video.adjust"));
     m_adjCropCaption->setText(trId("image.crop") + QStringLiteral(":"));

@@ -246,6 +246,19 @@ public:
         int crf
     ) const;
 
+    // Extracts a subtitle stream from an input video into a standalone subtitle file.
+    // subtitleStreamIndex: 0-based relative subtitle stream index (e.g. 0 for -map 0:s:0),
+    // or absolute container stream index if isAbsoluteIndex is true.
+    // subtitleCodec: explicit subtitle encoder (e.g. "subrip", "webvtt", "ass", "copy"),
+    // or empty to infer from outputPath suffix.
+    Q_INVOKABLE QStringList buildSubtitleExtract(
+        const QString &inputPath,
+        int subtitleStreamIndex,
+        const QString &outputPath,
+        const QString &subtitleCodec = {},
+        bool isAbsoluteIndex = false
+    ) const;
+
     QStringList buildWatermark(
         const QString &inputPath,
         const QString &watermarkPath,

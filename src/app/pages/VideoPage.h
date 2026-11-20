@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFutureWatcher>
 #include <QProcess>
 #include <QVector>
 #include <QPointer>
@@ -10,6 +11,7 @@ class GifStudioDialog;
 class SubtitleStudioDialog;
 class PipCompositorDialog;
 #include "cut/SmartCutEngine.h"
+#include "media/MediaFile.h"
 
 class FFmpegLocator;
 class FFmpegCommandBuilder;
@@ -67,7 +69,13 @@ private:
     void sequence();
     void watermark();
     void subtitleMux();
+    void extractSubtitle();
+    void extractSubtitleToStudio();
     void openSubtitleStudio();
+    void loadInputVideo(const QString &path);
+    void probeMediaFile(const QString &path);
+    void onMediaProbeFinished();
+    void updateSubtitleStreamsUI();
     void adjust();
     void detectAutoCrop();
     void pip();
@@ -227,6 +235,16 @@ private:
     ElaPushButton *m_subButton = nullptr;
     ElaPushButton *m_openSubStudioBtn = nullptr;
     QString m_subtitleFile;
+
+    // Subtitle Extraction UI
+    ElaText *m_subExtractSectionCaption = nullptr;
+    ElaText *m_subStreamCaption = nullptr;
+    ElaComboBox *m_subStreamCombo = nullptr;
+    ElaPushButton *m_subExtractButton = nullptr;
+    ElaPushButton *m_subExtractToStudioButton = nullptr;
+
+    QFutureWatcher<MediaFile> *m_mediaProbeWatcher = nullptr;
+    MediaFile m_mediaInfo;
 
     // Tab 4: Frames & Animation
     ElaScrollPageArea *m_shotCard = nullptr;

@@ -1,17 +1,21 @@
 #include "SubtitleStudioDialog.h"
 
 #include "app/widgets/VideoPlayerWidget.h"
+#include "ffmpeg/FFmpegCommandBuilder.h"
 #include "ffmpeg/FFmpegLocator.h"
 #include "i18n/TrId.h"
 #include "jobs/Job.h"
 #include "jobs/JobQueue.h"
+#include "media/MediaProbeService.h"
 #include "output/OutputNaming.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
 #include <QTableWidget>
@@ -87,6 +91,7 @@ SubtitleStudioDialog::SubtitleStudioDialog(JobQueue *queue, FFmpegLocator *locat
     auto *toolRow1 = new QHBoxLayout();
     m_importBtn = new ElaPushButton(rightCard);
     m_exportBtn = new ElaPushButton(rightCard);
+    m_extractFromVideoBtn = new ElaPushButton(rightCard);
     m_aiWhisperBtn = new ElaPushButton(rightCard);
     m_aiLangCombo = new ElaComboBox(rightCard);
     m_aiLangCombo->addItems(WhisperPipeline::supportedLanguages());
@@ -94,10 +99,12 @@ SubtitleStudioDialog::SubtitleStudioDialog(JobQueue *queue, FFmpegLocator *locat
 
     connect(m_importBtn, &ElaPushButton::clicked, this, &SubtitleStudioDialog::importSubtitle);
     connect(m_exportBtn, &ElaPushButton::clicked, this, &SubtitleStudioDialog::exportSubtitle);
+    connect(m_extractFromVideoBtn, &ElaPushButton::clicked, this, &SubtitleStudioDialog::extractSubtitleFromVideo);
     connect(m_aiWhisperBtn, &ElaPushButton::clicked, this, &SubtitleStudioDialog::runAiSpeechRecognition);
 
     toolRow1->addWidget(m_importBtn);
     toolRow1->addWidget(m_exportBtn);
+    toolRow1->addWidget(m_extractFromVideoBtn);
     toolRow1->addSpacing(10);
     toolRow1->addWidget(m_aiWhisperBtn);
     toolRow1->addWidget(m_aiLangCombo);
@@ -340,6 +347,89 @@ void SubtitleStudioDialog::exportSubtitle()
     }
 }
 
+bool SubtitleStudioDialog::extractAndLoadStream(int streamIndex)
+{
+    if (m_videoPath.isEmpty()) {
+        QMessageBox::information(this, trId("sub.dialog.title"), trId("sub.extract.noVideo"));
+        return false;
+    }
+
+    MediaProbeService probe(m_locator, this);
+    const MediaFile fileInfo = probe.probe(m_videoPath);
+    if (fileInfo.subtitleStreams.isEmpty() || streamIndex < 0 || streamIndex >= fileInfo.subtitleStreams.size()) {
+        QMessageBox::information(this, trId("sub.dialog.title"), trId("sub.extract.noStreams"));
+        return false;
+    }
+
+    const QString tempDir = QDir::tempPath();
+    const QString tempFile = tempDir + QStringLiteral("/extracted_sub_%1.srt").arg(QDateTime::currentMSecsSinceEpoch());
+
+    FFmpegCommandBuilder builder;
+    const QStringList args = builder.buildSubtitleExtract(m_videoPath, streamIndex, tempFile, QStringLiteral("subrip"));
+
+    const QString ffmpegPath = m_locator ? m_locator->ffmpegPath() : QStringLiteral("ffmpeg");
+    QProcess proc;
+    proc.start(ffmpegPath, args);
+    if (!proc.waitForFinished(15000) || proc.exitCode() != 0) {
+        QFile::remove(tempFile);
+        const QString err = QString::fromUtf8(proc.readAllStandardError());
+        QMessageBox::warning(this, trId("sub.dialog.title"),
+                             trId("sub.extract.failed").arg(err.isEmpty() ? trId("sub.extract.emptyOrUnsupported") : err));
+        return false;
+    }
+
+    QList<SubtitleItem> items = SubtitleEngine::loadFromFile(tempFile);
+    QFile::remove(tempFile);
+
+    if (items.isEmpty()) {
+        QMessageBox::warning(this, trId("sub.dialog.title"), trId("sub.extract.emptyOrUnsupported"));
+        return false;
+    }
+
+    m_items = items;
+    rebuildTable();
+    return true;
+}
+
+void SubtitleStudioDialog::extractSubtitleFromVideo()
+{
+    if (m_videoPath.isEmpty()) {
+        QMessageBox::information(this, trId("sub.dialog.title"), trId("sub.extract.noVideo"));
+        return;
+    }
+
+    MediaProbeService probe(m_locator, this);
+    const MediaFile fileInfo = probe.probe(m_videoPath);
+    if (fileInfo.subtitleStreams.isEmpty()) {
+        QMessageBox::information(this, trId("sub.dialog.title"), trId("sub.extract.noStreams"));
+        return;
+    }
+
+    int selectedSubIndex = 0;
+    if (fileInfo.subtitleStreams.size() > 1) {
+        QStringList items;
+        for (int i = 0; i < fileInfo.subtitleStreams.size(); ++i) {
+            const auto &s = fileInfo.subtitleStreams[i];
+            QString desc = QStringLiteral("Track %1 [%2]").arg(i).arg(s.codec.isEmpty() ? QStringLiteral("sub") : s.codec);
+            if (!s.language.isEmpty()) desc += QStringLiteral(" (%1)").arg(s.language);
+            if (!s.title.isEmpty()) desc += QStringLiteral(" - %1").arg(s.title);
+            items << desc;
+        }
+        bool ok = false;
+        const QString item = QInputDialog::getItem(this, trId("sub.dialog.title"),
+                                                   trId("sub.extract.selectTrack"),
+                                                   items, 0, false, &ok);
+        if (!ok || item.isEmpty()) return;
+        selectedSubIndex = items.indexOf(item);
+        if (selectedSubIndex < 0) selectedSubIndex = 0;
+    }
+
+    if (extractAndLoadStream(selectedSubIndex)) {
+        QMessageBox::information(this, trId("sub.dialog.title"),
+                                 trId("sub.extract.loadedSuccess").arg(m_items.size()));
+    }
+}
+
 void SubtitleStudioDialog::applyTimeShift()
 {
     const int offset = m_shiftSpin->value();
@@ -575,6 +665,7 @@ void SubtitleStudioDialog::retranslateUi()
 
     m_importBtn->setText(trId("sub.action.import"));
     m_exportBtn->setText(trId("sub.action.export"));
+    m_extractFromVideoBtn->setText(trId("sub.action.extractFromVideo"));
     m_aiWhisperBtn->setText(trId("sub.action.aiWhisper"));
     m_shiftBtn->setText(trId("sub.action.applyShift"));
 

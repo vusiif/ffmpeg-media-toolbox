@@ -781,6 +781,47 @@ QStringList FFmpegCommandBuilder::buildSubtitleBurnin(
     return args;
 }
 
+QStringList FFmpegCommandBuilder::buildSubtitleExtract(
+    const QString &inputPath,
+    int subtitleStreamIndex,
+    const QString &outputPath,
+    const QString &subtitleCodec,
+    bool isAbsoluteIndex
+) const
+{
+    if (inputPath.isEmpty() || outputPath.isEmpty()) {
+        return {};
+    }
+
+    QStringList args;
+    args << QStringLiteral("-y");
+    args << QStringLiteral("-i") << inputPath;
+    if (isAbsoluteIndex && subtitleStreamIndex >= 0) {
+        args << QStringLiteral("-map") << QStringLiteral("0:%1").arg(subtitleStreamIndex);
+    } else {
+        const int idx = qMax(0, subtitleStreamIndex);
+        args << QStringLiteral("-map") << QStringLiteral("0:s:%1").arg(idx);
+    }
+
+    if (!subtitleCodec.isEmpty()) {
+        args << QStringLiteral("-c:s") << subtitleCodec;
+    } else {
+        const QString ext = QFileInfo(outputPath).suffix().toLower();
+        if (ext == QLatin1String("srt")) {
+            args << QStringLiteral("-c:s") << QStringLiteral("subrip");
+        } else if (ext == QLatin1String("vtt")) {
+            args << QStringLiteral("-c:s") << QStringLiteral("webvtt");
+        } else if (ext == QLatin1String("ass") || ext == QLatin1String("ssa")) {
+            args << QStringLiteral("-c:s") << QStringLiteral("ass");
+        } else {
+            args << QStringLiteral("-c:s") << QStringLiteral("copy");
+        }
+    }
+
+    args << outputPath;
+    return args;
+}
+
 QStringList FFmpegCommandBuilder::buildWatermark(
     const QString &inputPath,
     const QString &watermarkPath,

@@ -37,6 +37,10 @@ private slots:
     void escapeFilterPathQuotesForFfmpeg();
     void subtitleBurninBuildsFilterAndMaps();
     void subtitleBurninOmitsCrfAndRejectsEmpty();
+    void subtitleExtractSrt();
+    void subtitleExtractVttAndAss();
+    void subtitleExtractCustomCodecAndAbsoluteIndex();
+    void subtitleExtractRejectsEmptyPaths();
     void imageOperationCropsOnly();
     void imageOperationResizesOnly();
     void imageOperationRotates();
@@ -595,6 +599,59 @@ void FFmpegCommandBuilderTest::subtitleBurninOmitsCrfAndRejectsEmpty()
     QVERIFY(m_builder.buildSubtitleBurnin(QStringLiteral("in.mp4"),
                                           QStringLiteral("s.srt"), QString(),
                                           23).isEmpty());
+}
+
+void FFmpegCommandBuilderTest::subtitleExtractSrt()
+{
+    const QStringList args = m_builder.buildSubtitleExtract(QStringLiteral("video.mkv"),
+                                                           0,
+                                                           QStringLiteral("output.srt"));
+    QCOMPARE(args, QStringList({QStringLiteral("-y"),
+                                QStringLiteral("-i"), QStringLiteral("video.mkv"),
+                                QStringLiteral("-map"), QStringLiteral("0:s:0"),
+                                QStringLiteral("-c:s"), QStringLiteral("subrip"),
+                                QStringLiteral("output.srt")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleExtractVttAndAss()
+{
+    const QStringList argsVtt = m_builder.buildSubtitleExtract(QStringLiteral("video.mp4"),
+                                                              1,
+                                                              QStringLiteral("output.vtt"));
+    QCOMPARE(argsVtt, QStringList({QStringLiteral("-y"),
+                                   QStringLiteral("-i"), QStringLiteral("video.mp4"),
+                                   QStringLiteral("-map"), QStringLiteral("0:s:1"),
+                                   QStringLiteral("-c:s"), QStringLiteral("webvtt"),
+                                   QStringLiteral("output.vtt")}));
+
+    const QStringList argsAss = m_builder.buildSubtitleExtract(QStringLiteral("video.mkv"),
+                                                              2,
+                                                              QStringLiteral("output.ass"));
+    QCOMPARE(argsAss, QStringList({QStringLiteral("-y"),
+                                   QStringLiteral("-i"), QStringLiteral("video.mkv"),
+                                   QStringLiteral("-map"), QStringLiteral("0:s:2"),
+                                   QStringLiteral("-c:s"), QStringLiteral("ass"),
+                                   QStringLiteral("output.ass")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleExtractCustomCodecAndAbsoluteIndex()
+{
+    const QStringList custom = m_builder.buildSubtitleExtract(QStringLiteral("video.mkv"),
+                                                             3,
+                                                             QStringLiteral("output.sup"),
+                                                             QStringLiteral("copy"),
+                                                             true);
+    QCOMPARE(custom, QStringList({QStringLiteral("-y"),
+                                  QStringLiteral("-i"), QStringLiteral("video.mkv"),
+                                  QStringLiteral("-map"), QStringLiteral("0:3"),
+                                  QStringLiteral("-c:s"), QStringLiteral("copy"),
+                                  QStringLiteral("output.sup")}));
+}
+
+void FFmpegCommandBuilderTest::subtitleExtractRejectsEmptyPaths()
+{
+    QVERIFY(m_builder.buildSubtitleExtract(QString(), 0, QStringLiteral("sub.srt")).isEmpty());
+    QVERIFY(m_builder.buildSubtitleExtract(QStringLiteral("in.mp4"), 0, QString()).isEmpty());
 }
 
 void FFmpegCommandBuilderTest::imageOperationCropsOnly()

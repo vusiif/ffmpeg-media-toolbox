@@ -2759,5 +2759,61 @@
         <source>common.taskAdded</source>
         <translation>Added to Task Queue</translation>
     </message>
+    <message id="video.sub.extractSection">
+        <source>video.sub.extractSection</source>
+        <translation>Extract Embedded Subtitles</translation>
+    </message>
+    <message id="video.sub.stream">
+        <source>video.sub.stream</source>
+        <translation>Select Subtitle Track</translation>
+    </message>
+    <message id="video.sub.noTracks">
+        <source>video.sub.noTracks</source>
+        <translation>(No embedded subtitle tracks detected)</translation>
+    </message>
+    <message id="video.sub.extractBtn">
+        <source>video.sub.extractBtn</source>
+        <translation>📥 Export Subtitle File...</translation>
+    </message>
+    <message id="video.sub.extractToStudio">
+        <source>video.sub.extractToStudio</source>
+        <translation>🎬 Extract to Studio</translation>
+    </message>
+    <message id="video.sub.saveExtractedTitle">
+        <source>video.sub.saveExtractedTitle</source>
+        <translation>Save Extracted Subtitle File</translation>
+    </message>
+    <message id="video.job.extractSub">
+        <source>video.job.extractSub</source>
+        <translation>Extract Subtitle: %1</translation>
+    </message>
+    <message id="sub.action.extractFromVideo">
+        <source>sub.action.extractFromVideo</source>
+        <translation>Extract Track from Video</translation>
+    </message>
+    <message id="sub.extract.noVideo">
+        <source>sub.extract.noVideo</source>
+        <translation>Please load or specify a video file first.</translation>
+    </message>
+    <message id="sub.extract.noStreams">
+        <source>sub.extract.noStreams</source>
+        <translation>No embedded subtitle tracks detected in this video.</translation>
+    </message>
+    <message id="sub.extract.selectTrack">
+        <source>sub.extract.selectTrack</source>
+        <translation>Please select a subtitle track to extract:</translation>
+    </message>
+    <message id="sub.extract.failed">
+        <source>sub.extract.failed</source>
+        <translation>Failed to extract subtitle track: %1</translation>
+    </message>
+    <message id="sub.extract.emptyOrUnsupported">
+        <source>sub.extract.emptyOrUnsupported</source>
+        <translation>Extracted track contains no parseable text subtitle items (may be bitmap graphics).</translation>
+    </message>
+    <message id="sub.extract.loadedSuccess">
+        <source>sub.extract.loadedSuccess</source>
+        <translation>Successfully extracted and loaded %1 subtitle items!</translation>
+    </message>
 </context>
 </TS>

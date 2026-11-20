@@ -30,6 +30,7 @@ public:
     ~SubtitleStudioDialog() override;
 
     void setVideoFile(const QString &videoPath);
+    bool extractAndLoadStream(int streamIndex);
     void retranslateUi();
 
 private slots:
@@ -39,6 +40,7 @@ private slots:
 
     void importSubtitle();
     void exportSubtitle();
+    void extractSubtitleFromVideo();
     void runAiSpeechRecognition();
     void applyTimeShift();
     void addRow();
@@ -71,6 +73,7 @@ private:
     // Toolbar
     ElaPushButton *m_importBtn = nullptr;
     ElaPushButton *m_exportBtn = nullptr;
+    ElaPushButton *m_extractFromVideoBtn = nullptr;
     ElaPushButton *m_aiWhisperBtn = nullptr;
     ElaComboBox *m_aiLangCombo = nullptr;
     ElaSpinBox *m_shiftSpin = nullptr;

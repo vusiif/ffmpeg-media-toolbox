@@ -2759,5 +2759,61 @@
         <source>common.taskAdded</source>
         <translation>已加入任务队列</translation>
     </message>
+    <message id="video.sub.extractSection">
+        <source>video.sub.extractSection</source>
+        <translation>内置字幕轨提取</translation>
+    </message>
+    <message id="video.sub.stream">
+        <source>video.sub.stream</source>
+        <translation>选择字幕轨</translation>
+    </message>
+    <message id="video.sub.noTracks">
+        <source>video.sub.noTracks</source>
+        <translation>(当前视频未检测到内置字幕轨)</translation>
+    </message>
+    <message id="video.sub.extractBtn">
+        <source>video.sub.extractBtn</source>
+        <translation>📥 导出字幕文件...</translation>
+    </message>
+    <message id="video.sub.extractToStudio">
+        <source>video.sub.extractToStudio</source>
+        <translation>🎬 提取并在工作台编辑</translation>
+    </message>
+    <message id="video.sub.saveExtractedTitle">
+        <source>video.sub.saveExtractedTitle</source>
+        <translation>保存提取的字幕文件</translation>
+    </message>
+    <message id="video.job.extractSub">
+        <source>video.job.extractSub</source>
+        <translation>提取字幕轨: %1</translation>
+    </message>
+    <message id="sub.action.extractFromVideo">
+        <source>sub.action.extractFromVideo</source>
+        <translation>从视频提取轨</translation>
+    </message>
+    <message id="sub.extract.noVideo">
+        <source>sub.extract.noVideo</source>
+        <translation>请先加载或指定视频文件。</translation>
+    </message>
+    <message id="sub.extract.noStreams">
+        <source>sub.extract.noStreams</source>
+        <translation>当前视频中未检测到内置字幕轨。</translation>
+    </message>
+    <message id="sub.extract.selectTrack">
+        <source>sub.extract.selectTrack</source>
+        <translation>请选择要提取的字幕轨：</translation>
+    </message>
+    <message id="sub.extract.failed">
+        <source>sub.extract.failed</source>
+        <translation>字幕轨提取失败：%1</translation>
+    </message>
+    <message id="sub.extract.emptyOrUnsupported">
+        <source>sub.extract.emptyOrUnsupported</source>
+        <translation>提取完成，但未能解析出有效的文本字幕项（可能为位图图形字幕）。</translation>
+    </message>
+    <message id="sub.extract.loadedSuccess">
+        <source>sub.extract.loadedSuccess</source>
+        <translation>成功提取并加载了 %1 条字幕！</translation>
+    </message>
 </context>
 </TS>
