@@ -1,35 +1,24 @@
 #pragma once
 
 #include <QFutureWatcher>
-#include <QProcess>
-#include <QVector>
-#include <QPointer>
 #include <QWidget>
-class LosslessCutDialog;
-class FilterStudioDialog;
-class GifStudioDialog;
-class SubtitleStudioDialog;
-class PipCompositorDialog;
-#include "cut/SmartCutEngine.h"
+
 #include "media/MediaFile.h"
 
 class FFmpegLocator;
 class FFmpegCommandBuilder;
 class MediaProbeService;
 class JobQueue;
-class QListWidget;
 class QStackedWidget;
 class ElaPivot;
-class ElaScrollArea;
-class ElaScrollPageArea;
 class ElaText;
 class ElaPushButton;
 class ElaLineEdit;
-class ElaComboBox;
-class ElaSpinBox;
-class ElaDoubleSpinBox;
-class ElaCheckBox;
-class VideoPlayerWidget;
+
+class VideoClipTab;
+class VideoAudioTab;
+class VideoEffectsTab;
+class VideoFramesTab;
 
 class VideoPage : public QWidget
 {
@@ -39,7 +28,7 @@ public:
     explicit VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                        JobQueue *queue, MediaProbeService *probeService = nullptr,
                        QWidget *parent = nullptr);
-    ~VideoPage() override;
+    ~VideoPage() override = default;
 
     void retranslateUi();
 
@@ -48,38 +37,10 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
 private:
-    QString browseFile(const QString &title, const QString &filters);
-    void enqueue(const QString &name, const QStringList &args);
-
-    void trim();
-    void openLosslessCutStudio();
-    void openFilterStudioDialog();
-    void detectKeyframes();
-    void onKeyframeProbeFinished(int exitCode);
-    void updateKeyframeStatus();
-
-    void extractAudio();
-    void mute();
-    void applyBgm();
-    void applyAudioSync();
-    void screenshot();
-    void makeGif();
-    void openGifStudio();
-    void joinVideos();
-    void sequence();
-    void watermark();
-    void subtitleMux();
-    void extractSubtitle();
-    void extractSubtitleToStudio();
-    void openSubtitleStudio();
     void loadInputVideo(const QString &path);
     void probeMediaFile(const QString &path);
     void onMediaProbeFinished();
-    void updateSubtitleStreamsUI();
-    void adjust();
-    void detectAutoCrop();
-    void pip();
-    void openPipCompositorStudio();
+    QString browseFile(const QString &title, const QString &filters);
 
     FFmpegLocator *m_locator;
     FFmpegCommandBuilder *m_builder;
@@ -87,8 +48,8 @@ private:
     MediaProbeService *m_probeService;
 
     QString m_inputFile;
-    QVector<double> m_keyframes;
-    QProcess *m_probeProcess = nullptr;
+    QFutureWatcher<MediaFile> *m_mediaProbeWatcher = nullptr;
+    MediaFile m_mediaInfo;
 
     ElaText *m_titleLabel = nullptr;
     ElaText *m_inputCaption = nullptr;
@@ -102,187 +63,8 @@ private:
     QString m_effectsTabTitle;
     QString m_framesTabTitle;
 
-    // Tab 1: Clip & Adjust
-    ElaScrollPageArea *m_trimCard = nullptr;
-    ElaText *m_trimTitleLabel = nullptr;
-    VideoPlayerWidget *m_trimPlayer = nullptr;
-    ElaPushButton *m_setInButton = nullptr;
-    ElaPushButton *m_setOutButton = nullptr;
-    ElaPushButton *m_previewTrimButton = nullptr;
-    ElaPushButton *m_prevKeyframeBtn = nullptr;
-    ElaPushButton *m_nextKeyframeBtn = nullptr;
-    ElaPushButton *m_snapInButton = nullptr;
-    ElaPushButton *m_snapOutButton = nullptr;
-    ElaPushButton *m_openStudioButton = nullptr;
-    ElaText *m_keyframeStatusLabel = nullptr;
-    ElaText *m_trimStartCaption = nullptr;
-    ElaDoubleSpinBox *m_trimStart = nullptr;
-    ElaText *m_trimEndCaption = nullptr;
-    ElaDoubleSpinBox *m_trimEnd = nullptr;
-    ElaText *m_trimModeCaption = nullptr;
-    ElaComboBox *m_trimMode = nullptr;
-    ElaText *m_trimFormatCaption = nullptr;
-    ElaComboBox *m_trimFormat = nullptr;
-    ElaText *m_trimCopyCaption = nullptr;
-    ElaCheckBox *m_trimCopy = nullptr;
-    ElaPushButton *m_trimButton = nullptr;
-
-    ElaScrollPageArea *m_adjCard = nullptr;
-    ElaText *m_adjTitleLabel = nullptr;
-    ElaText *m_adjCropCaption = nullptr;
-    ElaSpinBox *m_adjCropX = nullptr;
-    ElaSpinBox *m_adjCropY = nullptr;
-    ElaSpinBox *m_adjCropW = nullptr;
-    ElaSpinBox *m_adjCropH = nullptr;
-    ElaPushButton *m_autoCropButton = nullptr;
-    ElaText *m_autoCropStatus = nullptr;
-    ElaText *m_adjResizeCaption = nullptr;
-    ElaSpinBox *m_adjResizeW = nullptr;
-    ElaSpinBox *m_adjResizeH = nullptr;
-    ElaText *m_adjRotateCaption = nullptr;
-    ElaComboBox *m_adjRotateCombo = nullptr;
-    ElaText *m_adjQualityCaption = nullptr;
-    ElaSpinBox *m_adjQualitySpin = nullptr;
-    ElaPushButton *m_adjButton = nullptr;
-
-    ElaScrollPageArea *m_joinCard = nullptr;
-    ElaText *m_joinTitleLabel = nullptr;
-    QListWidget *m_joinList = nullptr;
-    ElaPushButton *m_joinAddButton = nullptr;
-    ElaPushButton *m_joinRemoveButton = nullptr;
-    ElaPushButton *m_joinButton = nullptr;
-
-    // Tab 2: Audio Tools
-    ElaScrollPageArea *m_audioCard = nullptr;
-    ElaText *m_audioTitleLabel = nullptr;
-    ElaText *m_audioFormatCaption = nullptr;
-    ElaComboBox *m_audioFormat = nullptr;
-    ElaText *m_audioBitrateCaption = nullptr;
-    ElaSpinBox *m_audioBitrate = nullptr;
-    ElaPushButton *m_audioButton = nullptr;
-
-    ElaScrollPageArea *m_muteCard = nullptr;
-    ElaText *m_muteTitleLabel = nullptr;
-    ElaText *m_muteFormatCaption = nullptr;
-    ElaComboBox *m_muteFormat = nullptr;
-    ElaPushButton *m_muteButton = nullptr;
-
-    // BGM Card
-    ElaScrollPageArea *m_bgmCard = nullptr;
-    ElaText *m_bgmTitleLabel = nullptr;
-    ElaText *m_bgmPathCaption = nullptr;
-    ElaLineEdit *m_bgmPath = nullptr;
-    ElaPushButton *m_bgmBrowseButton = nullptr;
-    ElaText *m_bgmModeCaption = nullptr;
-    ElaComboBox *m_bgmMode = nullptr;
-    ElaText *m_bgmOrigVolCaption = nullptr;
-    ElaSpinBox *m_bgmOrigVol = nullptr;
-    ElaText *m_bgmMusicVolCaption = nullptr;
-    ElaSpinBox *m_bgmMusicVol = nullptr;
-    ElaPushButton *m_bgmButton = nullptr;
-
-    // Audio Sync & Volume Card
-    ElaScrollPageArea *m_syncCard = nullptr;
-    ElaText *m_syncTitleLabel = nullptr;
-    ElaText *m_syncOffsetCaption = nullptr;
-    ElaDoubleSpinBox *m_syncOffset = nullptr;
-    ElaText *m_syncOffsetTip = nullptr;
-    ElaText *m_syncVolumeCaption = nullptr;
-    ElaSpinBox *m_syncVolume = nullptr;
-    ElaPushButton *m_syncButton = nullptr;
-
-    // Tab 3: Overlay & Subtitles
-    ElaScrollPageArea *m_filterStudioCard = nullptr;
-    ElaText *m_filterStudioTitleLabel = nullptr;
-    ElaPushButton *m_filterStudioButton = nullptr;
-    ElaScrollPageArea *m_wmCard = nullptr;
-    ElaText *m_wmTitleLabel = nullptr;
-    ElaText *m_wmImageCaption = nullptr;
-    ElaLineEdit *m_wmPath = nullptr;
-    ElaPushButton *m_wmBrowseButton = nullptr;
-    ElaText *m_wmPositionCaption = nullptr;
-    ElaComboBox *m_wmPosition = nullptr;
-    ElaText *m_wmOpacityCaption = nullptr;
-    ElaSpinBox *m_wmOpacity = nullptr;
-    ElaPushButton *m_wmButton = nullptr;
-
-    ElaScrollPageArea *m_pipCard = nullptr;
-    ElaText *m_pipTitleLabel = nullptr;
-    ElaText *m_pipVideoCaption = nullptr;
-    ElaLineEdit *m_pipPath = nullptr;
-    ElaPushButton *m_pipBrowseButton = nullptr;
-    ElaText *m_pipSizeCaption = nullptr;
-    ElaSpinBox *m_pipWidth = nullptr;
-    ElaSpinBox *m_pipHeight = nullptr;
-    ElaText *m_pipPositionCaption = nullptr;
-    ElaComboBox *m_pipPosition = nullptr;
-    ElaText *m_pipMarginCaption = nullptr;
-    ElaSpinBox *m_pipMargin = nullptr;
-    ElaText *m_pipQualityCaption = nullptr;
-    ElaSpinBox *m_pipQualitySpin = nullptr;
-    ElaPushButton *m_pipButton = nullptr;
-    ElaPushButton *m_openPipStudioBtn = nullptr;
-    QString m_pipFile;
-
-    ElaScrollPageArea *m_subCard = nullptr;
-    ElaText *m_subTitleLabel = nullptr;
-    ElaText *m_subCaption = nullptr;
-    ElaLineEdit *m_subPath = nullptr;
-    ElaPushButton *m_subPathButton = nullptr;
-    ElaCheckBox *m_subBurnCheck = nullptr;
-    ElaText *m_subQualityCaption = nullptr;
-    ElaSpinBox *m_subQualitySpin = nullptr;
-    ElaPushButton *m_subButton = nullptr;
-    ElaPushButton *m_openSubStudioBtn = nullptr;
-    QString m_subtitleFile;
-
-    // Subtitle Extraction UI
-    ElaText *m_subExtractSectionCaption = nullptr;
-    ElaText *m_subStreamCaption = nullptr;
-    ElaComboBox *m_subStreamCombo = nullptr;
-    ElaPushButton *m_subExtractButton = nullptr;
-    ElaPushButton *m_subExtractToStudioButton = nullptr;
-
-    QFutureWatcher<MediaFile> *m_mediaProbeWatcher = nullptr;
-    MediaFile m_mediaInfo;
-
-    // Tab 4: Frames & Animation
-    ElaScrollPageArea *m_shotCard = nullptr;
-    ElaText *m_shotTitleLabel = nullptr;
-    ElaText *m_shotTimeCaption = nullptr;
-    ElaDoubleSpinBox *m_shotTime = nullptr;
-    ElaText *m_shotFormatCaption = nullptr;
-    ElaComboBox *m_shotFormat = nullptr;
-    ElaPushButton *m_shotButton = nullptr;
-
-    ElaScrollPageArea *m_gifCard = nullptr;
-    ElaText *m_gifTitleLabel = nullptr;
-    ElaText *m_gifStartCaption = nullptr;
-    ElaDoubleSpinBox *m_gifStart = nullptr;
-    ElaText *m_gifEndCaption = nullptr;
-    ElaDoubleSpinBox *m_gifEnd = nullptr;
-    ElaText *m_gifFpsCaption = nullptr;
-    ElaSpinBox *m_gifFps = nullptr;
-    ElaText *m_gifWidthCaption = nullptr;
-    ElaSpinBox *m_gifWidth = nullptr;
-    ElaPushButton *m_gifButton = nullptr;
-    ElaPushButton *m_openGifStudioBtn = nullptr;
-
-    ElaScrollPageArea *m_seqCard = nullptr;
-    ElaText *m_seqTitleLabel = nullptr;
-    ElaText *m_seqModeCaption = nullptr;
-    ElaComboBox *m_seqMode = nullptr;
-    ElaText *m_seqPatternCaption = nullptr;
-    ElaLineEdit *m_seqPattern = nullptr;
-    ElaText *m_seqFpsCaption = nullptr;
-    ElaDoubleSpinBox *m_seqFps = nullptr;
-    ElaPushButton *m_seqButton = nullptr;
-
-    QStringList m_joinFiles;
-
-    QPointer<LosslessCutDialog> m_cutDialog;
-    QPointer<FilterStudioDialog> m_filterDialog;
-    QPointer<GifStudioDialog> m_gifDialog;
-    QPointer<SubtitleStudioDialog> m_subDialog;
-    QPointer<PipCompositorDialog> m_pipDialog;
+    VideoClipTab *m_clipTab = nullptr;
+    VideoAudioTab *m_audioTab = nullptr;
+    VideoEffectsTab *m_effectsTab = nullptr;
+    VideoFramesTab *m_framesTab = nullptr;
 };

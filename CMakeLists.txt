@@ -146,6 +146,16 @@ set(APP_SOURCES
     src/app/pages/SettingsPage.cpp
     src/app/pages/VideoPage.h
     src/app/pages/VideoPage.cpp
+    src/app/pages/video/VideoTabBase.h
+    src/app/pages/video/VideoTabBase.cpp
+    src/app/pages/video/VideoClipTab.h
+    src/app/pages/video/VideoClipTab.cpp
+    src/app/pages/video/VideoAudioTab.h
+    src/app/pages/video/VideoAudioTab.cpp
+    src/app/pages/video/VideoEffectsTab.h
+    src/app/pages/video/VideoEffectsTab.cpp
+    src/app/pages/video/VideoFramesTab.h
+    src/app/pages/video/VideoFramesTab.cpp
     src/app/pages/AudioPage.h
     src/app/pages/AudioPage.cpp
     src/app/dialogs/ABCompareDialog.h
