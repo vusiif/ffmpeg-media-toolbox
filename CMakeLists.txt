@@ -132,12 +132,28 @@ set(APP_SOURCES
     src/app/pages/HomePage.cpp
     src/app/pages/ConvertPage.h
     src/app/pages/ConvertPage.cpp
+    src/app/pages/convert/ConvertSourceCard.h
+    src/app/pages/convert/ConvertSourceCard.cpp
+    src/app/pages/convert/ConvertCodecCard.h
+    src/app/pages/convert/ConvertCodecCard.cpp
+    src/app/pages/convert/ConvertAdvancedCard.h
+    src/app/pages/convert/ConvertAdvancedCard.cpp
+    src/app/pages/convert/ConvertPreviewCard.h
+    src/app/pages/convert/ConvertPreviewCard.cpp
     src/app/pages/ImagePage.h
     src/app/pages/ImagePage.cpp
     src/app/pages/JoinPage.h
     src/app/pages/JoinPage.cpp
     src/app/pages/BatchPage.h
     src/app/pages/BatchPage.cpp
+    src/app/pages/batch/BatchFileListCard.h
+    src/app/pages/batch/BatchFileListCard.cpp
+    src/app/pages/batch/BatchOptionsCard.h
+    src/app/pages/batch/BatchOptionsCard.cpp
+    src/app/pages/batch/BatchPipelineCard.h
+    src/app/pages/batch/BatchPipelineCard.cpp
+    src/app/pages/batch/BatchMatrixCard.h
+    src/app/pages/batch/BatchMatrixCard.cpp
     src/app/pages/QueuePage.h
     src/app/pages/QueuePage.cpp
     src/app/pages/RepairPage.h
