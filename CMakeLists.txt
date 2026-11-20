@@ -142,6 +142,14 @@ set(APP_SOURCES
     src/app/pages/QueuePage.cpp
     src/app/pages/RepairPage.h
     src/app/pages/RepairPage.cpp
+    src/app/pages/repair/RepairTabBase.h
+    src/app/pages/repair/RepairTabBase.cpp
+    src/app/pages/repair/SalvageRepairTab.h
+    src/app/pages/repair/SalvageRepairTab.cpp
+    src/app/pages/repair/ScanRepairTab.h
+    src/app/pages/repair/ScanRepairTab.cpp
+    src/app/pages/repair/UntruncRepairTab.h
+    src/app/pages/repair/UntruncRepairTab.cpp
     src/app/pages/SettingsPage.h
     src/app/pages/SettingsPage.cpp
     src/app/pages/VideoPage.h
