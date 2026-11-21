@@ -230,6 +230,11 @@ void MainWindow::initPages()
     addPageNode(trId("nav.batch"), m_batchPage, ElaIconType::Box);
     addPageNode(trId("nav.queue"), m_queuePage, ElaIconType::List);
     addFooterNode(trId("nav.settings"), m_settingsPage, m_settingsKey, 0, ElaIconType::GearComplex);
+
+    const QString homeKey = m_homePage->property("ElaPageKey").toString();
+    if (!homeKey.isEmpty()) {
+        navigation(homeKey);
+    }
 }
 
 void MainWindow::retranslateUi()

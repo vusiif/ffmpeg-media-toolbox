@@ -47,7 +47,7 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
     scrollArea->setFrameShape(QFrame::NoFrame);
 
     auto *container = new QWidget(scrollArea);
-    container->setAttribute(Qt::WA_TranslucentBackground);
+    container->setStyleSheet(QStringLiteral("background-color: transparent;"));
     auto *containerLayout = new QVBoxLayout(container);
     containerLayout->setContentsMargins(0, 0, 16, 0);
     containerLayout->setSpacing(16);

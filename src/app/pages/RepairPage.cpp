@@ -5,6 +5,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QPainter>
+#include <QStyleOption>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -108,9 +109,12 @@ void RepairPage::dropEvent(QDropEvent *event)
 
 void RepairPage::paintEvent(QPaintEvent *event)
 {
-    QWidget::paintEvent(event);
+    Q_UNUSED(event);
+    QStyleOption opt;
+    opt.initFrom(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     if (m_isDragHover) {
-        QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         QRectF r = rect().adjusted(6, 6, -6, -6);
         p.setPen(QPen(QColor(0, 120, 212, 220), 2.0, Qt::DashLine));

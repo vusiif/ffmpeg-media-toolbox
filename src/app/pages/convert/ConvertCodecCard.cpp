@@ -73,11 +73,11 @@ ConvertCodecCard::ConvertCodecCard(FFmpegCapabilities *caps, PresetManager *pres
     quickLayout->setContentsMargins(0, 0, 0, 0);
     quickLayout->setSpacing(6);
 
-    m_quick25MBBtn = new ElaPushButton(this);
-    m_quick50MBBtn = new ElaPushButton(this);
-    m_quick100MBBtn = new ElaPushButton(this);
-    m_quickBalancedBtn = new ElaPushButton(this);
-    m_quickLosslessBtn = new ElaPushButton(this);
+    m_quick25MBBtn = new ElaPushButton(m_quickTargetWidget);
+    m_quick50MBBtn = new ElaPushButton(m_quickTargetWidget);
+    m_quick100MBBtn = new ElaPushButton(m_quickTargetWidget);
+    m_quickBalancedBtn = new ElaPushButton(m_quickTargetWidget);
+    m_quickLosslessBtn = new ElaPushButton(m_quickTargetWidget);
 
     for (auto *btn : {m_quick25MBBtn, m_quick50MBBtn, m_quick100MBBtn, m_quickBalancedBtn, m_quickLosslessBtn}) {
         btn->setFixedHeight(28);

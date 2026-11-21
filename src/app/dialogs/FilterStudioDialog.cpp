@@ -55,7 +55,7 @@ FilterStudioDialog::FilterStudioDialog(FFmpegLocator *locator, MediaProbeService
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *body = new QWidget(scroll);
-    body->setAttribute(Qt::WA_TranslucentBackground);
+    body->setStyleSheet(QStringLiteral("background-color: transparent;"));
     auto *bodyLayout = new QVBoxLayout(body);
     bodyLayout->setContentsMargins(0, 0, 10, 0);
     bodyLayout->setSpacing(12);

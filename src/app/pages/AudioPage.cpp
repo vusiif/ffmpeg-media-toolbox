@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QMimeData>
 #include <QPainter>
+#include <QStyleOption>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -99,7 +100,7 @@ AudioPage::AudioPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
         scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
         bodyWidget = new QWidget(scroll);
-        bodyWidget->setAttribute(Qt::WA_TranslucentBackground);
+        bodyWidget->setStyleSheet(QStringLiteral("background-color: transparent;"));
         bodyLayout = new QVBoxLayout(bodyWidget);
         bodyLayout->setContentsMargins(0, 0, 10, 0);
         bodyLayout->setSpacing(14);
@@ -449,9 +450,12 @@ void AudioPage::dropEvent(QDropEvent *event)
 
 void AudioPage::paintEvent(QPaintEvent *event)
 {
-    QWidget::paintEvent(event);
+    Q_UNUSED(event);
+    QStyleOption opt;
+    opt.initFrom(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     if (m_isDragHover) {
-        QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
         p.setBrush(QColor(0, 120, 212, 20));

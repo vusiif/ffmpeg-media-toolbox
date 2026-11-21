@@ -115,7 +115,7 @@ QueuePage::QueuePage(JobQueue *queue, QWidget *parent)
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     m_rowsContainer = new QWidget(scroll);
-    m_rowsContainer->setAttribute(Qt::WA_TranslucentBackground);
+    m_rowsContainer->setStyleSheet(QStringLiteral("background-color: transparent;"));
     m_rowsLayout = new QVBoxLayout(m_rowsContainer);
     m_rowsLayout->setContentsMargins(0, 0, 0, 0);
     m_rowsLayout->setSpacing(8);

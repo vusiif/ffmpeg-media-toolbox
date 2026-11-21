@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPainter>
+#include <QStyleOption>
 #include <QVBoxLayout>
 
 #include "batch/BatchExportMatrix.h"
@@ -65,7 +66,7 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(scroll);
-    scrollBody->setAttribute(Qt::WA_TranslucentBackground);
+    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
     auto *right = new QVBoxLayout(scrollBody);
     right->setContentsMargins(0, 0, 10, 0);
     right->setSpacing(12);
@@ -164,9 +165,12 @@ void BatchPage::dropEvent(QDropEvent *event)
 
 void BatchPage::paintEvent(QPaintEvent *event)
 {
-    QWidget::paintEvent(event);
+    Q_UNUSED(event);
+    QStyleOption opt;
+    opt.initFrom(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     if (m_isDragHover) {
-        QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
         p.setBrush(QColor(0, 120, 212, 20));

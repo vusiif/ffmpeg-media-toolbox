@@ -32,7 +32,7 @@ HomePage::HomePage(FFmpegLocator *locator, FFmpegCapabilities *caps,
     m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto *scrollBody = new QWidget(m_scrollArea);
-    scrollBody->setAttribute(Qt::WA_TranslucentBackground);
+    scrollBody->setStyleSheet(QStringLiteral("background-color: transparent;"));
     auto *body = new QVBoxLayout(scrollBody);
     body->setContentsMargins(30, 26, 30, 26);
     body->setSpacing(18);
