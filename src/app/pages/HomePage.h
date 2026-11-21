@@ -29,6 +29,9 @@ public:
 signals:
     void navigationRequested(QWidget *page);
 
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
 private:
     void refreshHwStatus();
     void refreshUntruncStatus();

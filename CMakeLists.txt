@@ -16,13 +16,10 @@ set(CMAKE_AUTOUIC ON)
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 if(MSVC)
-    # Ninja parses /showIncludes byte-for-byte. Localized compiler output can
-    # leave empty dependency records and link objects with incompatible ABIs.
-    # Apply the language only to the compiler, preserving any existing launcher.
-    set(CMAKE_CXX_CL_SHOWINCLUDES_PREFIX "Note: including file: ")
-    set(CMAKE_CL_SHOWINCLUDES_PREFIX "Note: including file: ")
-    list(PREPEND CMAKE_CXX_COMPILER_LAUNCHER
-        "${CMAKE_COMMAND}" -E env VSLANG=1033)
+    # Ninja parses /showIncludes byte-for-byte to track header dependencies.
+    # On systems with Chinese MSVC, cl.exe outputs "注意: 包含文件:  ".
+    set(CMAKE_CXX_CL_SHOWINCLUDES_PREFIX "注意: 包含文件:  ")
+    set(CMAKE_CL_SHOWINCLUDES_PREFIX "注意: 包含文件:  ")
 endif()
 
 if(NOT DEFINED CMAKE_PREFIX_PATH)

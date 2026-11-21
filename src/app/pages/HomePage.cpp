@@ -2,6 +2,8 @@
 
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QPainter>
+#include <QStyleOption>
 #include <QVBoxLayout>
 
 #include "ElaPushButton.h"
@@ -23,6 +25,7 @@ HomePage::HomePage(FFmpegLocator *locator, FFmpegCapabilities *caps,
     , m_queue(queue)
     , m_untrunc(untrunc)
 {
+    setAttribute(Qt::WA_StyledBackground, true);
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
 
@@ -311,4 +314,13 @@ void HomePage::refreshQueueStatus()
         m_queuePendingText->setText(QStringLiteral("%1: %2").arg(trId("queue.pending")).arg(pending));
         m_queueCompletedText->setText(QStringLiteral("%1: %2").arg(trId("queue.completed")).arg(completed));
     }
+}
+
+void HomePage::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    QStyleOption opt;
+    opt.initFrom(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
