@@ -53,4 +53,6 @@ private:
     BatchMatrixCard *m_matrixCard = nullptr;
     ElaPushButton *m_queueButton = nullptr;
     bool m_isDragHover = false;
+
+    void updateQueueButtonText();
 };

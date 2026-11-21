@@ -134,8 +134,21 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     buttonRow->addStretch();
     m_addButton = new ElaPushButton(this);
-    m_addButton->setFixedHeight(38);
-    m_addButton->setMinimumWidth(160);
+    m_addButton->setFixedHeight(40);
+    m_addButton->setMinimumWidth(180);
+    m_addButton->setBorderRadius(6);
+    m_addButton->setLightDefaultColor(QColor(0, 120, 212));
+    m_addButton->setDarkDefaultColor(QColor(0, 120, 212));
+    m_addButton->setLightHoverColor(QColor(16, 137, 245));
+    m_addButton->setDarkHoverColor(QColor(16, 137, 245));
+    m_addButton->setLightPressColor(QColor(0, 90, 165));
+    m_addButton->setDarkPressColor(QColor(0, 90, 165));
+    m_addButton->setLightTextColor(Qt::white);
+    m_addButton->setDarkTextColor(Qt::white);
+    QFont addBtnFont = m_addButton->font();
+    addBtnFont.setBold(true);
+    addBtnFont.setPixelSize(14);
+    m_addButton->setFont(addBtnFont);
     connect(m_addButton, &ElaPushButton::clicked, this, &ConvertPage::addToQueue);
     buttonRow->addWidget(m_addButton);
     root->addLayout(buttonRow);

@@ -68,6 +68,15 @@ private:
     ElaComboBox *m_codecCombo = nullptr;
     ElaText *m_audioCodecCaption = nullptr;
     ElaComboBox *m_audioCodecCombo = nullptr;
+
+    ElaText *m_quickTargetCaption = nullptr;
+    QWidget *m_quickTargetWidget = nullptr;
+    ElaPushButton *m_quick25MBBtn = nullptr;
+    ElaPushButton *m_quick50MBBtn = nullptr;
+    ElaPushButton *m_quick100MBBtn = nullptr;
+    ElaPushButton *m_quickBalancedBtn = nullptr;
+    ElaPushButton *m_quickLosslessBtn = nullptr;
+
     ElaText *m_rateControlCaption = nullptr;
     ElaComboBox *m_rateControlCombo = nullptr;
     ElaText *m_qualityCaption = nullptr;

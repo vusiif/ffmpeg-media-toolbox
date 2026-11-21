@@ -215,6 +215,46 @@
         <source>convert.addToQueue</source>
         <translation>加入队列</translation>
     </message>
+    <message id="convert.quickTarget">
+        <source>convert.quickTarget</source>
+        <translation>快捷直达</translation>
+    </message>
+    <message id="convert.quick25MB">
+        <source>convert.quick25MB</source>
+        <translation>25MB (微信)</translation>
+    </message>
+    <message id="convert.quick50MB">
+        <source>convert.quick50MB</source>
+        <translation>50MB</translation>
+    </message>
+    <message id="convert.quick100MB">
+        <source>convert.quick100MB</source>
+        <translation>100MB</translation>
+    </message>
+    <message id="convert.quickBalanced">
+        <source>convert.quickBalanced</source>
+        <translation>标准 (CRF 23)</translation>
+    </message>
+    <message id="convert.quickLossless">
+        <source>convert.quickLossless</source>
+        <translation>原画拷贝</translation>
+    </message>
+    <message id="batch.quickSmall">
+        <source>batch.quickSmall</source>
+        <translation>小体积 (CRF 28)</translation>
+    </message>
+    <message id="batch.quickBalanced">
+        <source>batch.quickBalanced</source>
+        <translation>标准均衡 (CRF 23)</translation>
+    </message>
+    <message id="batch.quickHighQuality">
+        <source>batch.quickHighQuality</source>
+        <translation>超清画质 (CRF 18)</translation>
+    </message>
+    <message id="batch.quickCopy">
+        <source>batch.quickCopy</source>
+        <translation>原画拷贝</translation>
+    </message>
     <message id="image.title">
         <source>image.title</source>
         <translation>图片处理</translation>

@@ -215,6 +215,46 @@
         <source>convert.addToQueue</source>
         <translation>Add to Queue</translation>
     </message>
+    <message id="convert.quickTarget">
+        <source>convert.quickTarget</source>
+        <translation>Quick Target</translation>
+    </message>
+    <message id="convert.quick25MB">
+        <source>convert.quick25MB</source>
+        <translation>25MB (WeChat)</translation>
+    </message>
+    <message id="convert.quick50MB">
+        <source>convert.quick50MB</source>
+        <translation>50MB</translation>
+    </message>
+    <message id="convert.quick100MB">
+        <source>convert.quick100MB</source>
+        <translation>100MB</translation>
+    </message>
+    <message id="convert.quickBalanced">
+        <source>convert.quickBalanced</source>
+        <translation>Standard (CRF 23)</translation>
+    </message>
+    <message id="convert.quickLossless">
+        <source>convert.quickLossless</source>
+        <translation>Lossless Copy</translation>
+    </message>
+    <message id="batch.quickSmall">
+        <source>batch.quickSmall</source>
+        <translation>Compact (CRF 28)</translation>
+    </message>
+    <message id="batch.quickBalanced">
+        <source>batch.quickBalanced</source>
+        <translation>Standard (CRF 23)</translation>
+    </message>
+    <message id="batch.quickHighQuality">
+        <source>batch.quickHighQuality</source>
+        <translation>High Quality (CRF 18)</translation>
+    </message>
+    <message id="batch.quickCopy">
+        <source>batch.quickCopy</source>
+        <translation>Lossless Copy</translation>
+    </message>
     <message id="image.title">
         <source>image.title</source>
         <translation>Image Processing</translation>

@@ -10,6 +10,7 @@ class PresetManager;
 class ElaText;
 class ElaComboBox;
 class ElaSpinBox;
+class ElaPushButton;
 class ElaCheckBox;
 class ElaLineEdit;
 
@@ -63,7 +64,12 @@ private:
     ElaText *m_audioCodecCaption = nullptr;
     ElaComboBox *m_audioCodecCombo = nullptr;
     ElaText *m_qualityCaption = nullptr;
+    QWidget *m_qualityWidget = nullptr;
     ElaSpinBox *m_qualitySpin = nullptr;
+    ElaPushButton *m_quickSmallBtn = nullptr;
+    ElaPushButton *m_quickBalancedBtn = nullptr;
+    ElaPushButton *m_quickHighQualityBtn = nullptr;
+    ElaPushButton *m_quickCopyBtn = nullptr;
     ElaCheckBox *m_smartCopyCheck = nullptr;
     ElaCheckBox *m_stripMetaCheck = nullptr;
     ElaCheckBox *m_hwAccelCheck = nullptr;

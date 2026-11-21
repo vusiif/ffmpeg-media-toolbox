@@ -66,6 +66,55 @@ ConvertCodecCard::ConvertCodecCard(FFmpegCapabilities *caps, PresetManager *pres
     m_audioCodecCombo = new ElaComboBox(this);
     connect(m_audioCodecCombo, &ElaComboBox::currentTextChanged, this, &ConvertCodecCard::optionsChanged);
 
+    // Quick Target Presets Bar
+    m_quickTargetCaption = new ElaText(QString(), 13, this);
+    m_quickTargetWidget = new QWidget(this);
+    auto *quickLayout = new QHBoxLayout(m_quickTargetWidget);
+    quickLayout->setContentsMargins(0, 0, 0, 0);
+    quickLayout->setSpacing(6);
+
+    m_quick25MBBtn = new ElaPushButton(this);
+    m_quick50MBBtn = new ElaPushButton(this);
+    m_quick100MBBtn = new ElaPushButton(this);
+    m_quickBalancedBtn = new ElaPushButton(this);
+    m_quickLosslessBtn = new ElaPushButton(this);
+
+    for (auto *btn : {m_quick25MBBtn, m_quick50MBBtn, m_quick100MBBtn, m_quickBalancedBtn, m_quickLosslessBtn}) {
+        btn->setFixedHeight(28);
+        btn->setBorderRadius(5);
+        quickLayout->addWidget(btn);
+    }
+    quickLayout->addStretch();
+
+    connect(m_quick25MBBtn, &ElaPushButton::clicked, this, [this]() {
+        m_rateControlCombo->setCurrentIndex(2);
+        m_targetSizeSpin->setValue(25.0);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quick50MBBtn, &ElaPushButton::clicked, this, [this]() {
+        m_rateControlCombo->setCurrentIndex(2);
+        m_targetSizeSpin->setValue(50.0);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quick100MBBtn, &ElaPushButton::clicked, this, [this]() {
+        m_rateControlCombo->setCurrentIndex(2);
+        m_targetSizeSpin->setValue(100.0);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quickBalancedBtn, &ElaPushButton::clicked, this, [this]() {
+        m_rateControlCombo->setCurrentIndex(0);
+        m_qualitySpin->setValue(23);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quickLosslessBtn, &ElaPushButton::clicked, this, [this]() {
+        m_smartCopyCheck->setChecked(true);
+        emit optionsChanged();
+    });
+
     m_rateControlCaption = new ElaText(QString(), 13, this);
     m_rateControlCombo = new ElaComboBox(this);
     m_rateControlCombo->addItem(trId("convert.rateControl.crf"));
@@ -175,6 +224,7 @@ ConvertCodecCard::ConvertCodecCard(FFmpegCapabilities *caps, PresetManager *pres
     form->addRow(m_formatCaption, m_formatCombo);
     form->addRow(m_codecCaption, m_codecCombo);
     form->addRow(m_audioCodecCaption, m_audioCodecCombo);
+    form->addRow(m_quickTargetCaption, m_quickTargetWidget);
     form->addRow(m_rateControlCaption, m_rateControlCombo);
     form->addRow(m_qualityCaption, m_qualitySpin);
     form->addRow(m_videoBitrateCaption, m_videoBitrateWidget);
@@ -422,6 +472,12 @@ void ConvertCodecCard::retranslateUi()
     m_formatCaption->setText(trId("convert.outputFormat") + QStringLiteral(":"));
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
+    m_quickTargetCaption->setText(trId("convert.quickTarget") + QStringLiteral(":"));
+    m_quick25MBBtn->setText(trId("convert.quick25MB"));
+    m_quick50MBBtn->setText(trId("convert.quick50MB"));
+    m_quick100MBBtn->setText(trId("convert.quick100MB"));
+    m_quickBalancedBtn->setText(trId("convert.quickBalanced"));
+    m_quickLosslessBtn->setText(trId("convert.quickLossless"));
     m_rateControlCaption->setText(trId("convert.rateControl") + QStringLiteral(":"));
     m_rateControlCombo->setItemText(0, trId("convert.rateControl.crf"));
     m_rateControlCombo->setItemText(1, trId("convert.rateControl.bitrate"));

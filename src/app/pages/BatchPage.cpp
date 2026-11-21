@@ -87,11 +87,26 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 
     // Bottom Action: Add all to queue
     m_queueButton = new ElaPushButton(this);
-    m_queueButton->setFixedHeight(40);
+    m_queueButton->setFixedHeight(42);
+    m_queueButton->setBorderRadius(6);
+    m_queueButton->setLightDefaultColor(QColor(0, 120, 212));
+    m_queueButton->setDarkDefaultColor(QColor(0, 120, 212));
+    m_queueButton->setLightHoverColor(QColor(16, 137, 245));
+    m_queueButton->setDarkHoverColor(QColor(16, 137, 245));
+    m_queueButton->setLightPressColor(QColor(0, 90, 165));
+    m_queueButton->setDarkPressColor(QColor(0, 90, 165));
+    m_queueButton->setLightTextColor(Qt::white);
+    m_queueButton->setDarkTextColor(Qt::white);
+    QFont queueFont = m_queueButton->font();
+    queueFont.setBold(true);
+    queueFont.setPixelSize(14);
+    m_queueButton->setFont(queueFont);
     root->addWidget(m_queueButton);
 
     connect(m_fileCard, &BatchFileListCard::fileReadyToProcess,
             this, &BatchPage::onWatcherFileReady);
+    connect(m_fileCard, &BatchFileListCard::fileListChanged,
+            this, &BatchPage::updateQueueButtonText);
     connect(m_pipelineCard, &BatchPipelineCard::baseSettingsChanged,
             m_optionsCard, &BatchOptionsCard::setBaseSettings);
     connect(m_queueButton, &ElaPushButton::clicked,
@@ -333,6 +348,16 @@ void BatchPage::addAllToQueue()
     m_queue->addJobs(stdJobs);
 }
 
+void BatchPage::updateQueueButtonText()
+{
+    const int count = m_fileCard ? m_fileCard->inputFiles().count() : 0;
+    if (count > 0) {
+        m_queueButton->setText(QStringLiteral("%1 (%2)").arg(trId("convert.addToQueue"), QString::number(count)));
+    } else {
+        m_queueButton->setText(trId("convert.addToQueue"));
+    }
+}
+
 void BatchPage::retranslateUi()
 {
     m_titleLabel->setText(trId("batch.title"));
@@ -340,5 +365,5 @@ void BatchPage::retranslateUi()
     m_optionsCard->retranslateUi();
     m_pipelineCard->retranslateUi();
     m_matrixCard->retranslateUi();
-    m_queueButton->setText(trId("convert.addToQueue"));
+    updateQueueButtonText();
 }

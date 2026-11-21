@@ -8,6 +8,7 @@
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
 #include "ElaLineEdit.h"
+#include "ElaPushButton.h"
 #include "ElaSpinBox.h"
 #include "ElaText.h"
 #include "ffmpeg/FFmpegCapabilities.h"
@@ -60,11 +61,50 @@ BatchOptionsCard::BatchOptionsCard(FFmpegCapabilities *caps, PresetManager *pres
     formLayout->addRow(m_audioCodecCaption, m_audioCodecCombo);
 
     m_qualityCaption = new ElaText(QString(), 13, this);
-    m_qualitySpin = new ElaSpinBox(this);
+    m_qualityWidget = new QWidget(this);
+    auto *qualityLayout = new QHBoxLayout(m_qualityWidget);
+    qualityLayout->setContentsMargins(0, 0, 0, 0);
+    qualityLayout->setSpacing(6);
+
+    m_qualitySpin = new ElaSpinBox(m_qualityWidget);
     m_qualitySpin->setRange(0, 51);
     m_qualitySpin->setValue(23);
     connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &BatchOptionsCard::optionsChanged);
-    formLayout->addRow(m_qualityCaption, m_qualitySpin);
+    qualityLayout->addWidget(m_qualitySpin);
+
+    m_quickSmallBtn = new ElaPushButton(m_qualityWidget);
+    m_quickBalancedBtn = new ElaPushButton(m_qualityWidget);
+    m_quickHighQualityBtn = new ElaPushButton(m_qualityWidget);
+    m_quickCopyBtn = new ElaPushButton(m_qualityWidget);
+
+    for (auto *btn : {m_quickSmallBtn, m_quickBalancedBtn, m_quickHighQualityBtn, m_quickCopyBtn}) {
+        btn->setFixedHeight(28);
+        btn->setBorderRadius(5);
+        qualityLayout->addWidget(btn);
+    }
+    qualityLayout->addStretch();
+
+    connect(m_quickSmallBtn, &ElaPushButton::clicked, this, [this]() {
+        m_qualitySpin->setValue(28);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quickBalancedBtn, &ElaPushButton::clicked, this, [this]() {
+        m_qualitySpin->setValue(23);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quickHighQualityBtn, &ElaPushButton::clicked, this, [this]() {
+        m_qualitySpin->setValue(18);
+        m_smartCopyCheck->setChecked(false);
+        emit optionsChanged();
+    });
+    connect(m_quickCopyBtn, &ElaPushButton::clicked, this, [this]() {
+        m_smartCopyCheck->setChecked(true);
+        emit optionsChanged();
+    });
+
+    formLayout->addRow(m_qualityCaption, m_qualityWidget);
 
     m_smartCopyCheck = new ElaCheckBox(this);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &BatchOptionsCard::optionsChanged);
@@ -463,6 +503,10 @@ void BatchOptionsCard::retranslateUi()
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_quickSmallBtn->setText(trId("batch.quickSmall"));
+    m_quickBalancedBtn->setText(trId("batch.quickBalanced"));
+    m_quickHighQualityBtn->setText(trId("batch.quickHighQuality"));
+    m_quickCopyBtn->setText(trId("batch.quickCopy"));
     m_smartCopyCheck->setText(trId("common.smartCopy"));
     m_stripMetaCheck->setText(trId("metadata.remove"));
     m_hwAccelCheck->setText(trId("convert.hwAccel"));
