@@ -162,7 +162,7 @@ SettingsPage::SettingsPage(FFmpegLocator *locator, FFmpegCapabilities *caps,
 
     m_minimizeToTrayCaption = new ElaText(QString(), 13, m_prefsCard);
     m_minimizeToTrayCheck = new ElaCheckBox(m_prefsCard);
-    m_minimizeToTrayCheck->setChecked(settings.value(QStringLiteral("app/minimizeToTray"), true).toBool());
+    m_minimizeToTrayCheck->setChecked(settings.value(QStringLiteral("app/minimizeToTray"), false).toBool());
     connect(m_minimizeToTrayCheck, &ElaCheckBox::toggled, this, [](bool checked) {
         QSettings s(AppSettings::organization(), AppSettings::application());
         s.setValue(QStringLiteral("app/minimizeToTray"), checked);

@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QMenu>
+#include <QMessageBox>
 #include <QSettings>
 #include <QSystemTrayIcon>
 
@@ -115,7 +116,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings(AppSettings::organization(), AppSettings::application());
     settings.setValue(QStringLiteral("window/geometry"), saveGeometry());
 
-    const bool minimizeToTray = settings.value(QStringLiteral("app/minimizeToTray"), true).toBool();
+    const bool minimizeToTray = settings.value(QStringLiteral("app/minimizeToTray"), false).toBool();
     if (minimizeToTray && m_trayIcon && m_trayIcon->isVisible()) {
         hide();
         if (m_jobQueue && m_jobQueue->hasRunningJobs()) {
@@ -125,7 +126,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
         return;
     }
 
-    ElaWindow::closeEvent(event);
+    if (m_jobQueue && m_jobQueue->hasRunningJobs()) {
+        const auto answer = QMessageBox::question(
+            this,
+            trId("app.title"),
+            m_languageManager && m_languageManager->language().startsWith(QLatin1String("zh"))
+                ? QStringLiteral("当前队列中仍有正在执行的转码任务，确定要退出程序并终止任务吗？")
+                : QStringLiteral("There are active tasks running in the queue. Are you sure you want to quit and cancel them?"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
+        if (answer != QMessageBox::Yes) {
+            event->ignore();
+            return;
+        }
+    }
+
+    if (m_trayIcon) {
+        m_trayIcon->hide();
+    }
+    event->accept();
+    qApp->quit();
 }
 
 void MainWindow::initTrayIcon()
