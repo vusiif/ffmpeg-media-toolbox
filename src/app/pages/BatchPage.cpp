@@ -1,11 +1,13 @@
 #include "BatchPage.h"
 
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QPainter>
 #include <QVBoxLayout>
 
 #include "batch/BatchExportMatrix.h"
@@ -111,12 +113,24 @@ void BatchPage::addFolder(const QString &folder)
 void BatchPage::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
         event->acceptProposedAction();
+        update();
     }
+}
+
+void BatchPage::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
 }
 
 void BatchPage::dropEvent(QDropEvent *event)
 {
+    m_isDragHover = false;
+    update();
+
     QStringList files;
     for (const QUrl &url : event->mimeData()->urls()) {
         if (!url.isLocalFile()) continue;
@@ -130,6 +144,18 @@ void BatchPage::dropEvent(QDropEvent *event)
     }
     if (!files.isEmpty()) {
         m_fileCard->addFiles(files);
+    }
+}
+
+void BatchPage::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 20));
+        p.drawRoundedRect(rect().adjusted(10, 10, -10, -10), 10, 10);
     }
 }
 

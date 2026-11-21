@@ -1,8 +1,10 @@
 #include "RepairPage.h"
 
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QPainter>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -68,12 +70,27 @@ RepairPage::~RepairPage() = default;
 void RepairPage::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
+        update();
         event->acceptProposedAction();
+    }
+}
+
+void RepairPage::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event);
+    if (m_isDragHover) {
+        m_isDragHover = false;
+        update();
     }
 }
 
 void RepairPage::dropEvent(QDropEvent *event)
 {
+    if (m_isDragHover) {
+        m_isDragHover = false;
+        update();
+    }
     const auto urls = event->mimeData()->urls();
     if (urls.isEmpty()) return;
     const QString local = urls.first().toLocalFile();
@@ -86,6 +103,19 @@ void RepairPage::dropEvent(QDropEvent *event)
         m_scanTab->handleDroppedFile(local);
     } else if (idx == 2 && m_untruncTab) {
         m_untruncTab->handleDroppedFile(local);
+    }
+}
+
+void RepairPage::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        QRectF r = rect().adjusted(6, 6, -6, -6);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2.0, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 20));
+        p.drawRoundedRect(r, 8.0, 8.0);
     }
 }
 

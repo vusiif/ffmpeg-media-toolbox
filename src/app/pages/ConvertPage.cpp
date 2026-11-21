@@ -2,11 +2,13 @@
 
 #include <QDir>
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QMimeData>
+#include <QPainter>
 #include <QSettings>
 #include <QUuid>
 #include <QVBoxLayout>
@@ -157,17 +159,40 @@ ConvertPage::ConvertPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
 void ConvertPage::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
         event->acceptProposedAction();
+        update();
     }
+}
+
+void ConvertPage::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
 }
 
 void ConvertPage::dropEvent(QDropEvent *event)
 {
+    m_isDragHover = false;
+    update();
     const auto urls = event->mimeData()->urls();
     if (urls.isEmpty()) return;
     const QString local = urls.first().toLocalFile();
     if (local.isEmpty()) return;
     m_sourceCard->setInputFile(local);
+}
+
+void ConvertPage::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 20));
+        p.drawRoundedRect(rect().adjusted(10, 10, -10, -10), 10, 10);
+    }
 }
 
 void ConvertPage::onInputFileChanged(const QString &path)

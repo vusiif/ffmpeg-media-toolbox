@@ -29,7 +29,9 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     ElaText *m_pageTitleLabel = nullptr;
@@ -43,4 +45,5 @@ private:
     QString m_salvageTabTitle;
     QString m_scanTabTitle;
     QString m_repairTabTitle;
+    bool m_isDragHover = false;
 };

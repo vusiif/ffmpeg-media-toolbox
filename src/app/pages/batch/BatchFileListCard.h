@@ -30,6 +30,13 @@ public:
     void addFolder(const QString &folder);
     void retranslateUi();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+
 signals:
     void fileListChanged();
     void fileReadyToProcess(const QString &filePath, const QString &relativeSubDir);
@@ -72,4 +79,5 @@ private:
     ElaPushButton *m_watchBrowseBtn = nullptr;
     ElaPushButton *m_watchActionBtn = nullptr;
     ElaText *m_watchStatusLabel = nullptr;
+    bool m_isDragHover = false;
 };

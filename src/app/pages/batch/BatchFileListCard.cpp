@@ -1,9 +1,15 @@
 #include "BatchFileListCard.h"
 
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QPainter>
 #include <QSettings>
 #include <QStringListModel>
 #include <QVBoxLayout>
@@ -52,9 +58,11 @@ BatchFileListCard::BatchFileListCard(QWidget *parent)
     m_fileView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_fileView->setItemHeight(32);
     m_fileView->setIsTransparent(true);
+    m_fileView->installEventFilter(this);
     m_fileModel = new QStringListModel(this);
     m_fileView->setModel(m_fileModel);
     leftLayout->addWidget(m_fileView, 1);
+    setAcceptDrops(true);
 
     auto *fileButtons = new QHBoxLayout();
     m_addButton = new ElaPushButton(this);
@@ -289,4 +297,70 @@ void BatchFileListCard::retranslateUi()
     m_watchBrowseBtn->setText(trId("common.browse"));
     m_watchActionBtn->setText(m_watcherService->isWatching() ? trId("batch.watcher.stop") : trId("batch.watcher.start"));
     updateCountLabel();
+}
+
+bool BatchFileListCard::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == m_fileView && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_Delete || ke->key() == Qt::Key_Backspace) {
+            onRemoveSelectedClicked();
+            return true;
+        }
+        if (ke->matches(QKeySequence::SelectAll)) {
+            m_fileView->selectAll();
+            return true;
+        }
+    }
+    return ElaScrollPageArea::eventFilter(obj, event);
+}
+
+void BatchFileListCard::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
+        event->acceptProposedAction();
+        update();
+    }
+}
+
+void BatchFileListCard::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
+}
+
+void BatchFileListCard::dropEvent(QDropEvent *event)
+{
+    m_isDragHover = false;
+    update();
+
+    QStringList files;
+    for (const QUrl &url : event->mimeData()->urls()) {
+        if (!url.isLocalFile()) continue;
+        const QString path = url.toLocalFile();
+        const QFileInfo fi(path);
+        if (fi.isDir()) {
+            addFolder(path);
+        } else {
+            files.append(path);
+        }
+    }
+    if (!files.isEmpty()) {
+        addFiles(files);
+    }
+    event->acceptProposedAction();
+}
+
+void BatchFileListCard::paintEvent(QPaintEvent *event)
+{
+    ElaScrollPageArea::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 25));
+        p.drawRoundedRect(rect().adjusted(4, 4, -4, -4), 8, 8);
+    }
 }

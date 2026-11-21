@@ -1,10 +1,12 @@
 #include "VideoPage.h"
 
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMimeData>
+#include <QPainter>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -136,16 +138,39 @@ void VideoPage::onMediaProbeFinished()
 void VideoPage::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
         event->acceptProposedAction();
+        update();
     }
+}
+
+void VideoPage::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
 }
 
 void VideoPage::dropEvent(QDropEvent *event)
 {
+    m_isDragHover = false;
+    update();
     const QList<QUrl> urls = event->mimeData()->urls();
     if (urls.isEmpty()) return;
     loadInputVideo(urls.first().toLocalFile());
     event->acceptProposedAction();
+}
+
+void VideoPage::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 20));
+        p.drawRoundedRect(rect().adjusted(10, 10, -10, -10), 10, 10);
+    }
 }
 
 void VideoPage::retranslateUi()

@@ -33,7 +33,9 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     QString browseFile(const QString &title, const QString &filters);
@@ -114,4 +116,5 @@ private:
     ElaPushButton *m_tempo200Btn = nullptr;
     ElaCheckBox *m_reverseCheck = nullptr;
     ElaPushButton *m_tempoButton = nullptr;
+    bool m_isDragHover = false;
 };

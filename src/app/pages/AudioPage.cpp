@@ -1,12 +1,14 @@
 #include "AudioPage.h"
 
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QMimeData>
+#include <QPainter>
 #include <QStackedWidget>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -417,12 +419,23 @@ void AudioPage::enqueue(const QString &name, const QStringList &args)
 void AudioPage::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
         event->acceptProposedAction();
+        update();
     }
+}
+
+void AudioPage::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
 }
 
 void AudioPage::dropEvent(QDropEvent *event)
 {
+    m_isDragHover = false;
+    update();
     const QList<QUrl> urls = event->mimeData()->urls();
     if (!urls.isEmpty()) {
         const QString path = urls.first().toLocalFile();
@@ -430,6 +443,19 @@ void AudioPage::dropEvent(QDropEvent *event)
             m_inputFile = path;
             m_inputEdit->setText(path);
         }
+    }
+    event->acceptProposedAction();
+}
+
+void AudioPage::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 20));
+        p.drawRoundedRect(rect().adjusted(10, 10, -10, -10), 10, 10);
     }
 }
 

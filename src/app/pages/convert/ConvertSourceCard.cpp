@@ -1,7 +1,12 @@
 #include "ConvertSourceCard.h"
 
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QMimeData>
+#include <QPainter>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 
@@ -20,6 +25,7 @@ ConvertSourceCard::ConvertSourceCard(MediaProbeService *probe, RecentFiles *rece
 {
     setMinimumHeight(0);
     setMaximumHeight(QWIDGETSIZE_MAX);
+    setAcceptDrops(true);
 
     auto *inputLayout = new QVBoxLayout(this);
     inputLayout->setContentsMargins(18, 16, 18, 16);
@@ -208,4 +214,45 @@ void ConvertSourceCard::retranslateUi()
     m_browseButton->setText(trId("common.browse"));
     m_metaCaption->setText(trId("metadata.title"));
     m_metaCaption->setVisible(!m_metaValue->text().isEmpty());
+}
+
+void ConvertSourceCard::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+        m_isDragHover = true;
+        event->acceptProposedAction();
+        update();
+    }
+}
+
+void ConvertSourceCard::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    m_isDragHover = false;
+    update();
+}
+
+void ConvertSourceCard::dropEvent(QDropEvent *event)
+{
+    m_isDragHover = false;
+    update();
+    const auto urls = event->mimeData()->urls();
+    if (urls.isEmpty()) return;
+    const QString local = urls.first().toLocalFile();
+    if (!local.isEmpty()) {
+        setInputFile(local);
+    }
+    event->acceptProposedAction();
+}
+
+void ConvertSourceCard::paintEvent(QPaintEvent *event)
+{
+    ElaScrollPageArea::paintEvent(event);
+    if (m_isDragHover) {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(0, 120, 212, 220), 2, Qt::DashLine));
+        p.setBrush(QColor(0, 120, 212, 25));
+        p.drawRoundedRect(rect().adjusted(4, 4, -4, -4), 8, 8);
+    }
 }

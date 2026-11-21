@@ -31,7 +31,9 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void addAllToQueue();
@@ -50,4 +52,5 @@ private:
     BatchPipelineCard *m_pipelineCard = nullptr;
     BatchMatrixCard *m_matrixCard = nullptr;
     ElaPushButton *m_queueButton = nullptr;
+    bool m_isDragHover = false;
 };

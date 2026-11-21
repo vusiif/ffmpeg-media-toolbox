@@ -34,7 +34,9 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     void loadInputVideo(const QString &path);
@@ -67,4 +69,5 @@ private:
     VideoAudioTab *m_audioTab = nullptr;
     VideoEffectsTab *m_effectsTab = nullptr;
     VideoFramesTab *m_framesTab = nullptr;
+    bool m_isDragHover = false;
 };

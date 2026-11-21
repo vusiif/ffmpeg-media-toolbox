@@ -37,7 +37,9 @@ public:
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void onInputFileChanged(const QString &path);
@@ -84,4 +86,5 @@ private:
     ElaPushButton *m_losslessCutButton = nullptr;
     ElaPushButton *m_filterStudioButton = nullptr;
     ElaPushButton *m_addButton = nullptr;
+    bool m_isDragHover = false;
 };

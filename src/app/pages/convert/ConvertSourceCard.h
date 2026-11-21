@@ -31,6 +31,12 @@ public:
     void showMetadata(const QVariantMap &tags);
     void retranslateUi();
 
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+
 signals:
     void inputFileChanged(const QString &path);
     void probeFinished(const MediaFile &info, bool enqueueAfter);
@@ -61,4 +67,5 @@ private:
     ElaText *m_infoLabel = nullptr;
     ElaText *m_metaCaption = nullptr;
     ElaText *m_metaValue = nullptr;
+    bool m_isDragHover = false;
 };
