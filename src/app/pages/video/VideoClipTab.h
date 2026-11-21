@@ -2,6 +2,7 @@
 
 #include "VideoTabBase.h"
 
+#include <QFutureWatcher>
 #include <QPointer>
 #include <QProcess>
 #include <QVector>
@@ -85,6 +86,7 @@ private:
     ElaSpinBox *m_adjCropH = nullptr;
     ElaPushButton *m_autoCropButton = nullptr;
     ElaText *m_autoCropStatus = nullptr;
+    QFutureWatcher<QString> *m_autoCropWatcher = nullptr;
     ElaText *m_adjResizeCaption = nullptr;
     ElaSpinBox *m_adjResizeW = nullptr;
     ElaSpinBox *m_adjResizeH = nullptr;

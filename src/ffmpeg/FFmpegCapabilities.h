@@ -21,6 +21,7 @@ class FFmpegCapabilities : public QObject
 
 public:
     explicit FFmpegCapabilities(const FFmpegLocator *locator, QObject *parent = nullptr);
+    ~FFmpegCapabilities() override;
 
     bool isLoaded() const;
     bool isScanning() const;

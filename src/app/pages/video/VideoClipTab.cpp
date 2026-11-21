@@ -39,9 +39,19 @@ VideoClipTab::VideoClipTab(FFmpegLocator *locator, FFmpegCommandBuilder *builder
 
 VideoClipTab::~VideoClipTab()
 {
-    if (m_probeProcess && m_probeProcess->state() != QProcess::NotRunning) {
-        m_probeProcess->kill();
-        m_probeProcess->waitForFinished(500);
+    if (m_probeProcess) {
+        disconnect(m_probeProcess, nullptr, this, nullptr);
+        if (m_probeProcess->state() != QProcess::NotRunning) {
+            m_probeProcess->kill();
+            m_probeProcess->waitForFinished(500);
+        }
+    }
+    if (m_autoCropWatcher) {
+        disconnect(m_autoCropWatcher, nullptr, this, nullptr);
+        if (m_autoCropWatcher->isRunning()) {
+            m_autoCropWatcher->cancel();
+            m_autoCropWatcher->waitForFinished();
+        }
     }
 }
 
@@ -451,6 +461,34 @@ void VideoClipTab::detectAutoCrop()
         return;
     }
 
+    if (!m_autoCropWatcher) {
+        m_autoCropWatcher = new QFutureWatcher<QString>(this);
+        connect(m_autoCropWatcher, &QFutureWatcher<QString>::finished, this, [this]() {
+            m_autoCropButton->setEnabled(true);
+            const QString output = m_autoCropWatcher->result();
+            const FFmpegCommandBuilder::CropArea crop = FFmpegCommandBuilder::parseCropdetectOutput(output);
+            if (crop.isValid()) {
+                m_adjCropX->setValue(crop.x);
+                m_adjCropY->setValue(crop.y);
+                m_adjCropW->setValue(crop.w);
+                m_adjCropH->setValue(crop.h);
+                m_autoCropStatus->setText(QStringLiteral("%1: %2x%3 (+%4,+%5)")
+                                              .arg(trId("video.autoCrop.found"))
+                                              .arg(crop.w)
+                                              .arg(crop.h)
+                                              .arg(crop.x)
+                                              .arg(crop.y));
+            } else {
+                m_autoCropStatus->setText(trId("video.autoCrop.none"));
+            }
+        });
+    }
+
+    if (m_autoCropWatcher->isRunning()) {
+        m_autoCropWatcher->cancel();
+        m_autoCropWatcher->waitForFinished();
+    }
+
     m_autoCropButton->setEnabled(false);
     m_autoCropStatus->setText(trId("video.autoCrop.detecting"));
 
@@ -464,36 +502,13 @@ void VideoClipTab::detectAutoCrop()
                                 : 1.0;
     const QStringList args = m_builder->buildCropdetect(inputPath, seekSec, 25);
 
-    auto *watcher = new QFutureWatcher<QString>(this);
-    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
-        const QString output = watcher->result();
-        watcher->deleteLater();
-        m_autoCropButton->setEnabled(true);
-
-        const FFmpegCommandBuilder::CropArea crop = FFmpegCommandBuilder::parseCropdetectOutput(output);
-        if (crop.isValid()) {
-            m_adjCropX->setValue(crop.x);
-            m_adjCropY->setValue(crop.y);
-            m_adjCropW->setValue(crop.w);
-            m_adjCropH->setValue(crop.h);
-            m_autoCropStatus->setText(QStringLiteral("%1: %2x%3 (+%4,+%5)")
-                                          .arg(trId("video.autoCrop.found"))
-                                          .arg(crop.w)
-                                          .arg(crop.h)
-                                          .arg(crop.x)
-                                          .arg(crop.y));
-        } else {
-            m_autoCropStatus->setText(trId("video.autoCrop.none"));
-        }
-    });
-
     QFuture<QString> future = QtConcurrent::run([ffmpegPath, args]() -> QString {
         QProcess proc;
         proc.start(ffmpegPath, args);
         proc.waitForFinished(10000);
         return QString::fromUtf8(proc.readAllStandardError());
     });
-    watcher->setFuture(future);
+    m_autoCropWatcher->setFuture(future);
 }
 
 void VideoClipTab::joinVideos()

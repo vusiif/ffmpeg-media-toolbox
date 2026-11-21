@@ -147,15 +147,26 @@ ImagePage::ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     buttonRow->addWidget(m_addButton);
     root->addLayout(buttonRow);
 
-    m_previewWatcher = new QFutureWatcher<QPixmap>(this);
-    connect(m_previewWatcher, &QFutureWatcher<QPixmap>::finished, this, [=]() {
-        const QPixmap pix = m_previewWatcher->result();
-        if (!pix.isNull()) {
-            m_previewLabel->setPixmap(pix);
+    m_previewWatcher = new QFutureWatcher<QImage>(this);
+    connect(m_previewWatcher, &QFutureWatcher<QImage>::finished, this, [this]() {
+        const QImage img = m_previewWatcher->result();
+        if (!img.isNull()) {
+            m_previewLabel->setPixmap(QPixmap::fromImage(img));
         }
     });
 
     retranslateUi();
+}
+
+ImagePage::~ImagePage()
+{
+    if (m_previewWatcher) {
+        disconnect(m_previewWatcher, nullptr, this, nullptr);
+        if (m_previewWatcher->isRunning()) {
+            m_previewWatcher->cancel();
+            m_previewWatcher->waitForFinished();
+        }
+    }
 }
 
 void ImagePage::browseInput()
@@ -172,12 +183,17 @@ void ImagePage::browseInput()
 
 void ImagePage::startPreview()
 {
+    if (m_inputFile.isEmpty()) return;
+    if (m_previewWatcher->isRunning()) {
+        m_previewWatcher->cancel();
+        m_previewWatcher->waitForFinished();
+    }
     const QString path = m_inputFile;
     const QSize target = m_previewLabel->size();
     m_previewWatcher->setFuture(QtConcurrent::run([path, target]() {
-        QPixmap pix(path);
-        if (pix.isNull()) return QPixmap();
-        return pix.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QImage img(path);
+        if (img.isNull()) return QImage();
+        return img.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }));
 }
 

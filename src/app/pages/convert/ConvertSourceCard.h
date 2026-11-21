@@ -20,7 +20,7 @@ class ConvertSourceCard : public ElaScrollPageArea
 
 public:
     explicit ConvertSourceCard(MediaProbeService *probe, RecentFiles *recentFiles, QWidget *parent = nullptr);
-    ~ConvertSourceCard() override = default;
+    ~ConvertSourceCard() override;
 
     QString inputFile() const;
     void setInputFile(const QString &path);

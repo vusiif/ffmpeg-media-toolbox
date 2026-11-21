@@ -95,6 +95,17 @@ VideoPage::VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     retranslateUi();
 }
 
+VideoPage::~VideoPage()
+{
+    if (m_mediaProbeWatcher) {
+        disconnect(m_mediaProbeWatcher, nullptr, this, nullptr);
+        if (m_mediaProbeWatcher->isRunning()) {
+            m_mediaProbeWatcher->cancel();
+            m_mediaProbeWatcher->waitForFinished();
+        }
+    }
+}
+
 QString VideoPage::browseFile(const QString &title, const QString &filters)
 {
     return QFileDialog::getOpenFileName(this, title, QString(), filters);

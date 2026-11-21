@@ -431,9 +431,12 @@ FilterStudioDialog::FilterStudioDialog(FFmpegLocator *locator, MediaProbeService
 
 FilterStudioDialog::~FilterStudioDialog()
 {
-    if (m_previewProcess && m_previewProcess->state() != QProcess::NotRunning) {
-        m_previewProcess->kill();
-        m_previewProcess->waitForFinished(500);
+    if (m_previewProcess) {
+        disconnect(m_previewProcess, nullptr, this, nullptr);
+        if (m_previewProcess->state() != QProcess::NotRunning) {
+            m_previewProcess->kill();
+            m_previewProcess->waitForFinished(500);
+        }
     }
     if (!m_previewSampleFile.isEmpty() && QFile::exists(m_previewSampleFile)) {
         QFile::remove(m_previewSampleFile);

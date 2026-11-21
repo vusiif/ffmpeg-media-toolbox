@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QFutureWatcher>
-#include <QPixmap>
+#include <QImage>
 #include <QWidget>
 
 class FFmpegLocator;
@@ -21,6 +21,7 @@ class ImagePage : public QWidget
 public:
     explicit ImagePage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                        JobQueue *queue, QWidget *parent = nullptr);
+    ~ImagePage() override;
 
     void retranslateUi();
 
@@ -34,7 +35,7 @@ private:
     JobQueue *m_queue;
 
     QString m_inputFile;
-    QFutureWatcher<QPixmap> *m_previewWatcher = nullptr;
+    QFutureWatcher<QImage> *m_previewWatcher = nullptr;
 
     ElaText *m_titleLabel = nullptr;
     ElaPushButton *m_browseButton = nullptr;

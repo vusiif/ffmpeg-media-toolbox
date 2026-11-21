@@ -28,7 +28,7 @@ public:
     explicit VideoPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
                        JobQueue *queue, MediaProbeService *probeService = nullptr,
                        QWidget *parent = nullptr);
-    ~VideoPage() override = default;
+    ~VideoPage() override;
 
     void retranslateUi();
 

@@ -89,6 +89,17 @@ ConvertSourceCard::ConvertSourceCard(MediaProbeService *probe, RecentFiles *rece
     retranslateUi();
 }
 
+ConvertSourceCard::~ConvertSourceCard()
+{
+    if (m_probeWatcher) {
+        disconnect(m_probeWatcher, nullptr, this, nullptr);
+        if (m_probeWatcher->isRunning()) {
+            m_probeWatcher->cancel();
+            m_probeWatcher->waitForFinished();
+        }
+    }
+}
+
 QString ConvertSourceCard::inputFile() const
 {
     return m_inputFile;
@@ -125,6 +136,10 @@ void ConvertSourceCard::loadRecentFile(const QString &path)
 void ConvertSourceCard::startProbe(bool enqueueAfter)
 {
     if (m_inputFile.isEmpty() || !m_probe) return;
+    if (m_probeWatcher->isRunning()) {
+        m_probeWatcher->cancel();
+        m_probeWatcher->waitForFinished();
+    }
     m_enqueueAfterProbe = enqueueAfter;
     m_infoLabel->setText(trId("convert.probing"));
     const QString path = m_inputFile;

@@ -187,6 +187,16 @@ void VideoPlayerWidget::ensurePlayerInitialized()
     connect(m_player, &QMediaPlayer::positionChanged, this, &VideoPlayerWidget::onPositionChanged);
     connect(m_player, &QMediaPlayer::durationChanged, this, &VideoPlayerWidget::onDurationChanged);
     connect(m_player, &QMediaPlayer::playbackStateChanged, this, &VideoPlayerWidget::onPlaybackStateChanged);
+    connect(m_player, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error error, const QString &errorString) {
+        if (error != QMediaPlayer::NoError) {
+            if (m_placeholderText) {
+                m_placeholderText->setText(QStringLiteral("⚠️ %1: %2").arg(trId("player.playbackError"), errorString));
+            }
+            if (m_videoStack && m_emptyPlaceholder) {
+                m_videoStack->setCurrentWidget(m_emptyPlaceholder);
+            }
+        }
+    });
 
     if (m_videoStack) {
         m_videoStack->addWidget(m_videoWidget);
@@ -234,6 +244,9 @@ void VideoPlayerWidget::loadMedia(const QString &filePath)
     clearSegments();
     clearKeyframes();
     clearCutSegments();
+    if (m_placeholderText) {
+        m_placeholderText->setText(trId("player.noMediaPlaceholder"));
+    }
     if (filePath.isEmpty()) {
         if (m_player) {
             m_player->setSource(QUrl());

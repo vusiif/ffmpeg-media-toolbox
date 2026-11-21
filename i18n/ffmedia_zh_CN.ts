@@ -1055,6 +1055,10 @@
         <source>player.noMediaPlaceholder</source>
         <translation>请选择或拖入视频文件以进行预览与剪辑</translation>
     </message>
+    <message id="player.playbackError">
+        <source>player.playbackError</source>
+        <translation>播放失败</translation>
+    </message>
     <message id="repair.tab.salvage">
         <source>repair.tab.salvage</source>
         <translation>免样本·智能抢救</translation>

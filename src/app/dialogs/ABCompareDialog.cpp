@@ -47,8 +47,18 @@ ABCompareDialog::ABCompareDialog(const QString &sourcePath,
 
 ABCompareDialog::~ABCompareDialog()
 {
-    if (m_watcher->isRunning()) {
-        m_watcher->waitForFinished();
+    if (m_watcher) {
+        disconnect(m_watcher, nullptr, this, nullptr);
+        if (m_watcher->isRunning()) {
+            m_watcher->cancel();
+            m_watcher->waitForFinished();
+        }
+    }
+    if (m_evaluator) {
+        disconnect(m_evaluator, nullptr, this, nullptr);
+        if (m_evaluator->isRunning()) {
+            m_evaluator->cancel();
+        }
     }
     QFile::remove(m_sourceTempImg);
     QFile::remove(m_previewTempImg);

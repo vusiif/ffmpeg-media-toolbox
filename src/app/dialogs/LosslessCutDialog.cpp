@@ -327,9 +327,12 @@ LosslessCutDialog::LosslessCutDialog(FFmpegLocator *locator, MediaProbeService *
 
 LosslessCutDialog::~LosslessCutDialog()
 {
-    if (m_probeProcess && m_probeProcess->state() != QProcess::NotRunning) {
-        m_probeProcess->kill();
-        m_probeProcess->waitForFinished(500);
+    if (m_probeProcess) {
+        disconnect(m_probeProcess, nullptr, this, nullptr);
+        if (m_probeProcess->state() != QProcess::NotRunning) {
+            m_probeProcess->kill();
+            m_probeProcess->waitForFinished(500);
+        }
     }
 }
 
@@ -406,7 +409,12 @@ void LosslessCutDialog::onDetectKeyframes()
 
     const QString ffprobe = m_locator ? m_locator->ffprobePath() : QStringLiteral("ffprobe");
     const QStringList args = SmartCutEngine::buildKeyframeProbeCommand(ffprobe, m_inputFile);
-    m_probeProcess->start(args.first(), args.mid(1));
+    if (!args.isEmpty()) {
+        m_probeProcess->start(args.first(), args.mid(1));
+    } else {
+        m_detectKeyframesBtn->setEnabled(true);
+        m_keyframeStatusLabel->setText(trId("cut.keyframe.detectFailed"));
+    }
 }
 
 void LosslessCutDialog::onKeyframeProbeFinished(int exitCode)

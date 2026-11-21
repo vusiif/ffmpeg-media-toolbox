@@ -1055,6 +1055,10 @@
         <source>player.noMediaPlaceholder</source>
         <translation>Select or drag in a video file to preview and edit</translation>
     </message>
+    <message id="player.playbackError">
+        <source>player.playbackError</source>
+        <translation>Playback Error</translation>
+    </message>
     <message id="repair.tab.salvage">
         <source>repair.tab.salvage</source>
         <translation>Smart Salvage</translation>

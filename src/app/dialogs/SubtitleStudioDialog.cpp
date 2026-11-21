@@ -202,9 +202,12 @@ SubtitleStudioDialog::SubtitleStudioDialog(JobQueue *queue, FFmpegLocator *locat
 
 SubtitleStudioDialog::~SubtitleStudioDialog()
 {
-    if (m_aiProcess && m_aiProcess->state() != QProcess::NotRunning) {
-        m_aiProcess->kill();
-        m_aiProcess->waitForFinished(1000);
+    if (m_aiProcess) {
+        disconnect(m_aiProcess, nullptr, this, nullptr);
+        if (m_aiProcess->state() != QProcess::NotRunning) {
+            m_aiProcess->kill();
+            m_aiProcess->waitForFinished(1000);
+        }
     }
 }
 

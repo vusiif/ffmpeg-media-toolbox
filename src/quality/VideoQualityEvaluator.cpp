@@ -70,9 +70,12 @@ VideoQualityEvaluator::VideoQualityEvaluator(const FFmpegLocator *locator, QObje
 
 VideoQualityEvaluator::~VideoQualityEvaluator()
 {
-    if (m_process->state() != QProcess::NotRunning) {
-        m_process->kill();
-        m_process->waitForFinished(1000);
+    if (m_process) {
+        disconnect(m_process, nullptr, this, nullptr);
+        if (m_process->state() != QProcess::NotRunning) {
+            m_process->kill();
+            m_process->waitForFinished(1000);
+        }
     }
 }
 

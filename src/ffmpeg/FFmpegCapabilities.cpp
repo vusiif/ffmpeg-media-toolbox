@@ -10,6 +10,17 @@ FFmpegCapabilities::FFmpegCapabilities(const FFmpegLocator *locator, QObject *pa
 {
 }
 
+FFmpegCapabilities::~FFmpegCapabilities()
+{
+    if (m_watcher) {
+        disconnect(m_watcher, nullptr, this, nullptr);
+        if (m_watcher->isRunning()) {
+            m_watcher->cancel();
+            m_watcher->waitForFinished();
+        }
+    }
+}
+
 bool FFmpegCapabilities::isLoaded() const { return m_loaded; }
 bool FFmpegCapabilities::isScanning() const { return m_scanRunning; }
 
