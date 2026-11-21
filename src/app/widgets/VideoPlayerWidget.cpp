@@ -426,6 +426,13 @@ void VideoPlayerWidget::retranslateUi()
     m_fullscreenBtn->setToolTip(m_isFullscreen ? trId("player.exitFullscreen") : trId("player.fullscreen"));
 }
 
+void VideoPlayerWidget::prewarm()
+{
+    if (m_videoWidget) {
+        (void)m_videoWidget->winId();
+    }
+}
+
 void VideoPlayerWidget::toggleFullscreen()
 {
     if (!m_isFullscreen) {

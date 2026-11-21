@@ -73,6 +73,7 @@ public:
     bool isFullscreen() const { return m_isFullscreen; }
 
     void retranslateUi();
+    void prewarm();
 
 signals:
     void skippedSegment(double fromSec, double toSec);

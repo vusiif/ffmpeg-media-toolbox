@@ -31,6 +31,7 @@ public:
     ~VideoPage() override = default;
 
     void retranslateUi();
+    void prewarm();
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
