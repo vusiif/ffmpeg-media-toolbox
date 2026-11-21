@@ -8,6 +8,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
@@ -92,6 +93,8 @@ LosslessCutDialog::LosslessCutDialog(FFmpegLocator *locator, MediaProbeService *
     // 2. Video Player
     m_player = new VideoPlayerWidget(body);
     m_player->setAutoSkipVisible(false);
+    connect(m_player, &VideoPlayerWidget::markInRequested, this, &LosslessCutDialog::onMarkInClicked);
+    connect(m_player, &VideoPlayerWidget::markOutRequested, this, &LosslessCutDialog::onMarkOutClicked);
     bodyLayout->addWidget(m_player);
 
     // 3. Keyframe Toolbar & Range Controls Card
@@ -765,8 +768,10 @@ void LosslessCutDialog::retranslateUi()
     m_nextKeyframeBtn->setText(trId("cut.keyframe.next"));
     m_snapInBtn->setText(trId("cut.keyframe.snapIn"));
     m_snapOutBtn->setText(trId("cut.keyframe.snapOut"));
-    m_markInBtn->setText(trId("cut.range.markIn"));
-    m_markOutBtn->setText(trId("cut.range.markOut"));
+    m_markInBtn->setText(trId("cut.range.markIn") + QStringLiteral(" (I)"));
+    m_markInBtn->setToolTip(QStringLiteral("快捷键: I 或 ["));
+    m_markOutBtn->setText(trId("cut.range.markOut") + QStringLiteral(" (O)"));
+    m_markOutBtn->setToolTip(QStringLiteral("快捷键: O 或 ]"));
     m_previewBtn->setText(trId("cut.range.preview"));
     m_addSegmentBtn->setText(trId("cut.range.addSegment"));
     if (m_splitBtn) m_splitBtn->setText(trId("cut.action.split"));
@@ -785,4 +790,32 @@ void LosslessCutDialog::retranslateUi()
     });
     updateKeyframeStatus();
     refreshSegmentsTable();
+}
+
+void LosslessCutDialog::keyPressEvent(QKeyEvent *event)
+{
+    QWidget *fw = focusWidget();
+    if (fw && (qobject_cast<QLineEdit *>(fw) || qobject_cast<QAbstractSpinBox *>(fw))) {
+        QDialog::keyPressEvent(event);
+        return;
+    }
+
+    if (m_player) {
+        if (event->key() == Qt::Key_I || event->key() == Qt::Key_BracketLeft) {
+            onMarkInClicked();
+            event->accept();
+            return;
+        }
+        if (event->key() == Qt::Key_O || event->key() == Qt::Key_BracketRight) {
+            onMarkOutClicked();
+            event->accept();
+            return;
+        }
+        if (event->key() == Qt::Key_Space) {
+            m_player->togglePlayPause();
+            event->accept();
+            return;
+        }
+    }
+    QDialog::keyPressEvent(event);
 }

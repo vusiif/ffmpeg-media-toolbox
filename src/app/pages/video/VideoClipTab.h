@@ -29,6 +29,9 @@ public:
     void setInputFile(const QString &path) override;
     void retranslateUi() override;
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
 private:
     void initTrimCard();
     void initAdjustCard();

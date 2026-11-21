@@ -5,6 +5,8 @@
 #include <QFormLayout>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QMessageBox>
 #include <QtConcurrent/QtConcurrentRun>
@@ -134,6 +136,19 @@ void VideoClipTab::initTrimCard()
 
     connect(m_setOutButton, &ElaPushButton::clicked, this, [this]() {
         const double pos = m_trimPlayer->currentPositionSec();
+        m_trimEnd->setValue(pos);
+        m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+    });
+
+    connect(m_trimPlayer, &VideoPlayerWidget::markInRequested, this, [this](double pos) {
+        m_trimStart->setValue(pos);
+        if (m_trimEnd->value() <= pos && m_trimPlayer->durationSec() > pos) {
+            m_trimEnd->setValue(m_trimPlayer->durationSec());
+        }
+        m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+    });
+
+    connect(m_trimPlayer, &VideoPlayerWidget::markOutRequested, this, [this](double pos) {
         m_trimEnd->setValue(pos);
         m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
     });
@@ -491,12 +506,44 @@ void VideoClipTab::joinVideos()
             m_builder->buildVideoJoin(m_joinFiles, output));
 }
 
+void VideoClipTab::keyPressEvent(QKeyEvent *event)
+{
+    QWidget *fw = focusWidget();
+    if (fw && (qobject_cast<QLineEdit *>(fw) || qobject_cast<QAbstractSpinBox *>(fw))) {
+        VideoTabBase::keyPressEvent(event);
+        return;
+    }
+
+    if (m_trimPlayer) {
+        if (event->key() == Qt::Key_I || event->key() == Qt::Key_BracketLeft) {
+            const double pos = m_trimPlayer->currentPositionSec();
+            m_trimStart->setValue(pos);
+            if (m_trimEnd->value() <= pos && m_trimPlayer->durationSec() > pos) {
+                m_trimEnd->setValue(m_trimPlayer->durationSec());
+            }
+            m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+            event->accept();
+            return;
+        }
+        if (event->key() == Qt::Key_O || event->key() == Qt::Key_BracketRight) {
+            const double pos = m_trimPlayer->currentPositionSec();
+            m_trimEnd->setValue(pos);
+            m_trimPlayer->setMarkRange(m_trimStart->value(), m_trimEnd->value());
+            event->accept();
+            return;
+        }
+    }
+    VideoTabBase::keyPressEvent(event);
+}
+
 void VideoClipTab::retranslateUi()
 {
     m_trimTitleLabel->setText(trId("video.trim"));
     if (m_trimPlayer) m_trimPlayer->retranslateUi();
-    m_setInButton->setText(trId("video.trim.setIn"));
-    m_setOutButton->setText(trId("video.trim.setOut"));
+    m_setInButton->setText(trId("video.trim.setIn") + QStringLiteral(" (I)"));
+    m_setInButton->setToolTip(QStringLiteral("快捷键: I 或 ["));
+    m_setOutButton->setText(trId("video.trim.setOut") + QStringLiteral(" (O)"));
+    m_setOutButton->setToolTip(QStringLiteral("快捷键: O 或 ]"));
     m_previewTrimButton->setText(trId("video.trim.preview"));
     m_trimStartCaption->setText(trId("common.start") + QStringLiteral(":"));
     m_trimEndCaption->setText(trId("common.end") + QStringLiteral(":"));

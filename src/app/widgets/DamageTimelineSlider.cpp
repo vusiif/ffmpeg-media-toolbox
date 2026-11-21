@@ -193,6 +193,25 @@ void DamageTimelineSlider::mouseMoveEvent(QMouseEvent *event)
     const double frac = qBound(0.0, static_cast<double>(mouseX - margin) / trackWidth, 1.0);
     const double currentSec = frac * m_duration;
 
+    const int totalSeconds = static_cast<int>(currentSec);
+    const int h = totalSeconds / 3600;
+    const int m = (totalSeconds % 3600) / 60;
+    const int s = totalSeconds % 60;
+    const int ms = static_cast<int>((currentSec - totalSeconds) * 1000);
+    QString timeStr;
+    if (h > 0) {
+        timeStr = QStringLiteral("%1:%2:%3.%4")
+                      .arg(h, 2, 10, QLatin1Char('0'))
+                      .arg(m, 2, 10, QLatin1Char('0'))
+                      .arg(s, 2, 10, QLatin1Char('0'))
+                      .arg(ms / 100);
+    } else {
+        timeStr = QStringLiteral("%1:%2.%3")
+                      .arg(m, 2, 10, QLatin1Char('0'))
+                      .arg(s, 2, 10, QLatin1Char('0'))
+                      .arg(ms / 100);
+    }
+
     // 1. Check QC segment tooltip
     if (!m_segments.isEmpty()) {
         for (const auto &seg : m_segments) {
@@ -213,10 +232,37 @@ void DamageTimelineSlider::mouseMoveEvent(QMouseEvent *event)
     if (!m_keyframes.isEmpty()) {
         for (double kf : m_keyframes) {
             if (std::abs(currentSec - kf) <= (m_duration / trackWidth * 3.0)) {
-                const QString tip = QStringLiteral("🔑 Keyframe: %1s").arg(QString::number(kf, 'f', 3));
+                const QString tip = QStringLiteral("🔑 Keyframe: %1 (%2s)")
+                                        .arg(timeStr)
+                                        .arg(QString::number(kf, 'f', 3));
                 QToolTip::showText(event->globalPosition().toPoint(), tip, this);
                 return;
             }
         }
     }
+
+    // 3. Default Timeline hover timestamp tooltip
+    QToolTip::showText(event->globalPosition().toPoint(), timeStr, this);
+}
+
+void DamageTimelineSlider::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        const int margin = 10;
+        const int trackWidth = width() - (margin * 2);
+        if (trackWidth > 0 && maximum() > minimum()) {
+            const int mouseX = event->pos().x();
+            const double frac = qBound(0.0, static_cast<double>(mouseX - margin) / trackWidth, 1.0);
+            const int newVal = minimum() + static_cast<int>(frac * (maximum() - minimum()));
+            setValue(newVal);
+            emit sliderMoved(newVal);
+        }
+    }
+    ElaSlider::mousePressEvent(event);
+}
+
+void DamageTimelineSlider::leaveEvent(QEvent *event)
+{
+    QToolTip::hideText();
+    ElaSlider::leaveEvent(event);
 }

@@ -11,6 +11,7 @@
 #include <QTimer>
 #include <QVideoWidget>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 
 #include "ElaCheckBox.h"
 #include "ElaComboBox.h"
@@ -546,9 +547,35 @@ bool VideoPlayerWidget::eventFilter(QObject *obj, QEvent *event)
             return true;
         } else if (event->type() == QEvent::MouseMove) {
             mouseMoveEvent(static_cast<QMouseEvent *>(event));
+        } else if (event->type() == QEvent::Wheel) {
+            wheelEvent(static_cast<QWheelEvent *>(event));
+            return true;
         }
     }
     return QWidget::eventFilter(obj, event);
+}
+
+void VideoPlayerWidget::wheelEvent(QWheelEvent *event)
+{
+    const int delta = event->angleDelta().y();
+    if (delta > 0) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+            seekToSec(currentPositionSec() + 1.0);
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            jumpToNextKeyframe();
+        } else {
+            stepForward(0.04);
+        }
+    } else if (delta < 0) {
+        if (event->modifiers() & Qt::ShiftModifier) {
+            seekToSec(currentPositionSec() - 1.0);
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            jumpToPreviousKeyframe();
+        } else {
+            stepBackward(0.04);
+        }
+    }
+    event->accept();
 }
 
 void VideoPlayerWidget::keyPressEvent(QKeyEvent *event)
@@ -556,6 +583,16 @@ void VideoPlayerWidget::keyPressEvent(QKeyEvent *event)
     switch (event->key()) {
     case Qt::Key_Space:
         togglePlayPause();
+        event->accept();
+        return;
+    case Qt::Key_I:
+    case Qt::Key_BracketLeft:
+        emit markInRequested(currentPositionSec());
+        event->accept();
+        return;
+    case Qt::Key_O:
+    case Qt::Key_BracketRight:
+        emit markOutRequested(currentPositionSec());
         event->accept();
         return;
     case Qt::Key_K:

@@ -50,6 +50,7 @@ public:
     void play();
     void pause();
     void stop();
+    void togglePlayPause();
 
     // Professional frame stepping & keyframe navigation
     void stepForward(double stepSec = 0.04);
@@ -77,18 +78,20 @@ signals:
     void skippedSegment(double fromSec, double toSec);
     void positionChanged(qint64 positionMs);
     void fullscreenToggled(bool isFullscreen);
+    void markInRequested(double currentSec);
+    void markOutRequested(double currentSec);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 private slots:
     void onPositionChanged(qint64 positionMs);
     void onDurationChanged(qint64 durationMs);
     void onPlaybackStateChanged();
     void onSliderMoved(int positionMs);
-    void togglePlayPause();
 
     void onSpeedComboChanged(int index);
     void onVolumeSliderChanged(int value);
