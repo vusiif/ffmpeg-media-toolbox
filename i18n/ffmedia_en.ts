@@ -1051,6 +1051,10 @@
         <source>player.autoSkip</source>
         <translation>Auto-skip damaged parts</translation>
     </message>
+    <message id="player.noMediaPlaceholder">
+        <source>player.noMediaPlaceholder</source>
+        <translation>Select or drag in a video file to preview and edit</translation>
+    </message>
     <message id="repair.tab.salvage">
         <source>repair.tab.salvage</source>
         <translation>Smart Salvage</translation>

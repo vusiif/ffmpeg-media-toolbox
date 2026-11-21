@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QMediaPlayer>
 #include <QMouseEvent>
+#include <QStackedLayout>
 #include <QTimer>
 #include <QVideoWidget>
 #include <QVBoxLayout>
@@ -30,19 +31,30 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->setSpacing(6);
 
-    // 1. Video display
-    m_player = new QMediaPlayer(this);
-    m_audioOutput = new QAudioOutput(this);
-    m_player->setAudioOutput(m_audioOutput);
+    // 1. Video display area (stack of empty-state placeholder and lazy QVideoWidget)
+    m_videoStack = new QStackedLayout();
+    m_videoStack->setContentsMargins(0, 0, 0, 0);
 
-    m_videoWidget = new QVideoWidget(this);
-    m_videoWidget->setMinimumHeight(240);
-    m_videoWidget->setStyleSheet(QStringLiteral("background-color: black; border-radius: 6px;"));
-    m_videoWidget->installEventFilter(this);
-    m_videoWidget->setMouseTracking(true);
-    m_player->setVideoOutput(m_videoWidget);
+    m_emptyPlaceholder = new QWidget(this);
+    m_emptyPlaceholder->setMinimumHeight(240);
+    m_emptyPlaceholder->setStyleSheet(QStringLiteral("background-color: #181818; border-radius: 6px; border: 1px dashed rgba(255, 255, 255, 0.12);"));
 
-    rootLayout->addWidget(m_videoWidget, 1);
+    auto *emptyLayout = new QVBoxLayout(m_emptyPlaceholder);
+    emptyLayout->setAlignment(Qt::AlignCenter);
+    emptyLayout->setSpacing(8);
+
+    auto *iconLabel = new ElaText(QStringLiteral("🎬"), 24, m_emptyPlaceholder);
+    iconLabel->setAlignment(Qt::AlignCenter);
+
+    m_placeholderText = new ElaText(trId("player.noMediaPlaceholder"), 13, m_emptyPlaceholder);
+    m_placeholderText->setAlignment(Qt::AlignCenter);
+    m_placeholderText->setStyleSheet(QStringLiteral("color: #777777; font-weight: 500;"));
+
+    emptyLayout->addWidget(iconLabel);
+    emptyLayout->addWidget(m_placeholderText);
+
+    m_videoStack->addWidget(m_emptyPlaceholder);
+    rootLayout->addLayout(m_videoStack, 1);
 
     // 2. Timeline Slider
     m_timeline = new DamageTimelineSlider(this);
@@ -147,17 +159,38 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     rootLayout->addWidget(m_controlBarWidget);
 
     // Placeholder widget used to preserve position when going fullscreen
-    m_placeholderWidget = new QWidget(this);
-    m_placeholderWidget->hide();
+    m_fullscreenPlaceholderWidget = new QWidget(this);
+    m_fullscreenPlaceholderWidget->hide();
 
     // Idle timer for auto-hiding controls in fullscreen
     m_idleTimer = new QTimer(this);
     m_idleTimer->setSingleShot(true);
     connect(m_idleTimer, &QTimer::timeout, this, &VideoPlayerWidget::onIdleTimeout);
+}
+
+void VideoPlayerWidget::ensurePlayerInitialized()
+{
+    if (m_player) {
+        return;
+    }
+    m_player = new QMediaPlayer(this);
+    m_audioOutput = new QAudioOutput(this);
+    m_player->setAudioOutput(m_audioOutput);
+
+    m_videoWidget = new QVideoWidget(this);
+    m_videoWidget->setMinimumHeight(240);
+    m_videoWidget->setStyleSheet(QStringLiteral("background-color: black; border-radius: 6px;"));
+    m_videoWidget->installEventFilter(this);
+    m_videoWidget->setMouseTracking(true);
+    m_player->setVideoOutput(m_videoWidget);
 
     connect(m_player, &QMediaPlayer::positionChanged, this, &VideoPlayerWidget::onPositionChanged);
     connect(m_player, &QMediaPlayer::durationChanged, this, &VideoPlayerWidget::onDurationChanged);
     connect(m_player, &QMediaPlayer::playbackStateChanged, this, &VideoPlayerWidget::onPlaybackStateChanged);
+
+    if (m_videoStack) {
+        m_videoStack->addWidget(m_videoWidget);
+    }
 }
 
 VideoPlayerWidget::~VideoPlayerWidget()
@@ -181,17 +214,17 @@ VideoPlayerWidget::~VideoPlayerWidget()
     // or emitting signals during destruction
     if (m_isFullscreen) {
         unsetCursor();
-        if (m_normalParent && m_placeholderWidget) {
+        if (m_normalParent && m_fullscreenPlaceholderWidget) {
             if (auto *box = qobject_cast<QBoxLayout *>(m_normalParent->layout())) {
-                box->removeWidget(m_placeholderWidget.data());
+                box->removeWidget(m_fullscreenPlaceholderWidget.data());
             }
         }
         m_isFullscreen = false;
     }
 
-    if (m_placeholderWidget) {
-        delete m_placeholderWidget.data();
-        m_placeholderWidget = nullptr;
+    if (m_fullscreenPlaceholderWidget) {
+        delete m_fullscreenPlaceholderWidget.data();
+        m_fullscreenPlaceholderWidget = nullptr;
     }
 }
 
@@ -202,8 +235,17 @@ void VideoPlayerWidget::loadMedia(const QString &filePath)
     clearKeyframes();
     clearCutSegments();
     if (filePath.isEmpty()) {
-        m_player->setSource(QUrl());
+        if (m_player) {
+            m_player->setSource(QUrl());
+        }
+        if (m_videoStack && m_emptyPlaceholder) {
+            m_videoStack->setCurrentWidget(m_emptyPlaceholder);
+        }
     } else {
+        ensurePlayerInitialized();
+        if (m_videoStack && m_videoWidget) {
+            m_videoStack->setCurrentWidget(m_videoWidget);
+        }
         m_player->setSource(QUrl::fromLocalFile(filePath));
     }
 }
@@ -258,7 +300,7 @@ void VideoPlayerWidget::clearCutSegments()
 
 double VideoPlayerWidget::currentPositionSec() const
 {
-    return m_player->position() / 1000.0;
+    return m_player ? (m_player->position() / 1000.0) : 0.0;
 }
 
 double VideoPlayerWidget::durationSec() const
@@ -279,7 +321,9 @@ void VideoPlayerWidget::seekToMs(qint64 ms)
 void VideoPlayerWidget::seekToSec(double sec)
 {
     const qint64 ms = static_cast<qint64>(sec * 1000.0);
-    m_player->setPosition(ms);
+    if (m_player) {
+        m_player->setPosition(ms);
+    }
     m_timeline->setValue(static_cast<int>(ms));
 }
 
@@ -315,7 +359,9 @@ void VideoPlayerWidget::jumpToPreviousKeyframe()
 
 void VideoPlayerWidget::setPlaybackRate(double rate)
 {
-    m_player->setPlaybackRate(rate);
+    if (m_player) {
+        m_player->setPlaybackRate(rate);
+    }
     const int idx = Media::PlayerNavigationHelper::rateToSpeedIndex(rate);
     m_speedCombo->blockSignals(true);
     m_speedCombo->setCurrentIndex(idx);
@@ -324,7 +370,7 @@ void VideoPlayerWidget::setPlaybackRate(double rate)
 
 double VideoPlayerWidget::playbackRate() const
 {
-    return m_player->playbackRate();
+    return m_player ? m_player->playbackRate() : 1.0;
 }
 
 void VideoPlayerWidget::setVolume(int volumePercent)
@@ -340,39 +386,48 @@ int VideoPlayerWidget::volume() const
 
 void VideoPlayerWidget::setMuted(bool muted)
 {
-    m_audioOutput->setMuted(muted);
+    if (m_audioOutput) {
+        m_audioOutput->setMuted(muted);
+    }
     updateVolumeUi();
 }
 
 bool VideoPlayerWidget::isMuted() const
 {
-    return m_audioOutput->isMuted();
+    return m_audioOutput ? m_audioOutput->isMuted() : false;
 }
 
 void VideoPlayerWidget::onSpeedComboChanged(int index)
 {
     const double rate = Media::PlayerNavigationHelper::speedIndexToRate(index);
-    m_player->setPlaybackRate(rate);
+    if (m_player) {
+        m_player->setPlaybackRate(rate);
+    }
 }
 
 void VideoPlayerWidget::onVolumeSliderChanged(int value)
 {
-    m_audioOutput->setVolume(Media::PlayerNavigationHelper::volumeToScalar(value));
-    if (value > 0 && m_audioOutput->isMuted()) {
-        m_audioOutput->setMuted(false);
+    if (m_audioOutput) {
+        m_audioOutput->setVolume(Media::PlayerNavigationHelper::volumeToScalar(value));
+        if (value > 0 && m_audioOutput->isMuted()) {
+            m_audioOutput->setMuted(false);
+        }
     }
     updateVolumeUi();
 }
 
 void VideoPlayerWidget::onMuteClicked()
 {
-    m_audioOutput->setMuted(!m_audioOutput->isMuted());
+    if (m_audioOutput) {
+        m_audioOutput->setMuted(!m_audioOutput->isMuted());
+    }
     updateVolumeUi();
 }
 
 void VideoPlayerWidget::updateVolumeUi()
 {
-    if (m_audioOutput->isMuted() || m_volumeSlider->value() == 0) {
+    const bool isMuted = m_audioOutput ? m_audioOutput->isMuted() : false;
+    if (isMuted || m_volumeSlider->value() == 0) {
         m_muteBtn->setText(QStringLiteral("🔇"));
     } else {
         m_muteBtn->setText(QStringLiteral("🔊"));
@@ -397,23 +452,32 @@ void VideoPlayerWidget::setAutoSkipEnabled(bool enabled)
 
 void VideoPlayerWidget::play()
 {
-    m_player->play();
+    if (m_player) {
+        m_player->play();
+    }
 }
 
 void VideoPlayerWidget::pause()
 {
-    m_player->pause();
+    if (m_player) {
+        m_player->pause();
+    }
 }
 
 void VideoPlayerWidget::stop()
 {
-    m_player->stop();
-    m_player->setPosition(0);
+    if (m_player) {
+        m_player->stop();
+        m_player->setPosition(0);
+    }
     m_timeline->setValue(0);
 }
 
 void VideoPlayerWidget::retranslateUi()
 {
+    if (m_placeholderText) {
+        m_placeholderText->setText(trId("player.noMediaPlaceholder"));
+    }
     m_autoSkipCheck->setText(trId("player.autoSkipDamaged"));
     m_playButton->setToolTip(trId("player.playPause"));
     m_stopButton->setToolTip(trId("player.stop"));
@@ -426,15 +490,11 @@ void VideoPlayerWidget::retranslateUi()
     m_fullscreenBtn->setToolTip(m_isFullscreen ? trId("player.exitFullscreen") : trId("player.fullscreen"));
 }
 
-void VideoPlayerWidget::prewarm()
-{
-    if (m_videoWidget) {
-        (void)m_videoWidget->winId();
-    }
-}
-
 void VideoPlayerWidget::toggleFullscreen()
 {
+    if (!m_videoWidget) {
+        return;
+    }
     if (!m_isFullscreen) {
         m_normalParent = parentWidget();
         m_normalGeometry = geometry();
@@ -444,12 +504,12 @@ void VideoPlayerWidget::toggleFullscreen()
             if (box) {
                 const int idx = box->indexOf(this);
                 if (idx >= 0) {
-                    if (!m_placeholderWidget) {
-                        m_placeholderWidget = new QWidget();
+                    if (!m_fullscreenPlaceholderWidget) {
+                        m_fullscreenPlaceholderWidget = new QWidget();
                     }
-                    m_placeholderWidget->setParent(m_normalParent.data());
-                    m_placeholderWidget->setGeometry(m_normalGeometry);
-                    box->insertWidget(idx, m_placeholderWidget.data());
+                    m_fullscreenPlaceholderWidget->setParent(m_normalParent.data());
+                    m_fullscreenPlaceholderWidget->setGeometry(m_normalGeometry);
+                    box->insertWidget(idx, m_fullscreenPlaceholderWidget.data());
                     box->removeWidget(this);
                 }
             }
@@ -461,7 +521,7 @@ void VideoPlayerWidget::toggleFullscreen()
         if (m_normalParent) {
             m_parentDestroyedConn = connect(m_normalParent.data(), &QObject::destroyed, this, [this]() {
                 m_normalParent = nullptr;
-                m_placeholderWidget = nullptr;
+                m_fullscreenPlaceholderWidget = nullptr;
                 deleteLater();
             });
         }
@@ -492,13 +552,13 @@ void VideoPlayerWidget::toggleFullscreen()
 
         if (m_normalParent && !m_normalParent.isNull()) {
             auto *box = qobject_cast<QBoxLayout *>(m_normalParent->layout());
-            if (box && m_placeholderWidget && m_placeholderWidget->parent() == m_normalParent.data()) {
-                const int idx = box->indexOf(m_placeholderWidget.data());
+            if (box && m_fullscreenPlaceholderWidget && m_fullscreenPlaceholderWidget->parent() == m_normalParent.data()) {
+                const int idx = box->indexOf(m_fullscreenPlaceholderWidget.data());
                 if (idx >= 0) {
                     box->insertWidget(idx, this);
-                    box->removeWidget(m_placeholderWidget.data());
-                    m_placeholderWidget->setParent(this);
-                    m_placeholderWidget->hide();
+                    box->removeWidget(m_fullscreenPlaceholderWidget.data());
+                    m_fullscreenPlaceholderWidget->setParent(this);
+                    m_fullscreenPlaceholderWidget->hide();
                 }
             } else if (box) {
                 box->addWidget(this);
@@ -524,7 +584,7 @@ void VideoPlayerWidget::toggleFullscreen()
 
 void VideoPlayerWidget::onIdleTimeout()
 {
-    if (m_isFullscreen && m_player->playbackState() == QMediaPlayer::PlayingState) {
+    if (m_isFullscreen && m_player && m_player->playbackState() == QMediaPlayer::PlayingState) {
         m_controlBarWidget->hide();
         m_timeline->hide();
         setCursor(Qt::BlankCursor);
@@ -546,7 +606,7 @@ void VideoPlayerWidget::mouseMoveEvent(QMouseEvent *event)
 
 bool VideoPlayerWidget::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == m_videoWidget) {
+    if (m_videoWidget && obj == m_videoWidget) {
         if (event->type() == QEvent::MouseButtonPress) {
             setFocus();
         } else if (event->type() == QEvent::MouseButtonDblClick) {
@@ -675,7 +735,7 @@ void VideoPlayerWidget::onPositionChanged(qint64 positionMs)
     emit positionChanged(positionMs);
 
     // Auto-skip logic
-    if (m_autoSkipCheck->isChecked() && !m_segments.isEmpty()) {
+    if (m_autoSkipCheck->isChecked() && !m_segments.isEmpty() && m_player) {
         const double curSec = positionMs / 1000.0;
         for (const auto &seg : m_segments) {
             if (curSec >= seg.start && curSec < seg.end) {
@@ -694,14 +754,15 @@ void VideoPlayerWidget::onDurationChanged(qint64 durationMs)
     m_durationMs = durationMs;
     m_timeline->setRange(0, static_cast<int>(durationMs));
     m_timeline->setDuration(durationMs / 1000.0);
+    const qint64 curPos = m_player ? m_player->position() : 0;
     m_timeLabel->setText(QStringLiteral("%1 / %2")
-                             .arg(formatTime(m_player->position()))
+                             .arg(formatTime(curPos))
                              .arg(formatTime(m_durationMs)));
 }
 
 void VideoPlayerWidget::onPlaybackStateChanged()
 {
-    if (m_player->playbackState() == QMediaPlayer::PlayingState) {
+    if (m_player && m_player->playbackState() == QMediaPlayer::PlayingState) {
         m_playButton->setText(QStringLiteral("⏸"));
     } else {
         m_playButton->setText(QStringLiteral("▶"));
@@ -711,15 +772,17 @@ void VideoPlayerWidget::onPlaybackStateChanged()
 void VideoPlayerWidget::onSliderMoved(int positionMs)
 {
     m_isSeeking = true;
-    m_player->setPosition(positionMs);
+    if (m_player) {
+        m_player->setPosition(positionMs);
+    }
     m_isSeeking = false;
 }
 
 void VideoPlayerWidget::togglePlayPause()
 {
-    if (m_player->playbackState() == QMediaPlayer::PlayingState) {
+    if (m_player && m_player->playbackState() == QMediaPlayer::PlayingState) {
         pause();
-    } else {
+    } else if (m_player) {
         play();
     }
 }

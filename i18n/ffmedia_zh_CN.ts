@@ -1051,6 +1051,10 @@
         <source>player.autoSkip</source>
         <translation>自动跳过损坏片段</translation>
     </message>
+    <message id="player.noMediaPlaceholder">
+        <source>player.noMediaPlaceholder</source>
+        <translation>请选择或拖入视频文件以进行预览与剪辑</translation>
+    </message>
     <message id="repair.tab.salvage">
         <source>repair.tab.salvage</source>
         <translation>免样本·智能抢救</translation>

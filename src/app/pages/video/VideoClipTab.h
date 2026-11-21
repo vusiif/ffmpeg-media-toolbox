@@ -28,7 +28,6 @@ public:
 
     void setInputFile(const QString &path) override;
     void retranslateUi() override;
-    void prewarm();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

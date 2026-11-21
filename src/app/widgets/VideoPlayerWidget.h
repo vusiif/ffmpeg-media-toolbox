@@ -10,6 +10,7 @@
 class QMediaPlayer;
 class QAudioOutput;
 class QVideoWidget;
+class QStackedLayout;
 class ElaPushButton;
 class ElaCheckBox;
 class ElaComboBox;
@@ -73,7 +74,6 @@ public:
     bool isFullscreen() const { return m_isFullscreen; }
 
     void retranslateUi();
-    void prewarm();
 
 signals:
     void skippedSegment(double fromSec, double toSec);
@@ -102,11 +102,15 @@ private slots:
 private:
     static QString formatTime(qint64 ms);
     void updateVolumeUi();
+    void ensurePlayerInitialized();
 
     QMediaPlayer *m_player = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QVideoWidget *m_videoWidget = nullptr;
-    QPointer<QWidget> m_placeholderWidget;
+    QStackedLayout *m_videoStack = nullptr;
+    QWidget *m_emptyPlaceholder = nullptr;
+    ElaText *m_placeholderText = nullptr;
+    QPointer<QWidget> m_fullscreenPlaceholderWidget;
     QWidget *m_controlBarWidget = nullptr;
 
     DamageTimelineSlider *m_timeline = nullptr;

@@ -207,14 +207,3 @@ void VideoPage::retranslateUi()
     if (m_effectsTab) m_effectsTab->retranslateUi();
     if (m_framesTab) m_framesTab->retranslateUi();
 }
-
-void VideoPage::prewarm()
-{
-    if (m_clipTab) {
-        m_clipTab->prewarm();
-    }
-    ensurePolished();
-    if (layout()) {
-        layout()->activate();
-    }
-}

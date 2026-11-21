@@ -10,7 +10,6 @@
 #include <QSettings>
 #include <QSystemTrayIcon>
 #include <QTimer>
-#include <QVideoWidget>
 
 #include "ElaIcon.h"
 #include "app/AppSettings.h"
@@ -109,24 +108,6 @@ MainWindow::MainWindow(LanguageManager *languageManager, QWidget *parent)
 
     connect(m_languageManager, &LanguageManager::languageChanged,
             this, &MainWindow::retranslateUi);
-
-    // Asynchronously pre-warm the multimedia and video subsystem during startup idle
-    // so that navigating to the "Video" page is instant with zero stutter.
-    QTimer::singleShot(100, this, [this]() {
-        if (m_videoPage) {
-            m_videoPage->prewarm();
-        }
-
-        auto *prewarmWidget = new QVideoWidget();
-        prewarmWidget->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-        prewarmWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
-        prewarmWidget->setGeometry(-2000, -2000, 1, 1);
-        prewarmWidget->show();
-        QTimer::singleShot(50, prewarmWidget, [prewarmWidget]() {
-            prewarmWidget->hide();
-            prewarmWidget->deleteLater();
-        });
-    });
 }
 
 MainWindow::~MainWindow() = default;

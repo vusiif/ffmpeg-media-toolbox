@@ -572,11 +572,3 @@ void VideoClipTab::retranslateUi()
     m_joinRemoveButton->setText(trId("common.delete"));
     m_joinButton->setText(trId("convert.addToQueue"));
 }
-
-void VideoClipTab::prewarm()
-{
-    if (m_trimPlayer) {
-        m_trimPlayer->prewarm();
-    }
-    ensurePolished();
-}
