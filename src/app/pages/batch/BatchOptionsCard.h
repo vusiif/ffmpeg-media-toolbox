@@ -64,8 +64,9 @@ private:
     ElaText *m_audioCodecCaption = nullptr;
     ElaComboBox *m_audioCodecCombo = nullptr;
     ElaText *m_qualityCaption = nullptr;
-    QWidget *m_qualityWidget = nullptr;
     ElaSpinBox *m_qualitySpin = nullptr;
+    ElaText *m_quickTargetCaption = nullptr;
+    QWidget *m_qualityWidget = nullptr;
     ElaPushButton *m_quickSmallBtn = nullptr;
     ElaPushButton *m_quickBalancedBtn = nullptr;
     ElaPushButton *m_quickHighQualityBtn = nullptr;

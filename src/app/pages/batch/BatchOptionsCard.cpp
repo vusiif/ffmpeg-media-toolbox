@@ -61,16 +61,18 @@ BatchOptionsCard::BatchOptionsCard(FFmpegCapabilities *caps, PresetManager *pres
     formLayout->addRow(m_audioCodecCaption, m_audioCodecCombo);
 
     m_qualityCaption = new ElaText(QString(), 13, this);
+    m_qualitySpin = new ElaSpinBox(this);
+    m_qualitySpin->setRange(0, 51);
+    m_qualitySpin->setValue(23);
+    m_qualitySpin->setFixedWidth(120);
+    connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &BatchOptionsCard::optionsChanged);
+    formLayout->addRow(m_qualityCaption, m_qualitySpin);
+
+    m_quickTargetCaption = new ElaText(QString(), 13, this);
     m_qualityWidget = new QWidget(this);
     auto *qualityLayout = new QHBoxLayout(m_qualityWidget);
     qualityLayout->setContentsMargins(0, 0, 0, 0);
     qualityLayout->setSpacing(6);
-
-    m_qualitySpin = new ElaSpinBox(m_qualityWidget);
-    m_qualitySpin->setRange(0, 51);
-    m_qualitySpin->setValue(23);
-    connect(m_qualitySpin, &ElaSpinBox::valueChanged, this, &BatchOptionsCard::optionsChanged);
-    qualityLayout->addWidget(m_qualitySpin);
 
     m_quickSmallBtn = new ElaPushButton(m_qualityWidget);
     m_quickBalancedBtn = new ElaPushButton(m_qualityWidget);
@@ -104,7 +106,7 @@ BatchOptionsCard::BatchOptionsCard(FFmpegCapabilities *caps, PresetManager *pres
         emit optionsChanged();
     });
 
-    formLayout->addRow(m_qualityCaption, m_qualityWidget);
+    formLayout->addRow(m_quickTargetCaption, m_qualityWidget);
 
     m_smartCopyCheck = new ElaCheckBox(this);
     connect(m_smartCopyCheck, &ElaCheckBox::toggled, this, &BatchOptionsCard::optionsChanged);
@@ -383,8 +385,12 @@ void BatchOptionsCard::rebuildCodecLists()
             m_caps->filterEncoders(FFmpegCapabilities::videoEncoderCandidates()));
     }
     const int videoIndex = m_codecCombo->findText(videoCodec);
-    if (videoIndex >= 0) {
+    if (!videoCodec.isEmpty() && videoIndex >= 0) {
         m_codecCombo->setCurrentIndex(videoIndex);
+    } else {
+        int defIdx = m_codecCombo->findText(QStringLiteral("libx264"));
+        if (defIdx < 0 && m_codecCombo->count() > 2) defIdx = 2;
+        if (defIdx >= 0) m_codecCombo->setCurrentIndex(defIdx);
     }
     m_codecCombo->blockSignals(false);
 
@@ -396,8 +402,12 @@ void BatchOptionsCard::rebuildCodecLists()
             m_caps->filterEncoders(FFmpegCapabilities::audioEncoderCandidates()));
     }
     const int audioIndex = m_audioCodecCombo->findText(audioCodec);
-    if (audioIndex >= 0) {
+    if (!audioCodec.isEmpty() && audioIndex >= 0) {
         m_audioCodecCombo->setCurrentIndex(audioIndex);
+    } else {
+        int defIdx = m_audioCodecCombo->findText(QStringLiteral("aac"));
+        if (defIdx < 0 && m_audioCodecCombo->count() > 2) defIdx = 2;
+        if (defIdx >= 0) m_audioCodecCombo->setCurrentIndex(defIdx);
     }
     m_audioCodecCombo->blockSignals(false);
 
@@ -503,6 +513,7 @@ void BatchOptionsCard::retranslateUi()
     m_codecCaption->setText(trId("convert.codec") + QStringLiteral(":"));
     m_audioCodecCaption->setText(trId("convert.audioCodec") + QStringLiteral(":"));
     m_qualityCaption->setText(trId("convert.quality") + QStringLiteral(":"));
+    m_quickTargetCaption->setText(trId("convert.quickTarget") + QStringLiteral(":"));
     m_quickSmallBtn->setText(trId("batch.quickSmall"));
     m_quickBalancedBtn->setText(trId("batch.quickBalanced"));
     m_quickHighQualityBtn->setText(trId("batch.quickHighQuality"));

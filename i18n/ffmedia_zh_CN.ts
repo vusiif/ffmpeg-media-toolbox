@@ -2863,5 +2863,301 @@
         <source>sub.extract.loadedSuccess</source>
         <translation>成功提取并加载了 %1 条字幕！</translation>
     </message>
+    <message id="audio.bitrate">
+        <source>audio.bitrate</source>
+        <translation>音频码率</translation>
+    </message>
+    <message id="audiotag.addFolder">
+        <source>audiotag.addFolder</source>
+        <translation>添加文件夹</translation>
+    </message>
+    <message id="audiotag.album">
+        <source>audiotag.album</source>
+        <translation>专辑</translation>
+    </message>
+    <message id="audiotag.appliedNotice">
+        <source>audiotag.appliedNotice</source>
+        <translation>元数据修改已应用至选中的文件</translation>
+    </message>
+    <message id="audiotag.applySelected">
+        <source>audiotag.applySelected</source>
+        <translation>应用修改到选中项</translation>
+    </message>
+    <message id="audiotag.artist">
+        <source>audiotag.artist</source>
+        <translation>艺术家</translation>
+    </message>
+    <message id="audiotag.batchEnqueuedNotice">
+        <source>audiotag.batchEnqueuedNotice</source>
+        <translation>已将 %1 个音频处理任务添加至任务队列</translation>
+    </message>
+    <message id="audiotag.batchQueue">
+        <source>audiotag.batchQueue</source>
+        <translation>加入任务队列</translation>
+    </message>
+    <message id="audiotag.bitrate">
+        <source>audiotag.bitrate</source>
+        <translation>比特率</translation>
+    </message>
+    <message id="audiotag.browseCover">
+        <source>audiotag.browseCover</source>
+        <translation>选择封面</translation>
+    </message>
+    <message id="audiotag.channels">
+        <source>audiotag.channels</source>
+        <translation>声道</translation>
+    </message>
+    <message id="audiotag.cmdCopiedNotice">
+        <source>audiotag.cmdCopiedNotice</source>
+        <translation>FFmpeg 命令已复制到剪贴板</translation>
+    </message>
+    <message id="audiotag.comment">
+        <source>audiotag.comment</source>
+        <translation>备注</translation>
+    </message>
+    <message id="audiotag.copyCmd">
+        <source>audiotag.copyCmd</source>
+        <translation>复制 FFmpeg 命令</translation>
+    </message>
+    <message id="audiotag.coverExtractFailed">
+        <source>audiotag.coverExtractFailed</source>
+        <translation>未从选中的音频中提取到内嵌封面</translation>
+    </message>
+    <message id="audiotag.coverExtractedNotice">
+        <source>audiotag.coverExtractedNotice</source>
+        <translation>成功提取内嵌封面图片</translation>
+    </message>
+    <message id="audiotag.dialog.subtitle">
+        <source>audiotag.dialog.subtitle</source>
+        <translation>批量修改 ID3 标签、内嵌高清封面图与格式转换</translation>
+    </message>
+    <message id="audiotag.dialog.title">
+        <source>audiotag.dialog.title</source>
+        <translation>音频标签与封面工坊</translation>
+    </message>
+    <message id="audiotag.extractCover">
+        <source>audiotag.extractCover</source>
+        <translation>提取内嵌封面</translation>
+    </message>
+    <message id="audiotag.fileCount">
+        <source>audiotag.fileCount</source>
+        <translation>共 %1 个文件</translation>
+    </message>
+    <message id="audiotag.formatCardTitle">
+        <source>audiotag.formatCardTitle</source>
+        <translation>输出格式与音频参数</translation>
+    </message>
+    <message id="audiotag.genre">
+        <source>audiotag.genre</source>
+        <translation>流派</translation>
+    </message>
+    <message id="audiotag.guessMeta">
+        <source>audiotag.guessMeta</source>
+        <translation>从文件名智能识别</translation>
+    </message>
+    <message id="audiotag.job.extract">
+        <source>audiotag.job.extract</source>
+        <translation>音频标签处理</translation>
+    </message>
+    <message id="audiotag.loudnorm">
+        <source>audiotag.loudnorm</source>
+        <translation>音频响度标准化 (EBU R128)</translation>
+    </message>
+    <message id="audiotag.metaCardTitle">
+        <source>audiotag.metaCardTitle</source>
+        <translation>元数据编辑与封面</translation>
+    </message>
+    <message id="audiotag.noCover">
+        <source>audiotag.noCover</source>
+        <translation>暂无封面</translation>
+    </message>
+    <message id="audiotag.noFileSelected">
+        <source>audiotag.noFileSelected</source>
+        <translation>请先在左侧列表中选择至少一个音频文件</translation>
+    </message>
+    <message id="audiotag.preset">
+        <source>audiotag.preset</source>
+        <translation>预设</translation>
+    </message>
+    <message id="audiotag.preset.aac_256k">
+        <source>audiotag.preset.aac_256k</source>
+        <translation>AAC 256 kbps (高质量)</translation>
+    </message>
+    <message id="audiotag.preset.flac">
+        <source>audiotag.preset.flac</source>
+        <translation>FLAC 无损压缩</translation>
+    </message>
+    <message id="audiotag.preset.mp3_192k">
+        <source>audiotag.preset.mp3_192k</source>
+        <translation>MP3 192 kbps (标准)</translation>
+    </message>
+    <message id="audiotag.preset.mp3_320k">
+        <source>audiotag.preset.mp3_320k</source>
+        <translation>MP3 320 kbps (最高品质)</translation>
+    </message>
+    <message id="audiotag.preset.opus_64k">
+        <source>audiotag.preset.opus_64k</source>
+        <translation>OPUS 64 kbps (人声/播客)</translation>
+    </message>
+    <message id="audiotag.preset.wav">
+        <source>audiotag.preset.wav</source>
+        <translation>WAV 未压缩 (CD级无损)</translation>
+    </message>
+    <message id="audiotag.removeCover">
+        <source>audiotag.removeCover</source>
+        <translation>移除封面</translation>
+    </message>
+    <message id="audiotag.removeSelected">
+        <source>audiotag.removeSelected</source>
+        <translation>移除选中</translation>
+    </message>
+    <message id="audiotag.samplerate">
+        <source>audiotag.samplerate</source>
+        <translation>采样率</translation>
+    </message>
+    <message id="audiotag.track">
+        <source>audiotag.track</source>
+        <translation>音轨号</translation>
+    </message>
+    <message id="audiotag.year">
+        <source>audiotag.year</source>
+        <translation>年份</translation>
+    </message>
+    <message id="batch.clearAll">
+        <source>batch.clearAll</source>
+        <translation>清空列表</translation>
+    </message>
+    <message id="batch.fileCount">
+        <source>batch.fileCount</source>
+        <translation>已选择 %1 个文件</translation>
+    </message>
+    <message id="batch.files">
+        <source>batch.files</source>
+        <translation>待处理文件列表</translation>
+    </message>
+    <message id="batch.outputDir">
+        <source>batch.outputDir</source>
+        <translation>输出目录</translation>
+    </message>
+    <message id="batch.pipe.audio">
+        <source>batch.pipe.audio</source>
+        <translation>步骤 6: 音频增强与调节</translation>
+    </message>
+    <message id="batch.pipe.crop">
+        <source>batch.pipe.crop</source>
+        <translation>步骤 2: 画面裁剪 (Crop)</translation>
+    </message>
+    <message id="batch.pipe.fps">
+        <source>batch.pipe.fps</source>
+        <translation>步骤 4: 帧率控制 (FPS)</translation>
+    </message>
+    <message id="batch.pipe.loudnorm">
+        <source>batch.pipe.loudnorm</source>
+        <translation>智能响度均衡 (EBU R128)</translation>
+    </message>
+    <message id="batch.pipe.mute">
+        <source>batch.pipe.mute</source>
+        <translation>消除音频 (静音)</translation>
+    </message>
+    <message id="batch.pipe.scale">
+        <source>batch.pipe.scale</source>
+        <translation>步骤 3: 分辨率调整 (Scale)</translation>
+    </message>
+    <message id="batch.pipe.selectWatermark">
+        <source>batch.pipe.selectWatermark</source>
+        <translation>选择水印图片</translation>
+    </message>
+    <message id="batch.pipe.trim">
+        <source>batch.pipe.trim</source>
+        <translation>步骤 1: 片段截取 (Trim)</translation>
+    </message>
+    <message id="batch.pipe.watermark">
+        <source>batch.pipe.watermark</source>
+        <translation>步骤 5: 画面水印 (Watermark)</translation>
+    </message>
+    <message id="batch.pipeline.title">
+        <source>batch.pipeline.title</source>
+        <translation>启用自定义多步流水线 (裁剪/缩放/水印/音频)</translation>
+    </message>
+    <message id="batch.selectFiles">
+        <source>batch.selectFiles</source>
+        <translation>选择待处理文件</translation>
+    </message>
+    <message id="batch.selectOutputDir">
+        <source>batch.selectOutputDir</source>
+        <translation>选择输出目录</translation>
+    </message>
+    <message id="common.duration">
+        <source>common.duration</source>
+        <translation>时长</translation>
+    </message>
+    <message id="common.file">
+        <source>common.file</source>
+        <translation>文件</translation>
+    </message>
+    <message id="common.source">
+        <source>common.source</source>
+        <translation>源文件</translation>
+    </message>
+    <message id="common.success">
+        <source>common.success</source>
+        <translation>成功</translation>
+    </message>
+    <message id="common.warning">
+        <source>common.warning</source>
+        <translation>警告</translation>
+    </message>
+    <message id="convert.dialog.title">
+        <source>convert.dialog.title</source>
+        <translation>格式转换</translation>
+    </message>
+    <message id="convert.probing">
+        <source>convert.probing</source>
+        <translation>正在分析媒体参数...</translation>
+    </message>
+    <message id="cut.keyframe.inAligned">
+        <source>cut.keyframe.inAligned</source>
+        <translation>入点已对齐关键帧</translation>
+    </message>
+    <message id="cut.keyframe.notAligned">
+        <source>cut.keyframe.notAligned</source>
+        <translation>未对齐关键帧（可能导致首帧黑屏或重新编码）</translation>
+    </message>
+    <message id="cut.keyframe.outAligned">
+        <source>cut.keyframe.outAligned</source>
+        <translation>出点已对齐关键帧</translation>
+    </message>
+    <message id="cut.open.studio">
+        <source>cut.open.studio</source>
+        <translation>打开精准无损剪辑工作台</translation>
+    </message>
+    <message id="cut.snap.in">
+        <source>cut.snap.in</source>
+        <translation>对齐到入点关键帧</translation>
+    </message>
+    <message id="cut.snap.out">
+        <source>cut.snap.out</source>
+        <translation>对齐到出点关键帧</translation>
+    </message>
+    <message id="dialog.close">
+        <source>dialog.close</source>
+        <translation>关闭</translation>
+    </message>
+    <message id="player.autoSkipDamaged">
+        <source>player.autoSkipDamaged</source>
+        <translation>自动跳过损坏片段</translation>
+    </message>
+    <message id="player.skippedMsg">
+        <source>player.skippedMsg</source>
+        <translation>已跳过损坏片段 [%1s - %2s]</translation>
+    </message>
+    <message id="repair.starting">
+        <source>repair.starting</source>
+        <translation>正在修复...</translation>
+    </message>
+    <message id="video.bgm.musicPath">
+        <source>video.bgm.musicPath</source>
+        <translation>选择音频文件</translation>
+    </message>
 </context>
 </TS>

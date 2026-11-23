@@ -113,6 +113,11 @@ BatchPage::BatchPage(FFmpegLocator *locator, FFmpegCommandBuilder *builder,
     connect(m_queueButton, &ElaPushButton::clicked,
             this, &BatchPage::addAllToQueue);
 
+    if (m_caps) {
+        connect(m_caps, &FFmpegCapabilities::capabilitiesChanged,
+                m_optionsCard, &BatchOptionsCard::rebuildCodecLists);
+    }
+
     retranslateUi();
 }
 

@@ -2863,5 +2863,301 @@
         <source>sub.extract.loadedSuccess</source>
         <translation>Successfully extracted and loaded %1 subtitle items!</translation>
     </message>
+    <message id="audio.bitrate">
+        <source>audio.bitrate</source>
+        <translation>Audio Bitrate</translation>
+    </message>
+    <message id="audiotag.addFolder">
+        <source>audiotag.addFolder</source>
+        <translation>Add Folder</translation>
+    </message>
+    <message id="audiotag.album">
+        <source>audiotag.album</source>
+        <translation>Album</translation>
+    </message>
+    <message id="audiotag.appliedNotice">
+        <source>audiotag.appliedNotice</source>
+        <translation>Metadata applied to selected files</translation>
+    </message>
+    <message id="audiotag.applySelected">
+        <source>audiotag.applySelected</source>
+        <translation>Apply to Selected</translation>
+    </message>
+    <message id="audiotag.artist">
+        <source>audiotag.artist</source>
+        <translation>Artist</translation>
+    </message>
+    <message id="audiotag.batchEnqueuedNotice">
+        <source>audiotag.batchEnqueuedNotice</source>
+        <translation>Added %1 audio jobs to queue</translation>
+    </message>
+    <message id="audiotag.batchQueue">
+        <source>audiotag.batchQueue</source>
+        <translation>Add to Queue</translation>
+    </message>
+    <message id="audiotag.bitrate">
+        <source>audiotag.bitrate</source>
+        <translation>Bitrate</translation>
+    </message>
+    <message id="audiotag.browseCover">
+        <source>audiotag.browseCover</source>
+        <translation>Browse Cover</translation>
+    </message>
+    <message id="audiotag.channels">
+        <source>audiotag.channels</source>
+        <translation>Channels</translation>
+    </message>
+    <message id="audiotag.cmdCopiedNotice">
+        <source>audiotag.cmdCopiedNotice</source>
+        <translation>FFmpeg command copied to clipboard</translation>
+    </message>
+    <message id="audiotag.comment">
+        <source>audiotag.comment</source>
+        <translation>Comment</translation>
+    </message>
+    <message id="audiotag.copyCmd">
+        <source>audiotag.copyCmd</source>
+        <translation>Copy FFmpeg Command</translation>
+    </message>
+    <message id="audiotag.coverExtractFailed">
+        <source>audiotag.coverExtractFailed</source>
+        <translation>No embedded cover found in selected audio</translation>
+    </message>
+    <message id="audiotag.coverExtractedNotice">
+        <source>audiotag.coverExtractedNotice</source>
+        <translation>Embedded cover extracted successfully</translation>
+    </message>
+    <message id="audiotag.dialog.subtitle">
+        <source>audiotag.dialog.subtitle</source>
+        <translation>Batch ID3 tag editing, cover art embedding and format conversion</translation>
+    </message>
+    <message id="audiotag.dialog.title">
+        <source>audiotag.dialog.title</source>
+        <translation>Audio Tag &amp; Cover Studio</translation>
+    </message>
+    <message id="audiotag.extractCover">
+        <source>audiotag.extractCover</source>
+        <translation>Extract Embedded Cover</translation>
+    </message>
+    <message id="audiotag.fileCount">
+        <source>audiotag.fileCount</source>
+        <translation>%1 file(s)</translation>
+    </message>
+    <message id="audiotag.formatCardTitle">
+        <source>audiotag.formatCardTitle</source>
+        <translation>Output Format &amp; Audio Options</translation>
+    </message>
+    <message id="audiotag.genre">
+        <source>audiotag.genre</source>
+        <translation>Genre</translation>
+    </message>
+    <message id="audiotag.guessMeta">
+        <source>audiotag.guessMeta</source>
+        <translation>Smart Guess from Filename</translation>
+    </message>
+    <message id="audiotag.job.extract">
+        <source>audiotag.job.extract</source>
+        <translation>Audio Tag Processing</translation>
+    </message>
+    <message id="audiotag.loudnorm">
+        <source>audiotag.loudnorm</source>
+        <translation>Loudness Normalization (EBU R128)</translation>
+    </message>
+    <message id="audiotag.metaCardTitle">
+        <source>audiotag.metaCardTitle</source>
+        <translation>Metadata &amp; Cover Art</translation>
+    </message>
+    <message id="audiotag.noCover">
+        <source>audiotag.noCover</source>
+        <translation>No Cover</translation>
+    </message>
+    <message id="audiotag.noFileSelected">
+        <source>audiotag.noFileSelected</source>
+        <translation>Please select at least one audio file from the list</translation>
+    </message>
+    <message id="audiotag.preset">
+        <source>audiotag.preset</source>
+        <translation>Preset</translation>
+    </message>
+    <message id="audiotag.preset.aac_256k">
+        <source>audiotag.preset.aac_256k</source>
+        <translation>AAC 256 kbps (High Quality)</translation>
+    </message>
+    <message id="audiotag.preset.flac">
+        <source>audiotag.preset.flac</source>
+        <translation>FLAC Lossless</translation>
+    </message>
+    <message id="audiotag.preset.mp3_192k">
+        <source>audiotag.preset.mp3_192k</source>
+        <translation>MP3 192 kbps (Standard)</translation>
+    </message>
+    <message id="audiotag.preset.mp3_320k">
+        <source>audiotag.preset.mp3_320k</source>
+        <translation>MP3 320 kbps (Extreme)</translation>
+    </message>
+    <message id="audiotag.preset.opus_64k">
+        <source>audiotag.preset.opus_64k</source>
+        <translation>OPUS 64 kbps (Voice/Podcast)</translation>
+    </message>
+    <message id="audiotag.preset.wav">
+        <source>audiotag.preset.wav</source>
+        <translation>WAV Uncompressed (CD Quality)</translation>
+    </message>
+    <message id="audiotag.removeCover">
+        <source>audiotag.removeCover</source>
+        <translation>Remove Cover</translation>
+    </message>
+    <message id="audiotag.removeSelected">
+        <source>audiotag.removeSelected</source>
+        <translation>Remove Selected</translation>
+    </message>
+    <message id="audiotag.samplerate">
+        <source>audiotag.samplerate</source>
+        <translation>Sample Rate</translation>
+    </message>
+    <message id="audiotag.track">
+        <source>audiotag.track</source>
+        <translation>Track #</translation>
+    </message>
+    <message id="audiotag.year">
+        <source>audiotag.year</source>
+        <translation>Year</translation>
+    </message>
+    <message id="batch.clearAll">
+        <source>batch.clearAll</source>
+        <translation>Clear All</translation>
+    </message>
+    <message id="batch.fileCount">
+        <source>batch.fileCount</source>
+        <translation>%1 file(s) selected</translation>
+    </message>
+    <message id="batch.files">
+        <source>batch.files</source>
+        <translation>Files to Process</translation>
+    </message>
+    <message id="batch.outputDir">
+        <source>batch.outputDir</source>
+        <translation>Output Directory</translation>
+    </message>
+    <message id="batch.pipe.audio">
+        <source>batch.pipe.audio</source>
+        <translation>Step 6: Audio Enhancement</translation>
+    </message>
+    <message id="batch.pipe.crop">
+        <source>batch.pipe.crop</source>
+        <translation>Step 2: Video Crop</translation>
+    </message>
+    <message id="batch.pipe.fps">
+        <source>batch.pipe.fps</source>
+        <translation>Step 4: Frame Rate (FPS)</translation>
+    </message>
+    <message id="batch.pipe.loudnorm">
+        <source>batch.pipe.loudnorm</source>
+        <translation>Loudness Normalization (EBU R128)</translation>
+    </message>
+    <message id="batch.pipe.mute">
+        <source>batch.pipe.mute</source>
+        <translation>Remove Audio (Mute)</translation>
+    </message>
+    <message id="batch.pipe.scale">
+        <source>batch.pipe.scale</source>
+        <translation>Step 3: Resolution Scale</translation>
+    </message>
+    <message id="batch.pipe.selectWatermark">
+        <source>batch.pipe.selectWatermark</source>
+        <translation>Select Watermark Image</translation>
+    </message>
+    <message id="batch.pipe.trim">
+        <source>batch.pipe.trim</source>
+        <translation>Step 1: Trim Segment</translation>
+    </message>
+    <message id="batch.pipe.watermark">
+        <source>batch.pipe.watermark</source>
+        <translation>Step 5: Watermark Overlay</translation>
+    </message>
+    <message id="batch.pipeline.title">
+        <source>batch.pipeline.title</source>
+        <translation>Enable Custom Pipeline (Crop/Scale/Watermark/Audio)</translation>
+    </message>
+    <message id="batch.selectFiles">
+        <source>batch.selectFiles</source>
+        <translation>Select Input Files</translation>
+    </message>
+    <message id="batch.selectOutputDir">
+        <source>batch.selectOutputDir</source>
+        <translation>Select Output Directory</translation>
+    </message>
+    <message id="common.duration">
+        <source>common.duration</source>
+        <translation>Duration</translation>
+    </message>
+    <message id="common.file">
+        <source>common.file</source>
+        <translation>File</translation>
+    </message>
+    <message id="common.source">
+        <source>common.source</source>
+        <translation>Source</translation>
+    </message>
+    <message id="common.success">
+        <source>common.success</source>
+        <translation>Success</translation>
+    </message>
+    <message id="common.warning">
+        <source>common.warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message id="convert.dialog.title">
+        <source>convert.dialog.title</source>
+        <translation>Format Conversion</translation>
+    </message>
+    <message id="convert.probing">
+        <source>convert.probing</source>
+        <translation>Analyzing media streams...</translation>
+    </message>
+    <message id="cut.keyframe.inAligned">
+        <source>cut.keyframe.inAligned</source>
+        <translation>In-point is keyframe-aligned</translation>
+    </message>
+    <message id="cut.keyframe.notAligned">
+        <source>cut.keyframe.notAligned</source>
+        <translation>Not aligned to keyframe (may cause black frame or require re-encode)</translation>
+    </message>
+    <message id="cut.keyframe.outAligned">
+        <source>cut.keyframe.outAligned</source>
+        <translation>Out-point is keyframe-aligned</translation>
+    </message>
+    <message id="cut.open.studio">
+        <source>cut.open.studio</source>
+        <translation>Open Lossless Cut Studio</translation>
+    </message>
+    <message id="cut.snap.in">
+        <source>cut.snap.in</source>
+        <translation>Snap In to Keyframe</translation>
+    </message>
+    <message id="cut.snap.out">
+        <source>cut.snap.out</source>
+        <translation>Snap Out to Keyframe</translation>
+    </message>
+    <message id="dialog.close">
+        <source>dialog.close</source>
+        <translation>Close</translation>
+    </message>
+    <message id="player.autoSkipDamaged">
+        <source>player.autoSkipDamaged</source>
+        <translation>Auto-skip damaged segments</translation>
+    </message>
+    <message id="player.skippedMsg">
+        <source>player.skippedMsg</source>
+        <translation>Skipped damaged segment [%1s - %2s]</translation>
+    </message>
+    <message id="repair.starting">
+        <source>repair.starting</source>
+        <translation>Repairing...</translation>
+    </message>
+    <message id="video.bgm.musicPath">
+        <source>video.bgm.musicPath</source>
+        <translation>Select Audio File</translation>
+    </message>
 </context>
 </TS>
