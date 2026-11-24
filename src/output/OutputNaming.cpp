@@ -31,6 +31,20 @@ QString OutputNaming::build(const QString &inputPath,
         name.append(suffix);
     }
 
+    // Sanitize generated file name to prevent path traversal outside output directory
+    name.replace(QLatin1Char('\\'), QLatin1Char('/'));
+    name = QFileInfo(name).fileName();
+    name.replace(QLatin1Char('/'), QLatin1Char('_'));
+    name.replace(QLatin1Char('\\'), QLatin1Char('_'));
+    name.replace(QLatin1Char(':'), QLatin1Char('_'));
+    while (name.startsWith(QLatin1String(".."))) {
+        name.remove(0, 2);
+    }
+    name = name.trimmed();
+    if (name.isEmpty() || name == QLatin1String(".")) {
+        name = QStringLiteral("output.%1").arg(ext.isEmpty() ? QStringLiteral("bin") : ext);
+    }
+
     QString targetPath;
     if (outputDir.isEmpty()) {
         targetPath = QDir(info.absolutePath()).filePath(name);

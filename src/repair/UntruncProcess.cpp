@@ -45,6 +45,14 @@ bool UntruncProcess::start(const QString &program, const QString &referenceFile,
     const QFileInfo corruptInfo(corruptedFile);
     m_process->setWorkingDirectory(corruptInfo.absolutePath());
 
+    if (program.isEmpty() || !QFileInfo::exists(program)) {
+        m_lastError = QStringLiteral("Untrunc executable not found");
+        setState(State::Failed);
+        emit logMessage(m_lastError);
+        emit finished(false, QString());
+        return false;
+    }
+
     const QStringList args = {
         QStringLiteral("-s"),
         QDir::toNativeSeparators(referenceFile),

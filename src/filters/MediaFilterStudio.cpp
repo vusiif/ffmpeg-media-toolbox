@@ -160,7 +160,8 @@ QString MediaFilterStudio::compileVideoFilters(const ColorGradingOptions &opts)
     if (!opts.lutFilePath.isEmpty()) {
         QString cleanPath = opts.lutFilePath;
         cleanPath.replace(QLatin1Char('\\'), QLatin1Char('/'));
-        cleanPath.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
+        cleanPath.replace(QLatin1Char(':'), QStringLiteral("\\:"));
+        cleanPath.replace(QLatin1Char('\''), QStringLiteral("\\'"));
         filters << QStringLiteral("lut3d=file='%1':interp=tetrahedral").arg(cleanPath);
     }
 

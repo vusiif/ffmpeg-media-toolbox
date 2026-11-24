@@ -21,6 +21,7 @@
 #include <QTableWidget>
 #include <QTemporaryFile>
 #include <QTime>
+#include <QUuid>
 #include <QVBoxLayout>
 
 #include "ElaComboBox.h"
@@ -364,8 +365,8 @@ bool SubtitleStudioDialog::extractAndLoadStream(int streamIndex)
         return false;
     }
 
-    const QString tempDir = QDir::tempPath();
-    const QString tempFile = tempDir + QStringLiteral("/extracted_sub_%1.srt").arg(QDateTime::currentMSecsSinceEpoch());
+    const QString tempFile = QDir::temp().filePath(
+        QStringLiteral("extracted_sub_%1.srt").arg(QUuid::createUuid().toString(QUuid::Id128)));
 
     FFmpegCommandBuilder builder;
     const QStringList args = builder.buildSubtitleExtract(m_videoPath, streamIndex, tempFile, QStringLiteral("subrip"));
@@ -523,7 +524,8 @@ void SubtitleStudioDialog::runAiSpeechRecognition()
     m_aiWhisperBtn->setEnabled(false);
 
     // 1. Extract 16kHz WAV
-    const QString tempWav = QDir::temp().filePath(QStringLiteral("whisper_in_%1.wav").arg(QTime::currentTime().msec()));
+    const QString tempWav = QDir::temp().filePath(
+        QStringLiteral("whisper_in_%1.wav").arg(QUuid::createUuid().toString(QUuid::Id128)));
     const QStringList extractArgs = WhisperPipeline::buildAudioExtractionCommand(m_videoPath, tempWav);
 
     auto *extractProc = new QProcess(this);
@@ -558,7 +560,8 @@ void SubtitleStudioDialog::runAiSpeechRecognition()
         opts.language = m_aiLangCombo->currentText();
         opts.whisperBinaryPath = whisperExe;
 
-        const QString outBase = QDir::temp().filePath(QStringLiteral("whisper_out_%1").arg(QTime::currentTime().msec()));
+        const QString outBase = QDir::temp().filePath(
+            QStringLiteral("whisper_out_%1").arg(QUuid::createUuid().toString(QUuid::Id128)));
         const QStringList whisperArgs = WhisperPipeline::buildWhisperCommand(opts, tempWav, outBase);
 
         m_aiProcess = new QProcess(this);
@@ -596,7 +599,8 @@ void SubtitleStudioDialog::burnSubtitleToVideo()
     }
 
     // Save temporary srt
-    const QString tempSrt = QDir::temp().filePath(QStringLiteral("burn_sub_%1.srt").arg(QTime::currentTime().msec()));
+    const QString tempSrt = QDir::temp().filePath(
+        QStringLiteral("burn_sub_%1.srt").arg(QUuid::createUuid().toString(QUuid::Id128)));
     if (!SubtitleEngine::saveToFile(tempSrt, m_items)) {
         return;
     }
@@ -605,15 +609,10 @@ void SubtitleStudioDialog::burnSubtitleToVideo()
     const QString output = OutputNaming::build(m_videoPath, QStringLiteral("{name}_burned.{format}"),
                                                fi.suffix());
 
-    // FFmpeg filter: subtitles='filename.srt'
-    QString filterPath = tempSrt;
-    filterPath.replace(QLatin1Char('\\'), QLatin1Char('/'));
-    filterPath.replace(QLatin1Char(':'), QStringLiteral("\\:"));
-
     QStringList args;
     args << QStringLiteral("-hide_banner") << QStringLiteral("-y")
          << QStringLiteral("-i") << m_videoPath
-         << QStringLiteral("-vf") << QStringLiteral("subtitles='%1'").arg(filterPath)
+         << QStringLiteral("-vf") << QStringLiteral("subtitles=%1").arg(FFmpegCommandBuilder::escapeFilterPath(tempSrt))
          << QStringLiteral("-c:a") << QStringLiteral("copy")
          << output;
 
@@ -633,7 +632,8 @@ void SubtitleStudioDialog::softMuxSubtitleToVideo()
         return;
     }
 
-    const QString tempSrt = QDir::temp().filePath(QStringLiteral("soft_sub_%1.srt").arg(QTime::currentTime().msec()));
+    const QString tempSrt = QDir::temp().filePath(
+        QStringLiteral("soft_sub_%1.srt").arg(QUuid::createUuid().toString(QUuid::Id128)));
     if (!SubtitleEngine::saveToFile(tempSrt, m_items)) {
         return;
     }

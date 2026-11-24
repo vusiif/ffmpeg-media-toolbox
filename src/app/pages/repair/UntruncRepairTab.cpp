@@ -194,6 +194,13 @@ void UntruncRepairTab::onStartRepair()
 {
     if (m_corruptedPath.isEmpty() || m_referencePath.isEmpty()) return;
 
+    if (!m_untruncLocator || !m_untruncLocator->isAvailable()) {
+        m_repairStatusLabel->setVisible(true);
+        m_repairStatusLabel->setText(trId("repair.failed"));
+        m_console->appendPlainText(QStringLiteral("[Error] Untrunc tool is not available or configured."));
+        return;
+    }
+
     m_startRepairBtn->setEnabled(false);
     m_cancelRepairBtn->setEnabled(true);
     m_repairProgressBar->setVisible(true);

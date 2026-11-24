@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QStackedWidget>
+#include <QUuid>
 #include <QVBoxLayout>
 
 #include "ElaCheckBox.h"
@@ -655,11 +656,13 @@ void FilterStudioDialog::onGeneratePreview()
         m_previewProcess->waitForFinished(500);
     }
 
-    const QString tempDir = QDir::tempPath();
-    m_previewSampleFile = QStringLiteral("%1/ffmedia_filter_preview.mp4").arg(tempDir);
-    if (QFile::exists(m_previewSampleFile)) {
+    if (!m_previewSampleFile.isEmpty() && QFile::exists(m_previewSampleFile)) {
         QFile::remove(m_previewSampleFile);
     }
+
+    const QString tempDir = QDir::tempPath();
+    const QString uniqueId = QUuid::createUuid().toString(QUuid::Id128);
+    m_previewSampleFile = QStringLiteral("%1/ffmedia_filter_prev_%2.mp4").arg(tempDir, uniqueId);
 
     m_previewProgress->setVisible(true);
     m_previewStatusLabel->setText(trId("filter.preview.generating"));

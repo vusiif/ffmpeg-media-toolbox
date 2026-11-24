@@ -23,6 +23,7 @@ private slots:
     void defaultStampIsGenerated();
     void ensureUniquePathReturnsSameWhenFileDoesNotExist();
     void ensureUniquePathAppendsIndexWhenFileExists();
+    void pathTraversalIsNeutralized();
 };
 
 void OutputNamingTest::emptyTemplateUsesDefault()
@@ -128,6 +129,25 @@ void OutputNamingTest::ensureUniquePathAppendsIndexWhenFileExists()
 
     f1.remove();
     f2.remove();
+}
+
+void OutputNamingTest::pathTraversalIsNeutralized()
+{
+    // Directory traversal sequences in template must not escape output directory
+    const QString result1 = OutputNaming::build(QStringLiteral("C:/media/clip.mkv"),
+                                                QStringLiteral("../../etc/passwd.{format}"),
+                                                QStringLiteral("mp4"),
+                                                QStringLiteral("D:/safe_out"),
+                                                kStamp);
+    QCOMPARE(result1, QStringLiteral("D:/safe_out/passwd-out-20260102-030405.mp4"));
+
+    // Directory traversal sequences in input file path must also stay within output directory
+    const QString result2 = OutputNaming::build(QStringLiteral("C:/media/../../traversal.mkv"),
+                                                QString(),
+                                                QStringLiteral("mp4"),
+                                                QStringLiteral("D:/safe_out"),
+                                                kStamp);
+    QCOMPARE(result2, QStringLiteral("D:/safe_out/traversal-out-20260102-030405.mp4"));
 }
 
 QTEST_GUILESS_MAIN(OutputNamingTest)
