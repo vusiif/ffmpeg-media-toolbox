@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setOrganizationName(AppSettings::organization());
     app.setApplicationName(AppSettings::application());
+    app.setApplicationVersion(QStringLiteral("1.0.0"));
 
     LanguageManager languageManager;
 
